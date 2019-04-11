@@ -1,2 +1,2 @@
-# cprior
-Fast conjugate prior for Bayesian statistics
+# CPrior
+Fast conjugate prior for Bayesian statistics.

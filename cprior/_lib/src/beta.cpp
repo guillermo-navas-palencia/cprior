@@ -1,5 +1,11 @@
+/*
+  Closed-form formulas for Beta distribution.
+
+  guillermo navas-palencia <g.navas.palencia@gmail.com>
+  Copyright (C) 2019
+*/
+
 #include <cmath>
-#include <iostream>
 
 #include "cprior.hpp"
 
@@ -8,22 +14,39 @@ double betaln(double a, double b)
   return std::lgamma(a) + std::lgamma(b) - std::lgamma(a + b);
 }
 
-double beta_terminating_a0(int a0, int b0, int a1, int b1, double err=1e-15)
-{
-  return 0;
-}
-
-double beta_terminating_a1(int a0, int b0, int a1, int b1, double err=1e-15)
+double beta_terminating_a0(int a0, double b0, double a1, double b1,
+  double err=1e-15)
 {
   double c, s, sp;
-  const int a01 = a0 - 1;
-  const int ab01 = a0 + b0 + b1 - 1;
+  const double a11 = a1 - 1;
+  const double ab11 = a1 + b0 + b1 - 1;
+
+  c = std::exp(betaln(a1 + a0 - 1, b0 + b1) - betaln(a1, b1) - betaln(a0, b0));
+  s = c / (b0 + a0 - 1);
+  sp = s;
+  for (int k = a0 - 1; k >= 0; k--) {
+    c *= (ab11 + k) * k / (a11 + k) / (k + b0);
+    s += c / (b0 + k - 1);
+    if (std::abs((s - sp) / s) < err)
+      break;
+    else
+      sp = s;
+  }
+  return 1.0 - s;
+}
+
+double beta_terminating_a1(double a0, double b0, int a1, double b1,
+  double err=1e-15)
+{
+  double c, s, sp;
+  const double a01 = a0 - 1;
+  const double ab01 = a0 + b0 + b1 - 1;
 
   c = std::exp(betaln(a0 + a1 - 1, b0 + b1) - betaln(a1, b1) - betaln(a0, b0));
   s = c / (b1 + a1 - 1);
   sp = s;
   for (int k = a1 - 1; k >= 0; k--) {
-    c *= static_cast<double>(ab01 + k) * k / (a01 + k) / (k + b1);
+    c *= (ab01 + k) * k / (a01 + k) / (k + b1);
     s += c / (b1 + k - 1);
     if (std::abs((s - sp) / s) < err)
       break;
@@ -76,9 +99,15 @@ double beta_asymptotic(int a0, int b0, int a1, int b1)
 double beta_cprior(int a0, int b0, int a1, int b1)
 {
   // calculate min value a0, b0, a1, b1 and implement special case for each one.
-
-  if ((a1 + b1 >= 2.0 * (a0 + b0)) and (a1 > b1) and (a1 > 300))
-    return beta_3f2(a0, b0, a1, b1);
-  else
+  if (a0 < a1){
+    return beta_terminating_a0(a0, b0, a1, b1);
+  }
+  else{
     return beta_terminating_a1(a0, b0, a1, b1);
+  }
+
+  // if ((a1 + b1 >= 2.0 * (a0 + b0)) and (a1 > b1) and (a1 > 300))
+  //   return beta_3f2(a0, b0, a1, b1);
+  // else
+  //   return beta_terminating_a1(a0, b0, a1, b1);
 }

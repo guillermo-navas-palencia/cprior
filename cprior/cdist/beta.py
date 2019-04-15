@@ -53,8 +53,6 @@ class BetaModel(BayesModel):
         if self.beta <= 0:
             raise ValueError("beta must be > 0; got {}.".format(self.beta))
 
-        self._dist = stats.beta(self.alpha_posterior, self.beta_posterior)
-
     @property
     def alpha_posterior(self):
         """
@@ -76,6 +74,86 @@ class BetaModel(BayesModel):
         beta : float
         """        
         return self._beta_posterior
+
+    def mean(self):
+        """Mean of the posterior distribution."""
+        return stats.beta(self._alpha_posterior, self._beta_posterior).mean()
+
+    def var(self):
+        """Variance of the posterior distribution."""
+        return stats.beta(self._alpha_posterior, self._beta_posterior).var()
+
+    def std(self):
+        """Standard deviation of the posterior distribution."""
+        return stats.beta(self._alpha_posterior, self._beta_posterior).std()
+
+    def pdf(self, x):
+        """
+        Probability density function of the posterior distribution.
+
+        Parameters
+        ----------
+        x : array-like
+            Quantiles.
+
+        Returns
+        -------
+        pdf : numpy.ndarray
+           Probability density function evaluated at x.
+        """
+        return stats.beta(self._alpha_posterior, self._beta_posterior).pdf(x)
+
+    def cdf(self, x):
+        """
+        Cumulative distribution function of the posterior distribution.
+
+        Parameters
+        ----------
+        x : array-like
+            Quantiles.
+
+        Returns
+        -------
+        cdf : numpy.ndarray
+            Cumulative distribution function evaluated at x.
+        """
+        return stats.beta(self._alpha_posterior, self._beta_posterior).cdf(x)
+
+    def ppf(self, q):
+        """
+        Percent point function (quantile) of the posterior distribution.
+
+        Parameters
+        ----------
+        x : array-like
+            Lower tail probability.
+
+        Returns
+        -------
+        ppf : numpy.ndarray
+            Quantile corresponding to the lower tail probability q.
+        """
+        return stats.beta(self._alpha_posterior, self._beta_posterior).ppf(x)
+
+    def rvs(self, size=1, random_state=None):
+        """
+        Random variates of the posterior distribution.
+
+        Parameters
+        ----------
+        size : int (default=1)
+            Number of random variates.
+
+        random_state : int or None (default=None)
+            The seed used by the random number generator.
+
+        Returns
+        -------
+        rvs : numpy.ndarray or scalar
+            Random variates of given size.
+        """
+        return stats.beta(self._alpha_posterior,
+            self._beta_posterior).rvs(size=size, random_state=random_state)
 
 
 class BetaABTest(BayesABTest):

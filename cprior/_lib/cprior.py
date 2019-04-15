@@ -1,8 +1,9 @@
 """
-Wrapper C library.
+Wrapper C/C++ library.
 """
 
-# author: <g.navas.palencia@gmail.com>
+# guillermo navas-palencia <g.navas.palencia@gmail.com>
+# Copyright (C) 2019
 
 import numpy as np
 import numpy.ctypeslib as npct

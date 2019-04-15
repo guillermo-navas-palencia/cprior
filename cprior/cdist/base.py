@@ -134,6 +134,7 @@ class BayesABTest(metaclass=ABCMeta):
 
     simulations : int or None (default=1000000)
         Number of Monte Carlo simulations.
+
     random_state : int or None (default=None)
         The seed used by the random number generator.
     """

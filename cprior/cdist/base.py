@@ -9,26 +9,27 @@ from abc import ABCMeta
 from abc import abstractmethod
 
 
-class BayesModel(object):
+class BayesModel(metaclass=ABCMeta):
     """
     Bayes model class.
-    """    
+    """
+    @abstractmethod
     def update(self):
         """Update posterior parameters."""
-        raise NotImplementedError
 
+    @abstractmethod
     def mean(self):
         """Mean of the posterior distribution."""
-        self._dist.mean()
 
+    @abstractmethod
     def var(self):
         """Variance of the posterior distribution."""
-        self._dist.var()
 
+    @abstractmethod
     def std(self):
         """Standard deviation of the posterior distribution."""
-        self._dist.std()
 
+    @abstractmethod
     def pdf(self, x):
         """
         Probability density function of the posterior distribution.
@@ -43,8 +44,8 @@ class BayesModel(object):
         pdf : numpy.ndarray
            Probability density function evaluated at x.
         """
-        self._dist.pdf(x)
 
+    @abstractmethod
     def cdf(self, x):
         """
         Cumulative distribution function of the posterior distribution.
@@ -59,8 +60,8 @@ class BayesModel(object):
         cdf : numpy.ndarray
             Cumulative distribution function evaluated at x.
         """
-        self._dist.cdf(x)
 
+    @abstractmethod
     def ppf(self, q):
         """
         Percent point function (quantile) of the posterior distribution.
@@ -75,8 +76,8 @@ class BayesModel(object):
         ppf : numpy.ndarray
             Quantile corresponding to the lower tail probability q.
         """
-        self._dist.ppf(x)
 
+    @abstractmethod
     def rvs(self, size=1, random_state=None):
         """
         Random variates of the posterior distribution.
@@ -94,7 +95,6 @@ class BayesModel(object):
         rvs : numpy.ndarray or scalar
             Random variates of given size.
         """
-        self._dist.rvs(size=size, random_state=random_state)
 
     def credible_interval(self):
         """

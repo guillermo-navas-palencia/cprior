@@ -1,3 +1,9 @@
+"""
+Gamma conjugate prior distribution model.
+"""
+
+# guillermo navas-palencia <g.navas.palencia@gmail.com>
+# Copyright (C) 2019
 
 import numpy as np
 
@@ -40,9 +46,6 @@ class GammaModel(BayesModel):
         if self.rate <= 0:
             raise ValueError("rate must be > 0; got {}.".format(self.rate))
 
-        self._dist = stats.gamma(a=self._shape_posterior, loc=0,
-            scale=1.0 / self._rate_posterior)
-
     @property
     def shape_posterior(self):
         return self._shape_posterior
@@ -50,6 +53,93 @@ class GammaModel(BayesModel):
     @property
     def rate_posterior(self):
         return self._rate_posterior
+
+    def mean(self):
+        """Mean of the posterior distribution."""
+        return stats.gamma(a=self._shape_posterior, loc=0,
+            scale=1.0 / self._rate_posterior).mean()
+
+    def var(self):
+        """Variance of the posterior distribution."""
+        return stats.gamma(a=self._shape_posterior, loc=0,
+            scale=1.0 / self._rate_posterior).var()
+
+    def std(self):
+        """Standard deviation of the posterior distribution."""
+        return stats.gamma(a=self._shape_posterior, loc=0,
+            scale=1.0 / self._rate_posterior).std()
+
+    def pdf(self, x):
+        """
+        Probability density function of the posterior distribution.
+
+        Parameters
+        ----------
+        x : array-like
+            Quantiles.
+
+        Returns
+        -------
+        pdf : numpy.ndarray
+           Probability density function evaluated at x.
+        """
+        return stats.gamma(a=self._shape_posterior, loc=0,
+            scale=1.0 / self._rate_posterior).pdf(x)
+
+    def cdf(self, x):
+        """
+        Cumulative distribution function of the posterior distribution.
+
+        Parameters
+        ----------
+        x : array-like
+            Quantiles.
+
+        Returns
+        -------
+        cdf : numpy.ndarray
+            Cumulative distribution function evaluated at x.
+        """
+        return stats.gamma(a=self._shape_posterior, loc=0,
+            scale=1.0 / self._rate_posterior).cdf(x)
+
+    def ppf(self, q):
+        """
+        Percent point function (quantile) of the posterior distribution.
+
+        Parameters
+        ----------
+        x : array-like
+            Lower tail probability.
+
+        Returns
+        -------
+        ppf : numpy.ndarray
+            Quantile corresponding to the lower tail probability q.
+        """
+        return stats.gamma(a=self._shape_posterior, loc=0,
+            scale=1.0 / self._rate_posterior).ppf(x)
+
+    def rvs(self, size=1, random_state=None):
+        """
+        Random variates of the posterior distribution.
+
+        Parameters
+        ----------
+        size : int (default=1)
+            Number of random variates.
+
+        random_state : int or None (default=None)
+            The seed used by the random number generator.
+
+        Returns
+        -------
+        rvs : numpy.ndarray or scalar
+            Random variates of given size.
+        """
+        return stats.gamma(a=self._shape_posterior, loc=0,
+            scale=1.0 / self._rate_posterior).mean().rvs(
+            size=size, random_state=random_state)
 
 
 class GammaABTest(BayesABTest):
@@ -59,26 +149,30 @@ class GammaABTest(BayesABTest):
     Parameters
     ----------
     modelA : object
+        The beta model for variant A.
 
     modelB : object
+        The beta model for variant B.
 
     simulations : int or None (default=1000000)
+        Number of Monte Carlo simulations.
 
-    random_state : int or None (default=None)    
+    random_state : int or None (default=None)
+        The seed used by the random number generator.
     """
     def __init__(self, modelA, modelB, simulations=None, random_state=None):
         super().__init__(modelA, modelB, simulations, random_state)
 
     def probability(self, method="exact", variant="A", lift=0):
         """
-        Compute 
-            P[A > B + lift] if variant == "A"
-            P[B > A + lift] if variant == "B"
-            both if variant == "all"
+        Compute the error probability or *chance to beat control*.
 
-            Similarly:
-                P[A - B > lift]
-                P[B - A > lift]
+        * If ``variant == "A"``, :math:`P[A > B + lift]`
+        * If ``variant == "B"``, :math:`P[B > A + lift]`
+        * If ``variant == "all"``, both.
+
+        If ``lift`` is positive value, the computation method must be Monte
+        Carlo sampling.
 
         Parameters
         ----------
@@ -86,9 +180,10 @@ class GammaABTest(BayesABTest):
             The method of computation. Options are "exact" and "MC".
 
         variant : str (default="A")
-            The chosen variant. Options are "A", "B", "all"
+            The chosen variant. Options are "A", "B", "all".
 
         lift : float (default=0.0)
+           The amount of uplift.
         """
         check_ab_method(method=method, method_options=("exact", "MC"),
             variant=variant, lift=lift)
@@ -125,10 +220,15 @@ class GammaABTest(BayesABTest):
 
     def expected_loss(self, method="exact", variant="A", lift=0):
         """
-        Compute
-            max(B - A - lift, 0) if variant == "A"
-            max(A - B - lift, 0) if variant == "B"
-            both if variant == "all"
+        Compute the expected loss. This is the expected uplift lost by choosing
+        a given variant.
+
+        * If ``variant == "A"``, :math:`\\max(B - A - lift, 0)`
+        * If ``variant == "B"``, :math:`\\max(A - B - lift, 0)`
+        * If ``variant == "all"``, both.
+
+        If ``lift`` is positive value, the computation method must be Monte
+        Carlo sampling.
 
         Parameters
         ----------
@@ -136,9 +236,10 @@ class GammaABTest(BayesABTest):
             The method of computation. Options are "exact" and "MC". 
 
         variant : str (default="A")
-            The chosen variant. Options are "A", "B", "all"
+            The chosen variant. Options are "A", "B", "all".
 
-        lift : float (default=0.0)                   
+        lift : float (default=0.0)
+            The amount of uplift.
         """
         check_ab_method(method=method, method_options=("exact", "MC"),
             variant=variant, lift=lift)
@@ -182,17 +283,20 @@ class GammaABTest(BayesABTest):
 
     def expected_loss_relative(self, method="exact", variant="A"):
         """
-        Compute expected relative loss for choosing a variant. Same as
-        expected minus relative improvement. 
+        Compute expected relative loss for choosing a variant. This can be seen
+        as the negative expected relative improvement or uplift.
 
-        Compute
-            E[(B - A) / A] if variant == "A"
-            E[(A - B) / B] if variant == "B"
+        * If ``variant == "A"``, :math:`\\mathrm{E}[(B - A) / A]`
+        * If ``variant == "B"``, :math:`\\mathrm{E}[(A - B) / B]`
+        * If ``variant == "all"``, both.
 
         Parameters
         ----------
         method : str (default="exact")
-            The method of computation. Options are "exact" and "montecarlo".                
+            The method of computation. Options are "exact" and "MC".
+
+        variant : str (default="A")
+            The chosen variant. Options are "A", "B", "all".
         """
         check_ab_method(method=method, method_options=("exact", "MC"),
             variant=variant)
@@ -224,16 +328,24 @@ class GammaABTest(BayesABTest):
 
     def expected_loss_ci(self, method="MC", variant="A", interval_length=0.9):
         """
-        Credible intervals
-            (B - A) if variant == "A"
-            (A - B) if variant == "B"
-            both if variant == "all"
+        Compute credible intervals on the difference distribution of
+        :math:`Z = B-A` and/or :math:`Z = A-B`.
+
+        * If ``variant == "A"``, :math:`Z = B - A`
+        * If ``variant == "B"``, :math:`Z = A - B`
+        * If ``variant == "all"``, both.
 
         Parameters
         ----------
         method : str (default="MC")
+            The method of computation. Options are "asymptotic" and "MC".
 
-        interval_length : float (default=0.9)            
+        variant : str (default="A")
+            The chosen variant. Options are "A", "B", "all".
+
+        interval_length : float (default=0.9)
+            Compute ``interval_length``\% credible interval. This is a value in
+            [0, 1].
         """
         check_ab_method(method=method, method_options=("MC", "asymptotic"),
             variant=variant)
@@ -279,16 +391,25 @@ class GammaABTest(BayesABTest):
     def expected_loss_relative_ci(self, method="MC", variant="A",
         interval_length=0.9):
         """
-        Credible intervals
-            (B - A) / A if variant == "A"
-            (A - B) / B if variant == "B"
-            both if variant == "all"
+        Compute credible intervals on the relative difference distribution of
+        :math:`Z = (B-A)/A` and/or :math:`Z = (A-B)/B`.
+
+        * If ``variant == "A"``, :math:`Z = (B-A)/A`
+        * If ``variant == "B"``, :math:`Z = (A-B)/B`
+        * If ``variant == "all"``, both.
 
         Parameters
         ----------
         method : str (default="MC")
+            The method of computation. Options are "asymptotic", "exact" and
+            "MC".
+
+        variant : str (default="A")
+            The chosen variant. Options are "A", "B", "all".
 
         interval_length : float (default=0.9)
+            Compute ``interval_length``\% credible interval. This is a value in
+            [0, 1].
         """
         check_ab_method(method=method,
             method_options=("asymptotic", "exact", "MC"), variant=variant)

@@ -34,3 +34,19 @@ def check_ab_method(method, method_options, variant, lift=0):
     if lift > 0 and method != "MC":
         raise ValueError("Method {} cannot be used with lift={}."
             " Select method='MC'.".format(method, lift))
+
+
+def check_models(classmodel, *models):
+    """
+    Check models class.
+
+    Parameters
+    ----------
+    classmodel : object
+
+    models : 
+    """
+    for model_id, model in enumerate(models):
+        if not isinstance(model, classmodel):
+            raise TypeError("Model {} is not an instance of {}."
+                .format(model_id, classmodel.__class__.__name__))

@@ -2,13 +2,14 @@
 Bayesian model with Bernoulli likelihood.
 """
 
-# guillermo navas-palencia <g.navas.palencia@gmail.com>
+# Guillermo Navas-Palencia <g.navas.palencia@gmail.com>
 # Copyright (C) 2019
 
 import numpy as np
 
 from .cdist import BetaABTest
 from .cdist import BetaModel
+from .cdist.utils import check_models
 
 
 class BernoulliModel(BetaModel):
@@ -166,5 +167,4 @@ class BernoulliABTest(BetaABTest):
     def __init__(self, modelA, modelB, simulations=1000000, random_state=None):
         super().__init__(modelA, modelB, simulations, random_state)
 
-        if not all(isinstance(m, BernoulliModel) for m in [modelA, modelB]):
-            raise TypeError("")
+        check_models(BernoulliModel, modelA, modelB)

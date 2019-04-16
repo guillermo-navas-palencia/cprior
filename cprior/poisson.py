@@ -1,8 +1,15 @@
+"""
+Bayesian model with Poisson likelihood.
+"""
+
+# Guillermo Navas-Palencia <g.navas.palencia@gmail.com>
+# Copyright (C) 2019
 
 import numpy as np
 
-from .cdist.gamma import GammaABTest
-from .cdist.gamma import GammaModel
+from .cdist import GammaABTest
+from .cdist import GammaModel
+from .cdist.utils import check_models
 
 
 class PoissonModel(GammaModel):
@@ -29,5 +36,4 @@ class PoissonABTest(GammaABTest):
     def __init__(self, modelA, modelB, simulations=1000000, random_state=None):
         super().__init__(modelA, modelB, simulations, random_state)
 
-        if not all(isinstance(m, PoissonModel) for m in [modelA, modelB]):
-            raise TypeError("")
+        check_models(PoissonModel, modelA, modelB)

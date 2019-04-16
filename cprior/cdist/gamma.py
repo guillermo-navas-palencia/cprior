@@ -2,7 +2,7 @@
 Gamma conjugate prior distribution model.
 """
 
-# guillermo navas-palencia <g.navas.palencia@gmail.com>
+# Guillermo Navas-Palencia <g.navas.palencia@gmail.com>
 # Copyright (C) 2019
 
 import numpy as np

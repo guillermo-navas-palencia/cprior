@@ -2,7 +2,7 @@
 Base Bayes model and A/B testing classes.
 """
 
-# guillermo navas-palencia <g.navas.palencia@gmail.com>
+# Guillermo Navas-Palencia <g.navas.palencia@gmail.com>
 # Copyright (C) 2019
 
 from abc import ABCMeta

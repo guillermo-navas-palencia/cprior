@@ -223,8 +223,8 @@ class GammaABTest(BayesABTest):
         Compute the expected loss. This is the expected uplift lost by choosing
         a given variant.
 
-        * If ``variant == "A"``, :math:`\\max(B - A - lift, 0)`
-        * If ``variant == "B"``, :math:`\\max(A - B - lift, 0)`
+        * If ``variant == "A"``, :math:`\\mathrm{E}[\\max(B - A - lift, 0)]`
+        * If ``variant == "B"``, :math:`\\mathrm{E}[\\max(A - B - lift, 0)]`
         * If ``variant == "all"``, both.
 
         If ``lift`` is positive value, the computation method must be Monte

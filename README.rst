@@ -29,9 +29,9 @@ Example
    test.update_B(data_B)
 
    # Compute P[A > B] and P[B > A]
-   print("P[A > B] = ", test.probability(variant="A"))
-   print("P[B > A] = ", test.probability(variant="B"))
+   print("P[A > B] = {:.4f}".format(test.probability(variant="A")))
+   print("P[B > A] = {:.4f}".format(test.probability(variant="B")))
 
    # Compute posterior expected loss given a variant
-   print("E[max(B - A, 0)] = ", test.expected_loss(variant="A"))
-   print("E[max(A - B, 0)] = ", test.expected_loss(variant="B"))
+   print("E[max(B - A, 0)] = {:.4f}".format(test.expected_loss(variant="A")))
+   print("E[max(A - B, 0)] = {:.4f}".format(test.expected_loss(variant="B")))

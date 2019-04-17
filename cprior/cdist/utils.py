@@ -36,17 +36,20 @@ def check_ab_method(method, method_options, variant, lift=0):
             " Select method='MC'.".format(method, lift))
 
 
-def check_models(classmodel, *models):
+def check_models(refclass, *models):
     """
-    Check models class.
+    Check that models for A/B and multivariate testing belong to the correct
+    class.
 
     Parameters
     ----------
-    classmodel : object
+    refclass : object
+        Reference class.
 
-    models : 
+    models : objects
+        Model instances to be checked.
     """
     for model_id, model in enumerate(models):
-        if not isinstance(model, classmodel):
+        if not isinstance(model, refclass):
             raise TypeError("Model {} is not an instance of {}."
-                .format(model_id, classmodel.__class__.__name__))
+                .format(model_id, refclass.__name__))

@@ -27,7 +27,6 @@ Example
 
    test.update_A(data_A)
    test.update_B(data_B)
-<<<<<<< HEAD
 
    # Compute P[A > B] and P[B > A]
    print("P[A > B] = ", test.probability(variant="A"))
@@ -36,7 +35,3 @@ Example
    # Compute posterior expected loss given a variant
    print("E[max(B - A, 0)] = ", test.expected_loss(variant="A"))
    print("E[max(A - B, 0)] = ", test.expected_loss(variant="B"))
-
-   # Compute credible intervals
-=======
->>>>>>> e2f0a3ec1cb4eeadee29b0421adf91e93971ca7f

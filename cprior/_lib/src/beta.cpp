@@ -5,6 +5,7 @@
   Copyright (C) 2019
 */
 
+#include <algorithm>
 #include <cmath>
 
 #include "cprior.hpp"
@@ -56,14 +57,46 @@ double beta_terminating_a1(double a0, double b0, int a1, double b1,
   return s;
 }
 
-double beta_terminating_b0(int a0, int b0, int a1, int b1, double err=1e-15)
+double beta_terminating_b0(double a0, int b0, double a1, double b1,
+  double err=1e-15)
 {
-  return 0;
+  double c, s, sp;
+  const double b11 = b1 - 1;
+  const double ab11 = b1 + a0 + a1 - 1;
+
+  c = std::exp(betaln(b1 + b0 - 1, a0 + a1) - betaln(a1, b1) - betaln(a0, b0));
+  s = c / (a0 + b0 - 1);
+  sp = s;
+  for (int k = b0 - 1; k >= 0; k--) {
+    c *= (ab11 + k) * k / (b11 + k) / (k + a0);
+    s += c / (a0 + k - 1);
+    if (std::abs((s - sp) / s) < err)
+      break;
+    else
+      sp = s;
+  }
+  return s;
 }
 
-double beta_terminating_b1(int a0, int b0, int a1, int b1, double err=1e-15)
+double beta_terminating_b1(double a0, double b0, double a1, int b1,
+  double err=1e-15)
 {
-  return 0;
+  double c, s, sp;
+  const double b01 = b0 - 1;
+  const double ab01 = b0 + a0 + a1 - 1;
+
+  c = std::exp(betaln(b0 + b1 - 1, a0 + a1) - betaln(a1, b1) - betaln(a0, b0));
+  s = c / (a1 + b1 - 1);
+  sp = s;
+  for (int k = b1 - 1; k >= 0; k--) {
+    c *= (ab01 + k) * k / (b01 + k) / (k + a1);
+    s += c / (a1 + k - 1);
+    if (std::abs((s - sp) / s) < err)
+      break;
+    else
+      sp = s;
+  }
+  return 1.0 - s;
 }
 
 double beta_3f2(double a0, double b0, double a1, double b1, double err=1e-15)
@@ -91,23 +124,18 @@ double beta_3f2(double a0, double b0, double a1, double b1, double err=1e-15)
   return 1.0 - s;
 }
 
-double beta_asymptotic(int a0, int b0, int a1, int b1)
+double beta_cprior(double a0, double b0, double a1, double b1)
 {
-  return 0;
-}
+  double int_a0, int_a1, int_b0, int_b1;
 
-double beta_cprior(int a0, int b0, int a1, int b1)
-{
-  // calculate min value a0, b0, a1, b1 and implement special case for each one.
-  if (a0 < a1){
-    return beta_terminating_a0(a0, b0, a1, b1);
-  }
-  else{
-    return beta_terminating_a1(a0, b0, a1, b1);
-  }
-
-  // if ((a1 + b1 >= 2.0 * (a0 + b0)) and (a1 > b1) and (a1 > 300))
-  //   return beta_3f2(a0, b0, a1, b1);
-  // else
-  //   return beta_terminating_a1(a0, b0, a1, b1);
+  if (a0 <= std::min(std::min(b0, b1), a1) && std::modf(a0, &int_a0) == 0.0)
+    return beta_terminating_a0((int)a0, b0, a1, b1);
+  else if (b0 <= std::min(std::min(a0, a1), b1) && std::modf(b0, &int_b0) == 0.0)
+    return beta_terminating_b0(a0, (int)b0, a1, b1);
+  else if (a1 <= std::min(std::min(a0, b0), b1) && std::modf(a1, &int_a1) == 0.0)
+    return beta_terminating_a1(a0, b0, (int)a1, b1);
+  else if (b1 <= std::min(std::min(a0, a1), b0) && std::modf(b1, &int_b1) == 0.0)
+    return beta_terminating_b1(a0, b0, a1, (int)b1);
+  else
+    return beta_3f2(a0, b0, a1, b1);
 }

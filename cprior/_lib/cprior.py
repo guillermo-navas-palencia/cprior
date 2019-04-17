@@ -25,7 +25,7 @@ else:
 
 
 cprior.cpp_beta_cprior.restype = c_double
-cprior.cpp_beta_cprior.argtypes = [c_int, c_int, c_int, c_int]
+cprior.cpp_beta_cprior.argtypes = [c_double, c_double, c_double, c_double]
 
 def beta_cprior(a0, b0, a1, b1):
 	return cprior.cpp_beta_cprior(a0, b0, a1, b1)

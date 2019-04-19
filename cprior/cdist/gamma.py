@@ -23,7 +23,7 @@ def func_ppf(x, a0, b0, a1, b1, p):
 
 class GammaModel(BayesModel):
     """
-    Gamma model.
+    Gamma conjugate prior distribution model.
 
     Parameters
     ----------
@@ -48,10 +48,24 @@ class GammaModel(BayesModel):
 
     @property
     def shape_posterior(self):
+        """
+        Posterior parameter alpha (shape).
+
+        Returns
+        -------
+        alpha : float
+        """
         return self._shape_posterior
 
     @property
     def rate_posterior(self):
+        """
+        Posterior parameter beta (rate).
+
+        Returns
+        -------
+        beta : float
+        """
         return self._rate_posterior
 
     def mean(self):

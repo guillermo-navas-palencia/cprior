@@ -14,6 +14,26 @@ from .cdist.utils import check_models
 
 class PoissonModel(GammaModel):
     """
+    Bayesian model with a Poisson likelihood and a gamma prior distribution.
+
+    Given data samples :math:`\mathbf{x} = (x_1, \ldots, x_n)`
+    from a Poisson distribution with parameter :math:`\lambda`, the posterior
+    distribution is
+
+    .. math::
+
+        \\lambda | \\mathbf{x} \\sim \\mathcal{G}\\left(\\alpha + \\sum_{i=1}^n x_i,
+        \\beta + n \\right).
+
+    with prior parameters :math:`\\alpha` (shape) and :math:`\\beta` (rate).
+
+    Parameters
+    ----------
+    shape : float (default=0.001)
+        Prior parameter shape.
+
+    rate : float (default=0.001)
+        Prior parameter rate.
     """
     def __init__(self, shape=0.001, rate=0.001):
         super().__init__(shape, rate)

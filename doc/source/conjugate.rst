@@ -32,3 +32,16 @@ In Bayesian inference, the beta distribution is the conjugate prior probability 
 	:members:
 	:inherited-members:
 	:show-inheritance:
+
+Gamma distribution
+------------------
+
+.. autoclass:: cprior.cdist.GammaModel
+	:members:
+	:inherited-members:
+	:show-inheritance:
+
+.. autoclass:: cprior.cdist.GammaABTest
+	:members:
+	:inherited-members:
+	:show-inheritance:

@@ -1,5 +1,5 @@
 """
-Bayesian model with Geometric likelihood.
+Bayesian model with geometric likelihood.
 """
 
 # Guillermo Navas-Palencia <g.navas.palencia@gmail.com>

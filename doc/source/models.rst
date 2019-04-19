@@ -37,3 +37,29 @@ The Bernoulli distribution is suitable for binary-outcome tests, for example, co
 	:members:
 	:inherited-members:	
 	:show-inheritance:
+
+
+Poisson distribution
+--------------------
+
+The Poisson distribution is a discrete distribution used to model occurrences and counts of rare events in an interval of time and/or space, when these are independent with constant rate :math:`\lambda`. The  probability mass function for :math:`k \in \mathbb{N}_0` is
+
+.. math::
+
+	f(k, \lambda) = \frac{\lambda^k e^{-\lambda}}{k!}
+
+and the cumulative distribution function is
+
+.. math::
+
+	F(k; \lambda) = Q(\lfloor k + 1 \rfloor, \lambda),
+
+where :math:`Q(a, z)` is the regularized incomplete gamma function and
+:math:`\lfloor x \rfloor` is the floor function. Finally, the expected value and variance is :math:`\lambda`.
+
+The Poisson distribution is applied to forecast arrival of customers for service at the checkout, visits to a website, etc.
+
+.. autoclass:: cprior.PoissonModel
+	:members:
+	:inherited-members:
+	:show-inheritance:

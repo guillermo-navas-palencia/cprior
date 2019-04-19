@@ -16,14 +16,14 @@ class BernoulliModel(BetaModel):
     """
     Bayesian model with a Bernoulli likelihood and a beta prior distribution.
 
-    Given a data samples :math:`\mathbf{x} = (x_1, \ldots, x_n)`
-    following a Bernoulli distribution with parameter :math:`p`, the posterior
+    Given data samples :math:`\mathbf{x} = (x_1, \ldots, x_n)`
+    from a Bernoulli distribution with parameter :math:`p`, the posterior
     distribution is
 
     .. math::
 
-        p | \mathbf{x} \\sim \\mathcal{B}(\\alpha + \sum_{i=1}^n x_i,
-        \\beta + n - \sum_{i=1}^n x_i).
+        p | \\mathbf{x} \\sim \\mathcal{B}\\left(\\alpha + \\sum_{i=1}^n x_i,
+        \\beta + n - \sum_{i=1}^n x_i\\right).
     
     with prior parameters :math:`\\alpha` and :math:`\\beta`.
 
@@ -150,7 +150,7 @@ class BernoulliModel(BetaModel):
 
 class BernoulliABTest(BetaABTest):
     """
-    Beta A/B test.
+    Bernoulli A/B test.
 
     Parameters
     ----------
@@ -161,8 +161,10 @@ class BernoulliABTest(BetaABTest):
         The variation model.
 
     simulations : int or None (default=1000000)
+        Number of Monte Carlo simulations.
 
     random_state : int or None (default=None)
+        The seed used by the random number generator.
     """
     def __init__(self, modelA, modelB, simulations=1000000, random_state=None):
         super().__init__(modelA, modelB, simulations, random_state)

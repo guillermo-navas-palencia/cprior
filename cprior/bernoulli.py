@@ -83,6 +83,11 @@ class BernoulliModel(BetaModel):
         where :math:`\\alpha` and :math:`\\beta` are the posterior values
         of the parameters.
 
+        Parameters
+        ----------
+        x : array-like
+            Quantiles.
+
         Returns
         -------
         pdf : float
@@ -140,7 +145,7 @@ class BernoulliModel(BetaModel):
 
         Returns
         -------
-        var : float        
+        var : float
         """
         a = self._alpha_posterior
         b = self._beta_posterior

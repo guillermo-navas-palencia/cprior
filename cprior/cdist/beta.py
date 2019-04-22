@@ -5,10 +5,11 @@ Beta conjugate prior distribution model.
 # Guillermo Navas-Palencia <g.navas.palencia@gmail.com>
 # Copyright (C) 2019
 
-import numpy as np
 import mpmath as mp
+import numpy as np
 
 from scipy import optimize
+from scipy import special
 from scipy import stats
 
 from .._lib.cprior import beta_cprior
@@ -133,7 +134,7 @@ class BetaModel(BayesModel):
         ppf : numpy.ndarray
             Quantile corresponding to the lower tail probability q.
         """
-        return stats.beta(self._alpha_posterior, self._beta_posterior).ppf(x)
+        return stats.beta(self._alpha_posterior, self._beta_posterior).ppf(q)
 
     def rvs(self, size=1, random_state=None):
         """
@@ -191,7 +192,8 @@ class BetaABTest(BayesABTest):
         Parameters
         ----------
         method : str (default="exact")
-            The method of computation. Options are "exact" and "MC".
+            The kmethod of computation. Options are "exact", "MC" (Monte Carlo)
+            and "MLHS" (Monte Carlo + Median Latin Hypercube Sampling).
 
         variant : str (default="A")
             The chosen variant. Options are "A", "B", "all".
@@ -199,7 +201,7 @@ class BetaABTest(BayesABTest):
         lift : float (default=0.0)
            The amount of uplift.        
         """
-        check_ab_method(method=method, method_options=("exact", "MC"),
+        check_ab_method(method=method, method_options=("exact", "MC", "MLHS"),
             variant=variant, lift=lift)
 
         if method == "exact":
@@ -215,6 +217,28 @@ class BetaABTest(BayesABTest):
                 return beta_cprior(aA, bA, aB, bB)
             else:
                 return beta_cprior(aB, bB, aA, bA), beta_cprior(aA, bA, aB, bB)
+        elif method == "MLHS":
+            aA = self.modelA.alpha_posterior
+            bA = self.modelA.beta_posterior
+
+            aB = self.modelB.alpha_posterior
+            bB = self.modelB.beta_posterior
+
+            n = 1000
+            r = np.arange(n)
+            np.random.shuffle(r)
+            v = (r - 0.5) / n
+
+            if variant == "A":
+                p = np.nanmean(special.betainc(aA, bA, self.modelB.ppf(v)))
+                return 1.0 - p
+            elif variant == "B":
+                p = np.nanmean(special.betainc(aB, bB, self.modelA.ppf(v)))
+                return 1.0 - p
+            else:
+                pa = np.nanmean(special.betainc(aA, bA, self.modelB.ppf(v)))
+                pb = np.nanmean(special.betainc(aB, bB, self.modelA.ppf(v)))
+                return 1.0 - pa, 1.0 - pb
         else:
             xA = self.modelA.rvs(self.simulations, self.random_state)
             xB = self.modelB.rvs(self.simulations, self.random_state)

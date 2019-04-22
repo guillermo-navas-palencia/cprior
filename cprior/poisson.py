@@ -45,13 +45,64 @@ class PoissonModel(GammaModel):
         Parameters
         ----------
         data : array-like, shape = (n_samples)
+            Data samples from a Poisson distribution.
         """
         self._shape_posterior += np.sum(data)
         self._rate_posterior += len(data)
 
+    def pppdf(self, x):
+        """
+        Posterior predictive probability density function.
+
+        Parameters
+        ----------
+        x : array-like
+            Quantiles.
+
+        Returns
+        -------
+        pdf : float
+            Probability density function evaluated at x.
+        """
+
+    def ppmean(self):
+        """
+        Posterior predictive mean.
+
+        Returns
+        -------
+        mean : float
+        """
+        pass
+
+    def ppvar(self):
+        """
+        Posterior predictive variance.
+
+        Returns
+        -------
+        var : float
+        """
+        pass
+
 
 class PoissonABTest(GammaABTest):
     """
+    Poisson A/B test.
+
+    Parameters
+    ----------
+    modelA : object
+        The control model.
+
+    modelB : object
+        The variation model.
+
+    simulations : int or None (default=1000000)
+        Number of Monte Carlo simulations.
+
+    random_state : int or None (default=None)
+        The seed used by the random number generator. 
     """
     def __init__(self, modelA, modelB, simulations=1000000, random_state=None):
         super().__init__(modelA, modelB, simulations, random_state)

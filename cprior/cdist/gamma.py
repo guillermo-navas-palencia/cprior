@@ -132,7 +132,7 @@ class GammaModel(BayesModel):
             Quantile corresponding to the lower tail probability q.
         """
         return stats.gamma(a=self._shape_posterior, loc=0,
-            scale=1.0 / self._rate_posterior).ppf(x)
+            scale=1.0 / self._rate_posterior).ppf(q)
 
     def rvs(self, size=1, random_state=None):
         """

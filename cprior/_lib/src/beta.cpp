@@ -1,7 +1,7 @@
 /*
   Closed-form formulas for Beta distribution.
 
-  guillermo navas-palencia <g.navas.palencia@gmail.com>
+  Guillermo Navas-Palencia <g.navas.palencia@gmail.com>
   Copyright (C) 2019
 */
 

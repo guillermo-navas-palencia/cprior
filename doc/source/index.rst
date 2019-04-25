@@ -17,6 +17,16 @@ Contents
    conjugate
    models
 
+Technical notes
+---------------
+
+.. toctree::
+   :maxdepth: 2
+
+   formulas_conjugate
+   formulas_models
+   cite
+
 
 Indices and tables
 ------------------

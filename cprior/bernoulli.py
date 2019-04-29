@@ -70,14 +70,14 @@ class BernoulliModel(BetaModel):
         Posterior predictive probability density function.
 
         If :math:`X` is a Bernoulli trial with parameter
-        :math:`p \\sim Beta(\\alpha, \\beta)`, then the posterior predictive
-        probability density function is given by
+        :math:`p \\sim \\mathcal{B}(\\alpha, \\beta)`, then the posterior
+        predictive probability density function is given by
 
         .. math::
 
             f(x; \\alpha, \\beta) = \\begin{cases}
-                \\frac{\\alpha}{\\alpha+ \\beta} & \\text{if $x = 1$}\\\\
-                \\frac{\\beta}{\\alpha+ \\beta} & \\text{if $x = 0$} 
+                \\frac{\\beta}{\\alpha+ \\beta} & \\text{if $x = 0$}\\\\
+                \\frac{\\alpha}{\\alpha+ \\beta} & \\text{if $x = 1$}\\,
             \\end{cases}
 
         where :math:`\\alpha` and :math:`\\beta` are the posterior values
@@ -109,8 +109,8 @@ class BernoulliModel(BetaModel):
         Posterior predictive mean.
 
         If :math:`X` is a Bernoulli trial with parameter
-        :math:`p \\sim Beta(\\alpha, \\beta)`, then the posterior predictive
-        expected value is given by
+        :math:`p \\sim \\mathcal{B}(\\alpha, \\beta)`, then the posterior
+        predictive expected value is given by
 
         .. math::
             
@@ -133,8 +133,8 @@ class BernoulliModel(BetaModel):
         Posterior predictive variance.
 
         If :math:`X` is a Bernoulli trial with parameter
-        :math:`p \\sim Beta(\\alpha, \\beta)`, then the posterior predictive
-        variance is given by
+        :math:`p \\sim \\mathcal{B}(\\alpha, \\beta)`, then the posterior
+        predictive variance is given by
 
         .. math::
             

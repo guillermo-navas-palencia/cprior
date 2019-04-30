@@ -1,8 +1,8 @@
 Beta distribution
 =================
 
-The error probability or chance to beat
----------------------------------------
+Error probability or chance to beat
+-----------------------------------
 
 Given two distributions :math:`X_A \sim \mathcal{B}(\alpha_A, \beta_A)` and :math:`X_B \sim \mathcal{B}(\alpha_B, \beta_B)` such that :math:`(\alpha_A, \beta_A, \alpha_B, \beta_B) \in \mathbb{R}_+^4`, :math:`P[X_B > X_A]` is given by
 
@@ -32,8 +32,8 @@ parameters is a positive integer number. See special cases in :cite:`Miller2015`
 
    The special cases in CPrior are efficiently implemented using a backward  recurrence, avoiding underflow and overflow issues and computation of negligible terms.
 
-The expected loss function
---------------------------
+Expected loss function
+----------------------
 
 The expected loss function can easily be calculated from the `definition <formulas_conjugate_general.html>`__ yielding
 
@@ -48,8 +48,8 @@ where :math:`f(\alpha_B, \beta_B, \alpha_A, \beta_A)` is :math:`P[X_A > X_B]` an
 
 See also :cite:`Stucchio2014`.
 
-The credible intervals
-----------------------
+Credible intervals
+------------------
 
 Credible intervals are employed to account for uncertainty in the expected loss and relative expected loss measures. Let us considered the relative expected loss if variant B is chosen, which follows the distribution :math:`(X_A - X_B)/X_B = X_A / X_B - 1`. This requires the distribution of the ratio of two random beta variables, :math:`U = X_A / X_B`. The probability density function is given by
 
@@ -131,8 +131,8 @@ The expected value and variance of the distribution :math:`Z = (X_A - X_B)/X_B =
 Proofs
 ------
 
-The error probability
-"""""""""""""""""""""
+Error probability
+"""""""""""""""""
 
 Integrating the joint distribution, under the assumption of independence, over all values of :math:`X_B > X_A` we obtain the following integral
 
@@ -164,8 +164,8 @@ Finally, note that the resulting series is hypergeometric and expressible in ter
 Rearranging terms the proof is completed. 
 
 
-The relative expected loss function
-"""""""""""""""""""""""""""""""""""
+Relative expected loss function
+"""""""""""""""""""""""""""""""
 
 The moments of :math:`Z = X_A / X_B` are given by
 

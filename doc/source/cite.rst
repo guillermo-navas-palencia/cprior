@@ -16,3 +16,18 @@ be highly appreciated. You can cite the library using the following BibTeX forma
 or simply use
 
    G. Navas-Palencia. *CPrior 0.1.0: a Python library for fast Bayesian A/B and multivariate testing*, 2019. http://gnpalencia.org/cprior.
+
+In addition, if you use some of the results from the "Technical notes" section, please use
+
+.. code-block:: text
+
+   @manual{gnavaspalencia2019,
+      author = {Navas-Palencia, G.},
+      title = {CPrior: Technical notes},
+      note = {\url{http://gnpalencia.org/cprior/}},
+      year = {2019}
+   }
+
+or simply use
+
+   G. Navas-Palencia. *CPrior: Technical notes*, 2019. http://gnpalencia.org/cprior.

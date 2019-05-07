@@ -38,6 +38,7 @@ Expected loss function
 The expected loss function can easily be calculated from the `definition <formulas_conjugate_general.html>`__ yielding
 
 .. math::
+
    \mathrm{EL}(X_B) = \frac{\alpha_A}{\alpha_A + \beta_A} f(\alpha_B, \beta_B, \alpha_A + 1, \beta_A) - \frac{\alpha_B}{\alpha_B + \beta_B} f(\alpha_B + 1, \beta_B, \alpha_A, \beta_A),
 
 where :math:`f(\alpha_B, \beta_B, \alpha_A, \beta_A)` is :math:`P[X_A > X_B]` and :math:`f(\alpha_B, \beta_B, \alpha_A, \beta_A)` is :math:`P[X_B > X_A]`. A similar expression is obtained for :math:`\mathrm{EL}(X_A)`,

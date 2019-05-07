@@ -15,6 +15,19 @@ where :math:`_2F_1(a,b;c;z)` is the Gauss hypergeometric function and :math:`I_x
 Expected loss function
 ----------------------
 
+The expected loss function can easily be calculated from the `definition <formulas_conjugate_general.html>`__ yielding
+
+.. math::
+
+   \mathrm{EL}(X_B) = \frac{\alpha_A}{\beta_A} I_{\frac{\beta_B}{\beta_A + \beta_A}}(\alpha_B, \alpha_A + 1) - \frac{\alpha_B}{\beta_B} I_{\frac{\beta_B}{\beta_A + \beta_A}}(\alpha_B + 1, \alpha_A).
+
+A similar expression is obtained for :math:`\mathrm{EL}(X_A)`,
+
+.. math::
+
+   \mathrm{EL}(X_A) = \frac{\alpha_B}{\beta_B} I_{\frac{\beta_A}{\beta_A + \beta_A}}(\alpha_A, \alpha_B + 1) - \frac{\alpha_A}{\beta_A} I_{\frac{\beta_A}{\beta_A + \beta_A}}(\alpha_A + 1, \alpha_B)
+
+
 Credible intervals
 ------------------
 
@@ -34,7 +47,7 @@ Integrating the joint distribution over all values of :math:`X_B > X_A` we obtai
 where :math:`P(a,z)` is the regularized lower incomplete gamma function defined by
 
 .. math::
-   
+
    P(a, z) = \frac{\gamma(a, z)}{\Gamma(a)} = 1 - Q(a,z),
 
 and :math:`Q(a,z)` is the regularized upper incomplete gamma function with series expansion

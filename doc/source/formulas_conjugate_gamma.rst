@@ -31,6 +31,33 @@ A similar expression is obtained for :math:`\mathrm{EL}(X_A)`,
 Credible intervals
 ------------------
 
+Credible intervals are employed to account for uncertainty in the expected loss and relative expected loss measures. Let us considered the relative expected loss if variant B is chosen, which follows the distribution :math:`(X_A - X_B)/X_B = X_A / X_B - 1`. This requires the distribution of the ratio of two random gamma variables, :math:`U = X_A / X_B`. The probability density function is given by
+
+.. math::
+
+   f(u) = \left(\frac{\beta_B}{\beta_A}\right)^{\alpha_B} \frac{u^{\alpha_B - 1} (1 + \frac{\beta_B}{\beta_A}u)^{-\alpha_A - \alpha_B}}{B(\alpha_A, \alpha_B)}.
+
+
+Note that this is the probability density function of the generalized beta prime distribution. The cumulative distribution function is given by
+
+.. math::
+
+   F(u) = I_{\frac{u}{u + \frac{\beta_B}{\beta_A}}}(\alpha_A, \alpha_B).  
+
+.. note::
+
+   Credible intervals are computed by solving :math:`F(u) = p`, :math:`p \in [0, 1]`. A reasonable starting point is the normal approximation of the gamma distribution.
+
+
+The expected value and variance of the distribution :math:`Z = (X_A - X_B)/X_B = X_A / X_B - 1` can be computed using
+
+.. math::
+
+   \mathrm{E}\left[\frac{X_A}{X_B} \right] = \frac{\alpha_A}{(\alpha_B - 1)}\frac{\beta_B}{\beta_A}.
+
+.. math::
+
+   \mathrm{Var} \left[\frac{X_A}{X_B} \right] = \frac{\alpha_A (\alpha_A + \alpha_B - 1)}{(\alpha_B - 2)(\alpha_B - 1)^2} \left(\frac{\beta_B}{\beta_A}\right)^2.
 
 Proofs
 ------

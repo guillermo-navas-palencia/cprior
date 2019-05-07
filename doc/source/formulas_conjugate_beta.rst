@@ -73,7 +73,7 @@ We divide the domain of computation. First, we consider the case :math:`u \in (0
    &= \frac{B(\alpha_A + \alpha_B, \beta_B) u^{\alpha_B - 1}}{B(\alpha_A, \beta_A) B(\alpha_B, \beta_B)}\, _2F_1(1-\beta_A, \alpha_A + \alpha_B; \alpha_A + \alpha_B + \beta_B; u)\\
    &= \frac{B(\alpha_A + \alpha_B, \beta_B) u^{\alpha_B - 1} (1-u)^{\beta_A + \beta_B - 1}}{B(\alpha_A, \beta_A) B(\alpha_B, \beta_B)}\, _2F_1(\beta_B, \alpha_A + \alpha_B + \beta_A + \beta_B - 1; \alpha_A + \alpha_B + \beta_B; u).
 
-The cumulative density function can be computed as follows
+The cumulative distribution function can be computed as follows
 
 .. math::
 
@@ -106,7 +106,7 @@ where constant :math:`C` is defined by
 
    C = \frac{B(\alpha_A + \alpha_B, \beta_A)}{B(\alpha_A, \beta_A) B(\alpha_B, \beta_B)}.
 
-The cumulative density function is given by
+The cumulative distribution function is given by
 
 .. math::
 

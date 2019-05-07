@@ -192,7 +192,7 @@ class BetaABTest(BayesABTest):
         Parameters
         ----------
         method : str (default="exact")
-            The kmethod of computation. Options are "exact", "MC" (Monte Carlo)
+            The method of computation. Options are "exact", "MC" (Monte Carlo)
             and "MLHS" (Monte Carlo + Median Latin Hypercube Sampling).
 
         variant : str (default="A")

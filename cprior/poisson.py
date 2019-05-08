@@ -23,8 +23,8 @@ class PoissonModel(GammaModel):
 
     .. math::
 
-        \\lambda | \\mathbf{x} \\sim \\mathcal{G}\\left(\\alpha + \\sum_{i=1}^n x_i,
-        \\beta + n \\right).
+        \\lambda | \\mathbf{x} \\sim \\mathcal{G}\\left(\\alpha + \\sum_{i=1}^n
+        x_i, \\beta + n \\right).
 
     with prior parameters :math:`\\alpha` (shape) and :math:`\\beta` (rate).
 

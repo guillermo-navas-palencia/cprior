@@ -1,4 +1,4 @@
-Beta-Bernoulli conjugate model
+Bernoulli-beta conjugate model
 ==============================
 
 Posterior predictive distribution

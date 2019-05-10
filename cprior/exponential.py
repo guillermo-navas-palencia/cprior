@@ -53,19 +53,89 @@ class ExponentialModel(GammaModel):
 
     def pppdf(self, x):
         """
+        Posterior predictive probability density function.
+
+        If :math:`X` follows an exponential distribution with parameter
+        :math:`\\lambda`, then the posterior predictive probability density
+        function is given by
+
+        .. math::
+
+            f(x; \\alpha, \\beta) = \\frac{\\alpha \\beta^{\\alpha}}{
+            (\\beta + x)^{\\alpha + 1}}.
+
+        where :math:`\\alpha` and :math:`\\beta` are the posterior values
+        of the parameters.
+
+        Parameters
+        ----------
+        x : array-like
+            Quantiles.
+
+        Returns
+        -------
+        pdf : float
+            Probability density function evaluated at x.
         """
-        pass
+        a = self._shape_posterior
+        b = self._rate_posterior
+
+        logpdf = np.log(a) + a * np.log(b) - (a + 1) * np.log(b + x)
+        return np.exp(logpdf)
 
     def ppmean(self):
         """
+        Posterior predictive mean.
+
+        If :math:`X` follows an exponential distribution with parameter
+        :math:`\\lambda`, then the posterior predictive expected value is given
+        by
+
+        .. math::
+
+            \\mathrm{E}[X] = \\frac{\\beta}{\\alpha - 1},
+
+        where :math:`\\alpha` and :math:`\\beta` are the posterior values
+        of the parameters.
+
+        Returns
+        -------
+        mean : float
         """
-        pass
+        a = self._shape_posterior
+        b = self._rate_posterior
+
+        if a > 1:
+            return b / (a - 1)
+        else:
+            return np.nan
 
     def ppvar(self):
         """
-        """
-        pass
+        Posterior predictive variance.
 
+        If :math:`X` follows a Poisson distribution with parameter
+        :math:`\\lambda`, then the posterior predictive variance is given by
+
+        .. math::
+
+            \\mathrm{Var}[X] = \\frac{\\alpha \\beta^2}{(\\alpha - 1)^2
+            (\\alpha - 2)},
+
+        where :math:`\\alpha` and :math:`\\beta` are the posterior values
+        of the parameters.
+
+        Returns
+        -------
+        var : float
+        """
+        a = self._shape_posterior
+        b = self._rate_posterior
+
+        if a > 2:
+            return b ** 2 / ((a - 1) ** 2 * (a - 2))
+        else:
+            return np.nan
 
 class ExponentialABTest(GammaABTest):
     """

@@ -23,7 +23,7 @@ The expected value and variance are as follows
 
    \mathrm{E}[X] = p, \quad \mathrm{Var}[X]= p(1-p).  
 
-The Bernoulli distribution is suitable for binary-outcome tests, for example, conversion rate (CRO) or click-through rate (CTR) testing.
+The Bernoulli distribution is suitable for binary-outcome tests, for example, CRO (conversion rate) or CTR (click-through rate) testing.
 
 .. autoclass:: cprior.BernoulliModel
    :members:

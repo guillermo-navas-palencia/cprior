@@ -23,7 +23,7 @@ class BernoulliModel(BetaModel):
     .. math::
 
         p | \\mathbf{x} \\sim \\mathcal{B}\\left(\\alpha + \\sum_{i=1}^n x_i,
-        \\beta + n - \sum_{i=1}^n x_i\\right).
+        \\beta + n - \sum_{i=1}^n x_i\\right),
     
     with prior parameters :math:`\\alpha` and :math:`\\beta`.
 

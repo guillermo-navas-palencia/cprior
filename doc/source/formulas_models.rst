@@ -8,6 +8,7 @@ Beta conjugate prior distribution
    :maxdepth: 2
 
    formulas_models_bernoulli
+   formulas_models_geometric
 
 Gamma conjugate prior distribution
 ----------------------------------

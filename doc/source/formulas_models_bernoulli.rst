@@ -26,10 +26,10 @@ Posterior predictive probability density function
 
 .. math::
 
-   f(x=0) = \int_0^1 (1-p) \frac{p^{\alpha - 1} (1-p)^{\beta - 1}}{B(\alpha, \beta)} \mathop{dp}
+   f(x=0) &= \int_0^1 (1-p) \frac{p^{\alpha - 1} (1-p)^{\beta - 1}}{B(\alpha, \beta)} \mathop{dp}
    = \mathrm{E}[1-p] = \frac{\beta}{\alpha + \beta}.
 
-   f(x=1) = \int_0^1 p \frac{p^{\alpha - 1} (1-p)^{\beta - 1}}{B(\alpha, \beta)} \mathop{dp}
+   f(x=1) &= \int_0^1 p \frac{p^{\alpha - 1} (1-p)^{\beta - 1}}{B(\alpha, \beta)} \mathop{dp}
    = \mathrm{E}[p] = \frac{\alpha}{\alpha + \beta}.
 
 Posterior predictive expected value

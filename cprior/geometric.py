@@ -122,7 +122,7 @@ class GeometricModel(BetaModel):
 
         .. math::
 
-            \\mathrm{Var}[X] = \\frac{\\alpha \\beta (\\alpha + \\beta - 1)}{
+            \\mathrm{Var}[X] = \\frac{\\beta (\\alpha + \\beta - 1)}{
             (\\alpha - 1)^2 (\\alpha - 2)},
 
         where :math:`\\alpha` and :math:`\\beta` are the posterior values
@@ -136,7 +136,7 @@ class GeometricModel(BetaModel):
         b = self._beta_posterior
 
         if a > 2:
-            return a * b * (a + b - 1) / ((a - 1) ** 2 * (a - 2))
+            return b * (a + b - 1) / ((a - 1) ** 2 * (a - 2))
         else:
             return np.nan
 

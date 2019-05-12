@@ -16,5 +16,5 @@ Gamma conjugate prior distribution
 .. toctree::
    :maxdepth: 2
 
-   formulas_models_poisson
    formulas_models_exponential
+   formulas_models_poisson

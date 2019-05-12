@@ -1,11 +1,11 @@
 Poisson distribution
 ====================
 
-The Poisson distribution is a discrete distribution used to model occurrences and counts of rare events in an interval of time and/or space, when these are independent with constant average event rate :math:`\lambda`. The  probability mass function for :math:`k \in \mathbb{N}_0` is
+The Poisson distribution is a discrete distribution used to model occurrences and counts of rare events in an interval of time and/or space, when these are independent with constant average event rate :math:`\lambda`. The probability mass function for :math:`k \in \mathbb{N}_0` is
 
 .. math::
 
-   f(k, \lambda) = \frac{\lambda^k e^{-\lambda}}{k!}
+   f(k; \lambda) = \frac{\lambda^k e^{-\lambda}}{k!}
 
 and the cumulative distribution function is
 

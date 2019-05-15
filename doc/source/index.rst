@@ -21,7 +21,7 @@ Technical notes
 ---------------
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
 
    formulas_conjugate
    formulas_models

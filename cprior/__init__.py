@@ -10,6 +10,9 @@ from .exponential import ExponentialModel
 from .geometric import GeometricABTest
 from .geometric import GeometricModel
 
+from .negative_binomial import NegativeBinomialABTest
+from .negative_binomial import NegativeBinomialModel
+
 from .poisson import PoissonABTest
 from .poisson import PoissonModel
 
@@ -22,5 +25,7 @@ __all__ = ['BernoulliABTest',
            "ExponentialModel",
            "GeometricABTest",
            "GeometricModel",
+           "NegativeBinomialABTest",
+           "NegativeBinomialModel",
            "PoissonABTest",
            "PoissonModel"]

@@ -27,13 +27,18 @@ class GammaModel(BayesModel):
 
     Parameters
     ----------
+    name : str (default="")
+        Model name.
+
     shape : int or float
         Prior parameter shape.
 
     rate : int or float
         Prior parameter rate.
     """
-    def __init__(self, shape=0.001, rate=0.001):
+    def __init__(self, name="", shape=0.001, rate=0.001):
+        super().__init__(name)
+
         self.shape = shape
         self.rate = rate
 

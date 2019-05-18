@@ -31,6 +31,9 @@ class PoissonModel(GammaModel):
 
     Parameters
     ----------
+    name : str (default="")
+        Model name.
+
     shape : float (default=0.001)
         Prior parameter shape.
 
@@ -42,8 +45,8 @@ class PoissonModel(GammaModel):
     n_samples_ : int
         Number of samples.
     """
-    def __init__(self, shape=0.001, rate=0.001):
-        super().__init__(shape, rate)
+    def __init__(self, name="", shape=0.001, rate=0.001):
+        super().__init__(name, shape, rate)
 
         self.n_samples_ = 0
 

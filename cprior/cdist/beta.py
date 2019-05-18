@@ -41,7 +41,9 @@ class BetaModel(BayesModel):
     beta: int or float (default=1)
         Prior parameter beta.
     """
-    def __init__(self, alpha=1, beta=1):
+    def __init__(self, name="", alpha=1, beta=1):
+        super().__init__(name)
+
         self.alpha = alpha
         self.beta = beta
 

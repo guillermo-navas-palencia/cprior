@@ -34,6 +34,9 @@ class BinomialModel(BetaModel):
     m : int
         Number of trials.
 
+    name : str (default="")
+        Model name.
+
     alpha : int or float (default=1)
         Prior parameter alpha.
 
@@ -45,8 +48,8 @@ class BinomialModel(BetaModel):
     n_samples_ : int
         Number of samples.
     """
-    def __init__(self, m, alpha=1, beta=1):
-        super().__init__(alpha, beta)
+    def __init__(self, m, name="", alpha=1, beta=1):
+        super().__init__(name, alpha, beta)
 
         self.m = m
         self.n_samples_ = 0

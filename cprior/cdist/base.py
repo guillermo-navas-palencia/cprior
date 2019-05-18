@@ -12,7 +12,15 @@ from abc import abstractmethod
 class BayesModel(metaclass=ABCMeta):
     """
     Bayes model class.
+
+    Parameters
+    ----------
+    name : str (default="")
+        Model name.
     """
+    def __init__(self, name=""):
+        self.name = name
+
     @abstractmethod
     def update(self):
         """Update posterior parameters."""

@@ -29,6 +29,9 @@ class BernoulliModel(BetaModel):
 
     Parameters
     ----------
+    name : str (default="")
+        Model name.
+
     alpha : int or float (default=1)
         Prior parameter alpha.
 
@@ -43,8 +46,8 @@ class BernoulliModel(BetaModel):
     n_samples_ : int
         Number of samples.
     """    
-    def __init__(self, alpha=1, beta=1):
-        super().__init__(alpha, beta)
+    def __init__(self, name="", alpha=1, beta=1):
+        super().__init__(name, alpha, beta)
 
         self.n_success_ = 0
         self.n_samples_ = 0

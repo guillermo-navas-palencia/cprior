@@ -35,6 +35,9 @@ class NegativeBinomialModel(BetaModel):
     r : int
         Number of failures.
 
+    name : str (default="")
+        Model name.
+
     alpha : int or float (default=1)
         Prior parameter alpha.
 
@@ -46,8 +49,8 @@ class NegativeBinomialModel(BetaModel):
     n_samples_ : int
         Number of samples.    
     """
-    def __init__(self, r, alpha=1, beta=1):
-        super().__init__(alpha, beta)
+    def __init__(self, r, name="", alpha=1, beta=1):
+        super().__init__(name, alpha, beta)
 
         self.r = r
         self.n_samples_ = 0

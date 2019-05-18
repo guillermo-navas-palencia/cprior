@@ -39,11 +39,17 @@ class BinomialModel(BetaModel):
 
     beta: int or float (default=1)
         Prior parameter beta.
+
+    Attributes
+    ----------
+    n_samples_ : int
+        Number of samples.
     """
     def __init__(self, m, alpha=1, beta=1):
-        super().__init__(alpha, neta)
+        super().__init__(alpha, beta)
 
         self.m = m
+        self.n_samples_ = 0
 
     def update(self, data):
         """
@@ -58,6 +64,7 @@ class BinomialModel(BetaModel):
         n_success = np.sum(data)
         self._alpha_posterior += n_success
         self._beta_posterior += self.m * n - n_success
+        self.n_samples_ += n
 
     def pppdf(self, x):
         """
@@ -69,8 +76,8 @@ class BinomialModel(BetaModel):
 
         .. math::
 
-            f(x; m, \\alpha, \\beta) = \\binom{m}{x} \\frac{B(\\alpha + x, m -
-            x + \\beta)}{B(\\alpha, \\beta)},
+            f(x; m, \\alpha, \\beta) = \\binom{m}{x} \\frac{B(\\alpha + x,
+            \\beta + m - x)}{B(\\alpha, \\beta)},
 
         where :math:`\\alpha` and :math:`\\beta` are the posterior values
         of the parameters.
@@ -113,7 +120,7 @@ class BinomialModel(BetaModel):
 
         Returns
         -------
-        mean : float  
+        mean : float
         """
         a = self._alpha_posterior
         b = self._beta_posterior
@@ -137,7 +144,7 @@ class BinomialModel(BetaModel):
 
         Returns
         -------
-        var : float        
+        var : float
         """
         a = self._alpha_posterior
         b = self._beta_posterior

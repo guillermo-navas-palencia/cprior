@@ -35,10 +35,17 @@ class GeometricModel(BetaModel):
         Prior parameter alpha.
 
     beta: int or float (default=1)
-        Prior parameter beta.    
+        Prior parameter beta.
+
+    Attributes
+    ----------
+    n_samples_ : int
+        Number of samples.
     """
     def __init__(self, alpha=1, beta=1):
         super().__init__(alpha, beta)
+
+        self.n_samples_ = 0
 
     def update(self, data):
         """
@@ -52,6 +59,7 @@ class GeometricModel(BetaModel):
         n = len(data)
         self._alpha_posterior += n
         self._beta_posterior += np.sum(data) - n
+        self.n_samples_ += n
 
     def pppdf(self, x):
         """

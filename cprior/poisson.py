@@ -6,6 +6,7 @@ Bayesian model with Poisson likelihood.
 # Copyright (C) 2019
 
 import numpy as np
+
 from scipy import stats
 
 from .cdist import GammaABTest
@@ -35,9 +36,16 @@ class PoissonModel(GammaModel):
 
     rate : float (default=0.001)
         Prior parameter rate.
+
+    Attributes
+    ----------
+    n_samples_ : int
+        Number of samples.
     """
     def __init__(self, shape=0.001, rate=0.001):
         super().__init__(shape, rate)
+
+        self.n_samples_ = 0
 
     def update(self, data):
         """
@@ -48,8 +56,10 @@ class PoissonModel(GammaModel):
         data : array-like, shape = (n_samples)
             Data samples from a Poisson distribution.
         """
+        n = len(data)
         self._shape_posterior += np.sum(data)
-        self._rate_posterior += len(data)
+        self._rate_posterior += n
+        self.n_samples_ += n
 
     def pppdf(self, x):
         """

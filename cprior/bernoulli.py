@@ -61,8 +61,9 @@ class BernoulliModel(BetaModel):
         data : array-like, shape = (n_samples)
             Data samples from a Bernoulli distribution.
         """
-        n = len(data)
-        n_success = np.sum(data)
+        x = np.asarray(data)
+        n = x.size
+        n_success = np.sum(x)
         self._alpha_posterior += n_success
         self._beta_posterior += n - n_success
         self.n_samples_ += n

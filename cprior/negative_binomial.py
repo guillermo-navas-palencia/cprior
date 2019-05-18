@@ -64,9 +64,10 @@ class NegativeBinomialModel(BetaModel):
         data : array-like, shape = (n_samples)
             Data samples from a negative binomial distribution.
         """
-        n = len(data)
+        x = np.asarray(data)
+        n = x.size
         self._alpha_posterior += self.r * n
-        self._beta_posterior += np.sum(data)
+        self._beta_posterior += np.sum(x)
         self.n_samples_ += n
 
     def pppdf(self, x):
@@ -130,7 +131,10 @@ class NegativeBinomialModel(BetaModel):
         a = self._alpha_posterior
         b = self._beta_posterior
 
-        return self.r * b / (a - 1)
+        if a > 1:
+            return self.r * b / (a - 1)
+        else:
+            return np.nan
 
     def ppvar(self):
         """
@@ -157,7 +161,10 @@ class NegativeBinomialModel(BetaModel):
 
         c = self.r * b
 
-        return c * (self.r + a - 1) * (a + b - 1) / (a - 1) ** 2 / (a - 2)
+        if a > 2:
+            return c * (self.r + a - 1) * (a + b - 1) / (a - 1) ** 2 / (a - 2)
+        else:
+            return np.nan
 
 
 class NegativeBinomialABTest(BetaABTest):

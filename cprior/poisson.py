@@ -59,8 +59,9 @@ class PoissonModel(GammaModel):
         data : array-like, shape = (n_samples)
             Data samples from a Poisson distribution.
         """
-        n = len(data)
-        self._shape_posterior += np.sum(data)
+        x = np.asarray(data)
+        n = x.size
+        self._shape_posterior += np.sum(x)
         self._rate_posterior += n
         self.n_samples_ += n
 

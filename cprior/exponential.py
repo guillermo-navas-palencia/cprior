@@ -58,9 +58,10 @@ class ExponentialModel(GammaModel):
         data : array-like, shape = (n_samples)
             Data samples from an exponential distribution.
         """
-        n = len(data)
+        x = np.asarray(data)
+        n = x.size
         self._shape_posterior += n
-        self._rate_posterior += np.sum(data)
+        self._rate_posterior += np.sum(x)
         self.n_samples_ += n
 
     def pppdf(self, x):

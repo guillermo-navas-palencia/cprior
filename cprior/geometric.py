@@ -59,9 +59,10 @@ class GeometricModel(BetaModel):
         data : array-like, shape = (n_samples)
             Data samples from a geometric distribution.
         """
-        n = len(data)
+        x = np.asarray(data)
+        n = x.size
         self._alpha_posterior += n
-        self._beta_posterior += np.sum(data) - n
+        self._beta_posterior += np.sum(x) - n
         self.n_samples_ += n
 
     def pppdf(self, x):

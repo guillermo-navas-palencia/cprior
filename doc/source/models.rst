@@ -10,6 +10,7 @@ Beta conjugate prior distribution
    models_bernoulli
    models_binomial
    models_geometric
+   models_negative_binomial
 
 Gamma conjugate prior distribution
 ----------------------------------

@@ -53,3 +53,28 @@ def check_models(refclass, *models):
         if not isinstance(model, refclass):
             raise TypeError("Model {} is not an instance of {}."
                 .format(model_id, refclass.__name__))
+
+
+def check_mv_models(refclass, models):
+    """
+    Check models for Multivariate testing.
+
+    Parameters
+    ----------
+    refclass : object
+        Reference class.
+
+    models : dict
+        Dictionary of model instances to be checked.
+    """
+    if not isinstance(models, dict):
+        raise TypeError("")
+
+    variants = models.keys()
+    variant_control = "A"
+
+    if variant_control not in variants:
+        raise ValueError("")
+
+    model_classes = models.values()
+    check_models(refclass, *model_classes)

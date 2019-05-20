@@ -10,6 +10,7 @@ import numpy as np
 from .cdist import BetaABTest
 from .cdist import BetaModel
 from .cdist.utils import check_models
+from .cdist.utils import check_mv_models
 
 
 class BernoulliModel(BetaModel):
@@ -179,3 +180,24 @@ class BernoulliABTest(BetaABTest):
         super().__init__(modelA, modelB, simulations, random_state)
 
         check_models(BernoulliModel, modelA, modelB)
+
+
+class BernoulliMVTest(BetaMVTest):
+    """
+    Bernoulli Multivariate test.
+
+    Parameters
+    ----------
+    models: dict
+        The control and variations models.
+
+    simulations : int or None (default=1000000)
+        Number of Monte Carlo simulations.
+
+    random_state : int or None (default=None)
+        The seed used by the random number generator.
+    """
+    def __init__(self, models, simulations=1000000, random_state=None):
+        super().__init__(models, simulations, random_state)
+
+        check_mv_models(BernoulliModel, models)

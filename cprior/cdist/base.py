@@ -8,6 +8,8 @@ Base Bayes model and A/B testing classes.
 from abc import ABCMeta
 from abc import abstractmethod
 
+from .utils import check_mv_model_variants
+
 
 class BayesModel(metaclass=ABCMeta):
     """
@@ -161,11 +163,11 @@ class BayesABTest(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def expected_loss_relative(self):
+    def expected_loss_ci(self):
         pass
 
     @abstractmethod
-    def expected_loss_ci(self):
+    def expected_loss_relative(self):
         pass
 
     @abstractmethod
@@ -177,3 +179,48 @@ class BayesABTest(metaclass=ABCMeta):
 
     def update_B(self, data):
         self.modelB.update(data)
+
+
+class BayesMVTest(metaclass=ABCMeta):
+    """
+    Bayesian Multivariate test abstract class.
+
+    Parameters
+    ----------
+    models : dict
+        The Bayes models.
+
+    simulations : int or None (default=1000000)
+        Number of Monte Carlo simulations.
+
+    random_state : int or None (default=None)
+        The seed used by the random number generator.
+    """
+    def __init__(self, models, simulations=None, random_state=None):
+        self.models = models
+
+    @abstractmethod
+    def probability(self):
+        pass
+
+    @abstractmethod
+    def expected_loss(self):
+        pass
+
+    @abstractmethod
+    def expected_loss_ci(self):
+        pass
+
+    @abstractmethod
+    def expected_loss_relative(self):
+        pass
+
+    @abstractmethod
+    def expected_loss_relative_ci(self):
+        pass
+
+    def update(self, data, variant):
+        if not variant in self.models.keys():
+            raise ValueError("Variant {} not available. "
+                "Variants = {}.".format(variant, self.models.keys()))
+        self.models[variant].update(data)

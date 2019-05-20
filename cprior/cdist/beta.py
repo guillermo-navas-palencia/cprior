@@ -315,51 +315,6 @@ class BetaABTest(BayesABTest):
                 return (np.maximum(xB - xA - lift, 0).mean(),
                     np.maximum(xA - xB - lift, 0).mean())
 
-    def expected_loss_relative(self, method="exact", variant="A"):
-        """
-        Compute expected relative loss for choosing a variant. This can be seen
-        as the negative expected relative improvement or uplift.
-
-        * If ``variant == "A"``, :math:`\\mathrm{E}[(B - A) / A]`
-        * If ``variant == "B"``, :math:`\\mathrm{E}[(A - B) / B]`
-        * If ``variant == "all"``, both.
-
-        Parameters
-        ----------
-        method : str (default="exact")
-            The method of computation. Options are "exact" and "MC".
-
-        variant : str (default="A")
-            The chosen variant. Options are "A", "B", "all".
-        """
-        check_ab_method(method=method, method_options=("exact", "MC"),
-            variant=variant)
-
-        if method == "exact":
-            aA = self.modelA.alpha_posterior
-            bA = self.modelA.beta_posterior
-
-            aB = self.modelB.alpha_posterior
-            bB = self.modelB.beta_posterior
-
-            if variant == "A":
-                return aB * (aA + bA - 1) / (aB + bB) / (aA - 1) - 1
-            elif variant == "B":
-                return aA * (aB + bB - 1) / (aA + bA) / (aB - 1) - 1
-            else:
-                return (aB * (aA + bA - 1) / (aB + bB) / (aA - 1) - 1,
-                    aA * (aB + bB - 1) / (aA + bA) / (aB - 1) - 1)
-        else:
-            xA = self.modelA.rvs(self.simulations, self.random_state)
-            xB = self.modelB.rvs(self.simulations, self.random_state)
-
-            if variant == "A":
-                return ((xB - xA) / xA).mean()
-            elif variant == "B":
-                return ((xA - xB) / xB).mean()
-            else:
-                return (((xB - xA) / xA).mean(), ((xA - xB) / xB).mean())
-
     def expected_loss_ci(self, method="MC", variant="A", interval_length=0.9):
         """
         Compute credible intervals on the difference distribution of
@@ -421,6 +376,51 @@ class BetaABTest(BayesABTest):
             else:
                 return (stats.norm(mu, sigma).ppf([lower, upper]),
                     stats.norm(-mu, sigma).ppf([lower, upper]))
+
+    def expected_loss_relative(self, method="exact", variant="A"):
+        """
+        Compute expected relative loss for choosing a variant. This can be seen
+        as the negative expected relative improvement or uplift.
+
+        * If ``variant == "A"``, :math:`\\mathrm{E}[(B - A) / A]`
+        * If ``variant == "B"``, :math:`\\mathrm{E}[(A - B) / B]`
+        * If ``variant == "all"``, both.
+
+        Parameters
+        ----------
+        method : str (default="exact")
+            The method of computation. Options are "exact" and "MC".
+
+        variant : str (default="A")
+            The chosen variant. Options are "A", "B", "all".
+        """
+        check_ab_method(method=method, method_options=("exact", "MC"),
+            variant=variant)
+
+        if method == "exact":
+            aA = self.modelA.alpha_posterior
+            bA = self.modelA.beta_posterior
+
+            aB = self.modelB.alpha_posterior
+            bB = self.modelB.beta_posterior
+
+            if variant == "A":
+                return aB * (aA + bA - 1) / (aB + bB) / (aA - 1) - 1
+            elif variant == "B":
+                return aA * (aB + bB - 1) / (aA + bA) / (aB - 1) - 1
+            else:
+                return (aB * (aA + bA - 1) / (aB + bB) / (aA - 1) - 1,
+                    aA * (aB + bB - 1) / (aA + bA) / (aB - 1) - 1)
+        else:
+            xA = self.modelA.rvs(self.simulations, self.random_state)
+            xB = self.modelB.rvs(self.simulations, self.random_state)
+
+            if variant == "A":
+                return ((xB - xA) / xA).mean()
+            elif variant == "B":
+                return ((xA - xB) / xB).mean()
+            else:
+                return (((xB - xA) / xA).mean(), ((xA - xB) / xB).mean())
 
     def expected_loss_relative_ci(self, method="MC", variant="A",
         interval_length=0.9):

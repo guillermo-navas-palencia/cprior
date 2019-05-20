@@ -516,3 +516,37 @@ class BetaABTest(BayesABTest):
                     variant="A", interval_length=interval_length),
                     self.expected_loss_relative_ci(method=method,
                     variant="B", interval_length=interval_length))
+
+
+class BetaMVTest(BayesMVTest):
+    """
+    Bayesian Multivariate testing with prior beta distribution.
+
+    Parameters
+    ----------
+    models : object
+        The beta models.
+
+    simulations : int or None (default=1000000)
+        Number of Monte Carlo simulations.
+
+    random_state : int or None (default=None)
+        The seed used by the random number generator.
+    """
+    def __init__(self, models, simulations=None, random_state=None):
+        super().__init__(models, simulations, random_state)
+
+    def probability(self):
+        pass
+
+    def expected_loss(self):
+        pass
+
+    def expected_loss_ci(self):
+        pass
+
+    def expected_loss_relative(self):
+        pass
+
+    def expected_loss_relative_ci(self):
+        pass

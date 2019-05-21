@@ -194,11 +194,19 @@ class BayesMVTest(metaclass=ABCMeta):
     random_state : int or None (default=None)
         The seed used by the random number generator.
     """
-    def __init__(self, models, simulations=None, random_state=None):
+    def __init__(self, models, simulations=None, random_state=None,
+        n_jobs=None):
         self.models = models
+        self.simulations = simulations
+        self.random_state = random_state
+        self.n_jobs = n_jobs
 
     @abstractmethod
     def probability(self):
+        pass
+
+    @abstractmethod
+    def probability_vs_all(self):
         pass
 
     @abstractmethod
@@ -215,6 +223,10 @@ class BayesMVTest(metaclass=ABCMeta):
 
     @abstractmethod
     def expected_loss_relative_ci(self):
+        pass
+
+    @abstractmethod
+    def expected_loss_vs_all(self):
         pass
 
     def update(self, data, variant):

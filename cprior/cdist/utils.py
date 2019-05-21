@@ -35,6 +35,9 @@ def check_ab_method(method, method_options, variant, lift=0):
         raise ValueError("Method {} cannot be used with lift={}."
             " Select method='MC'.".format(method, lift))
 
+def check_mv_method(method, method_options, control, variant, variants, lift=0):
+    pass
+
 
 def check_models(refclass, *models):
     """

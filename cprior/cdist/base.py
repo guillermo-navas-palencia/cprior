@@ -8,8 +8,6 @@ Base Bayes model and A/B testing classes.
 from abc import ABCMeta
 from abc import abstractmethod
 
-from .utils import check_mv_model_variants
-
 
 class BayesModel(metaclass=ABCMeta):
     """
@@ -221,6 +219,6 @@ class BayesMVTest(metaclass=ABCMeta):
 
     def update(self, data, variant):
         if not variant in self.models.keys():
-            raise ValueError("Variant {} not available. "
+            raise ValueError("Variant '{}' not available. "
                 "Variants = {}.".format(variant, self.models.keys()))
         self.models[variant].update(data)

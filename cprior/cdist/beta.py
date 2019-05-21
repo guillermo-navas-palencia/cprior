@@ -15,6 +15,7 @@ from scipy import stats
 from .._lib.cprior import beta_cprior
 from .base import BayesABTest
 from .base import BayesModel
+from .base import BayesMVTest
 from .utils import check_ab_method
 
 

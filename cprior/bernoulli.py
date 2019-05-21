@@ -198,7 +198,8 @@ class BernoulliMVTest(BetaMVTest):
     random_state : int or None (default=None)
         The seed used by the random number generator.
     """
-    def __init__(self, models, simulations=1000000, random_state=None):
-        super().__init__(models, simulations, random_state)
+    def __init__(self, models, simulations=1000000, random_state=None,
+        n_jobs=None):
+        super().__init__(models, simulations, random_state, n_jobs)
 
         check_mv_models(BernoulliModel, models)

@@ -68,13 +68,13 @@ def check_mv_models(refclass, models):
         Dictionary of model instances to be checked.
     """
     if not isinstance(models, dict):
-        raise TypeError("")
+        raise TypeError("Input models must be of type dict.")
 
     variants = models.keys()
     variant_control = "A"
 
     if variant_control not in variants:
-        raise ValueError("")
+        raise ValueError("A model variant 'A' (control) is required.")
 
     model_classes = models.values()
     check_models(refclass, *model_classes)

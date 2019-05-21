@@ -6,22 +6,18 @@
 Welcome to CPrior's documentation!
 ==================================
 
-Contents
---------
-
 .. toctree::
    :maxdepth: 3
+   :caption: CPrior contents
 
    getting_started
    base
    conjugate
    models
 
-Technical notes
----------------
-
 .. toctree::
    :maxdepth: 3
+   :caption: Technical notes
 
    formulas_conjugate
    formulas_models

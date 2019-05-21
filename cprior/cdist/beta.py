@@ -8,6 +8,7 @@ Beta conjugate prior distribution model.
 import mpmath as mp
 import numpy as np
 
+from multiprocessing import Pool
 from scipy import optimize
 from scipy import special
 from scipy import stats
@@ -17,6 +18,7 @@ from .base import BayesABTest
 from .base import BayesModel
 from .base import BayesMVTest
 from .utils import check_ab_method
+from .utils import check_mv_method
 
 
 def func_ppf(x, a0, b0, a1, b1, p):
@@ -534,13 +536,56 @@ class BetaMVTest(BayesMVTest):
     random_state : int or None (default=None)
         The seed used by the random number generator.
     """
-    def __init__(self, models, simulations=None, random_state=None):
-        super().__init__(models, simulations, random_state)
+    def __init__(self, models, simulations=None, random_state=None,
+        n_jobs=None):
+        super().__init__(models, simulations, random_state, n_jobs)
 
-    def probability(self):
-        pass
+    def probability(self, method="exact", control="A", variant="B", lift=0):
+        """
+        """
+        check_mv_method(method=method, method_options=("exact", "MC"),
+            control=control, variant=variant, variants=self.models.keys(),
+            lift=lift)
 
-    def expected_loss(self):
+        model_control = self.models[control]
+        model_variant = self.models[variant]
+
+        if method == "exact":
+            a0 = model_control.alpha_posterior
+            b0 = model_control.beta_posterior
+
+            a1 = model_variant.alpha_posterior
+            b1 = model_variant.beta_posterior
+
+            return beta_cprior(a0, b0, a1, b1)
+        else:
+            x0 = model_control.rvs(self.simulations, self.random_state)
+            x1 = model_variant.rvs(self.simulations, self.random_state)
+
+            return (x1 > x0 + lift).mean()
+
+    def probability_vs_all(self, method="MC", variant="B", lift=0):
+        """
+        """
+        check_mv_method(method=method, method_options=("MC"),
+            control=None, variant=variant, variants=self.models.keys(),
+            lift=lift)
+
+        # exclude variant
+        variants = list(self.models.keys())
+        variants.remove(variant)
+
+        # generate samples from all models in parallel
+        xvariant = self.models[variant].rvs(self.simulations, self.random_state)
+
+        pool = Pool(processes=self.n_jobs)
+        processes = [pool.apply_async(self._rvs, args=(v, )) for v in variants]
+        xall = [p.get() for p in processes]
+        maxall = np.maximum.reduce(xall)
+
+        return (xvariant > maxall + lift).mean()
+
+    def expected_loss(self, method="exact", control="A", variant="B", lift=0):
         pass
 
     def expected_loss_ci(self):
@@ -551,3 +596,9 @@ class BetaMVTest(BayesMVTest):
 
     def expected_loss_relative_ci(self):
         pass
+
+    def expected_loss_vs_all(self, variant="B", lift=0):
+        pass
+
+    def _rvs(self, variant):
+        return self.models[variant].rvs(self.simulations, self.random_state)

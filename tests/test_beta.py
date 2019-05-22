@@ -11,17 +11,19 @@ from cprior._lib.cprior import beta_cprior
 
 
 def test_beta_small_a0():
-    a0 = 10
-    b0 = 50
-    a1 = 60
-    b1 = 250
-
-    beta_cprior(a0, b0, a1, b1) == approx(0.7088919200702957, rel=1e-8)
+    beta_cprior(10, 50, 60, 350) == approx(0.7088919200702957, rel=1e-8)
 
 def test_beta_small_a1():
-    a0 = 600
-    b0 = 550
-    a1 = 52
-    b1 = 60
+    beta_cprior(600, 550, 52, 60) == approx(0.12231442584597124, rel=1e-8)
 
-    beta_cprior(a0, b0, a1, b1) == approx(0.12231442584597124, rel=1e-8)
+def test_beta_small_b0():
+    beta_cprior(1000, 900, 1200, 1000) == approx(0.8898254504596144, rel=1e-8)
+
+def test_beta_small_b1():
+    beta_cprior(1000, 900, 1200, 800) == approx(0.999998265666369, rel=1e-8)
+
+def test_beta_equal_params_integer():
+    beta_cprior(100, 90, 100, 90) == approx(0.5, rel=1e-8)
+
+def test_beta_equal_params_float():
+    beta_cprior(100.1, 90.1, 100.1, 90.1) == approx(0.5, rel=1e-8)

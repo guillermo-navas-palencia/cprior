@@ -22,10 +22,6 @@ class BayesModel(metaclass=ABCMeta):
         self.name = name
 
     @abstractmethod
-    def update(self):
-        """Update posterior parameters."""
-
-    @abstractmethod
     def mean(self):
         """Mean of the posterior distribution."""
 

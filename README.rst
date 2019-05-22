@@ -1,3 +1,6 @@
+.. image:: https://travis-ci.com/guillermo-navas-palencia/cprior.svg?branch=master
+    :target: https://travis-ci.com/guillermo-navas-palencia/cprior
+
 CPrior
 ======
 

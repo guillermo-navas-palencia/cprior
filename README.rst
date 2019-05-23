@@ -1,5 +1,10 @@
-.. image:: https://travis-ci.com/guillermo-navas-palencia/cprior.svg?branch=master
-    :target: https://travis-ci.com/guillermo-navas-palencia/cprior
+|Travis|_ |Codecov|_
+
+.. |Travis| image:: https://travis-ci.com/guillermo-navas-palencia/cprior.svg?branch=master
+.. _Travis: https://travis-ci.com/guillermo-navas-palencia/cprior
+    
+.. |Codecov| image:: https://codecov.io/gh/guillermo-navas-palencia/cprior/branch/master/graph/badge.svg
+.. _Codecov: https://codecov.io/gh/guillermo-navas-palencia/cprior
 
 CPrior
 ======

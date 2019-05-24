@@ -8,6 +8,7 @@ Beta distribution testing
 from pytest import approx, raises
 
 from cprior._lib.cprior import beta_cprior
+from cprior.cdist import BetaABTest
 from cprior.cdist import BetaModel
 
 
@@ -53,9 +54,41 @@ def test_beta_model_stats():
     assert model.pdf(0.1) == approx(0.297607)
     assert model.pdf(0) == 0
     assert model.pdf(1) == 0
+    assert model.cdf(0.1) == approx(0.00833109)
+    assert model.cdf(0) == 0
+    assert model.cdf(1) == 1
+    assert model.ppf(0.1) == approx(0.2103962)
+    assert model.ppf(0.5) == approx(0.3930848)
 
 
 def test_beta_model_priors():
     model = BetaModel(alpha=4, beta=6)
     assert model.alpha_posterior == model.alpha
     assert model.beta_posterior == model.beta
+
+
+def test_beta_model_probability_method():
+    modelA = BetaModel(alpha=40, beta=60)
+    modelB = BetaModel(alpha=70, beta=90)
+    abtest = BetaABTest(modelA, modelB, 1000000, 42)
+
+    with raises(ValueError):
+        abtest.probability(method="new")
+
+
+def test_beta_model_probability_variant():
+    modelA = BetaModel(alpha=40, beta=60)
+    modelB = BetaModel(alpha=70, beta=90)
+    abtest = BetaABTest(modelA, modelB, 1000000, 42)
+
+    with raises(ValueError):
+        abtest.probability(variant="C")
+
+
+def test_beta_model_probability_lift():
+    modelA = BetaModel(alpha=40, beta=60)
+    modelB = BetaModel(alpha=70, beta=90)
+    abtest = BetaABTest(modelA, modelB, 1000000, 42)
+
+    with raises(ValueError):
+        abtest.probability(method="MC", lift=-0.1)

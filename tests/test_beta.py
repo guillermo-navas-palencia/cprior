@@ -45,6 +45,17 @@ def test_beta_model_beta_positive():
         model = BetaModel(beta=0)
 
 
-def test_beta_model_mean():
+def test_beta_model_stats():
     model = BetaModel(alpha=4, beta=6)
     assert model.mean() == approx(0.4)
+    assert model.var() == approx(0.02181818181818)
+    assert model.std() == approx(0.14770978917519)
+    assert model.pdf(0.1) == approx(0.297607)
+    assert model.pdf(0) == 0
+    assert model.pdf(1) == 0
+
+
+def test_beta_model_priors():
+    model = BetaModel(alpha=4, beta=6)
+    assert model.alpha_posterior == model.alpha
+    assert model.beta_posterior == model.beta

@@ -67,7 +67,7 @@ def test_beta_model_priors():
     assert model.beta_posterior == model.beta
 
 
-def test_beta_model_probability_method():
+def test_beta_model_check_method():
     modelA = BetaModel(alpha=40, beta=60)
     modelB = BetaModel(alpha=70, beta=90)
     abtest = BetaABTest(modelA, modelB, 1000000, 42)
@@ -76,7 +76,7 @@ def test_beta_model_probability_method():
         abtest.probability(method="new")
 
 
-def test_beta_model_probability_variant():
+def test_beta_model_check_variant():
     modelA = BetaModel(alpha=40, beta=60)
     modelB = BetaModel(alpha=70, beta=90)
     abtest = BetaABTest(modelA, modelB, 1000000, 42)
@@ -85,10 +85,76 @@ def test_beta_model_probability_variant():
         abtest.probability(variant="C")
 
 
-def test_beta_model_probability_lift():
+def test_beta_model_check_lift():
     modelA = BetaModel(alpha=40, beta=60)
     modelB = BetaModel(alpha=70, beta=90)
     abtest = BetaABTest(modelA, modelB, 1000000, 42)
 
     with raises(ValueError):
         abtest.probability(method="MC", lift=-0.1)
+
+
+def test_beta_model_check_lift_no_MC():
+    modelA = BetaModel(alpha=40, beta=60)
+    modelB = BetaModel(alpha=70, beta=90)
+    abtest = BetaABTest(modelA, modelB, 1000000, 42)
+
+    with raises(ValueError):
+        abtest.probability(method="exact", lift=0.1)
+
+
+def test_beta_probability():
+    modelA = BetaModel(alpha=40, beta=60)
+    modelB = BetaModel(alpha=70, beta=90)
+    abtest = BetaABTest(modelA, modelB, 1000000, 42)
+
+    assert abtest.probability(method="exact",
+        variant="A") == approx(0.2737282537, rel=1e-8)
+
+    assert abtest.probability(method="MLHS",
+        variant="A") == approx(0.2737282537, rel=1e-2)
+
+    assert abtest.probability(method="MC",
+        variant="A") == approx(0.2737282537, rel=1e-2)
+
+    assert abtest.probability(method="exact",
+        variant="B") == approx(0.7262717462, rel=1e-8)
+
+    assert abtest.probability(method="MLHS",
+        variant="B") == approx(0.7262717462, rel=1e-2)
+
+    assert abtest.probability(method="MC",
+        variant="B") == approx(0.7262717462, rel=1e-2)
+
+    assert abtest.probability(method="exact",
+        variant="all") == approx([0.2737282537, 0.7262717462], rel=1e-8)
+
+    assert abtest.probability(method="MLHS",
+        variant="all") == approx([0.2737282537, 0.7262717462], rel=1e-2)
+
+    assert abtest.probability(method="MC",
+        variant="all") == approx([0.2737282537, 0.7262717462], rel=1e-2)
+
+
+def test_beta_expected_loss():
+    modelA = BetaModel(alpha=40, beta=60)
+    modelB = BetaModel(alpha=70, beta=90)
+    abtest = BetaABTest(modelA, modelB, 1000000, 42)
+
+    assert abtest.expected_loss(method="exact",
+        variant="A") == approx(0.0481119843, rel=1e-8)
+
+    assert abtest.expected_loss(method="MC",
+        variant="A") == approx(0.0481119843, rel=1e-2)
+
+    assert abtest.expected_loss(method="exact",
+        variant="B") == approx(0.0106119843, rel=1e-8)
+
+    assert abtest.expected_loss(method="MC",
+        variant="B") == approx(0.0106119843, rel=1e-2)
+
+    assert abtest.expected_loss(method="exact",
+        variant="all") == approx([0.0481119843, 0.0106119843], rel=1e-8)
+
+    assert abtest.expected_loss(method="MC",
+        variant="all") == approx([0.0481119843, 0.0106119843], rel=1e-2)

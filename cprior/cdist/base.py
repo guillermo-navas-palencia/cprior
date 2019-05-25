@@ -100,7 +100,7 @@ class BayesModel(metaclass=ABCMeta):
             Random variates of given size.
         """
 
-    def credible_interval(self):
+    def credible_interval(self, interval_length):
         """
         Credible interval of the posterior distribution.
 
@@ -150,28 +150,54 @@ class BayesABTest(metaclass=ABCMeta):
 
     @abstractmethod
     def probability(self):
-        pass
+        """Compute the error probability or *chance to beat control*."""
 
     @abstractmethod
     def expected_loss(self):
-        pass
+        """
+        Compute the expected loss. This is the expected uplift lost by choosing
+        a given variant.
+        """
 
     @abstractmethod
     def expected_loss_ci(self):
-        pass
+        """
+        Compute credible intervals on the difference distribution of
+        :math:`Z = B-A` and/or :math:`Z = A-B`.
+        """
 
     @abstractmethod
     def expected_loss_relative(self):
-        pass
+        """
+        Compute expected relative loss for choosing a variant. This can be seen
+        as the negative expected relative improvement or uplift.
+        """
 
     @abstractmethod
     def expected_loss_relative_ci(self):
-        pass
+        """
+        Compute credible intervals on the relative difference distribution of
+        :math:`Z = (B-A)/A` and/or :math:`Z = (A-B)/B`.
+        """
 
     def update_A(self, data):
+        """
+        Update posterior parameters with new data samples.
+
+        Parameters
+        ----------
+        data : array-like, shape = (n_samples)
+        """
         self.modelA.update(data)
 
     def update_B(self, data):
+        """
+        Update posterior parameters with new data samples.
+
+        Parameters
+        ----------
+        data : array-like, shape = (n_samples)
+        """
         self.modelB.update(data)
 
 

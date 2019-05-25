@@ -61,6 +61,23 @@ def test_beta_model_stats():
     assert model.ppf(0.5) == approx(0.3930848)
 
 
+def test_beta_model_check_ci_interval():
+    model = BetaModel(alpha=4, beta=6)
+
+    with raises(ValueError):
+        model.credible_interval(interval_length=1.1)
+
+    with raises(ValueError):
+        model.credible_interval(interval_length=-0.1)
+
+
+def test_beta_model_ci():
+    model = BetaModel(alpha=4, beta=6)
+
+    assert model.credible_interval(interval_length=0.8) == approx(
+        [0.210396, 0.59942], rel=1e-5)
+
+
 def test_beta_model_priors():
     model = BetaModel(alpha=4, beta=6)
     assert model.alpha_posterior == model.alpha

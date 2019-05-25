@@ -158,3 +158,76 @@ def test_beta_expected_loss():
 
     assert abtest.expected_loss(method="MC",
         variant="all") == approx([0.0481119843, 0.0106119843], rel=1e-2)
+
+
+def test_beta_expected_loss_ci():
+    modelA = BetaModel(alpha=4000, beta=6000)
+    modelB = BetaModel(alpha=7000, beta=9000)
+    abtest = BetaABTest(modelA, modelB, 1000000, 42)
+
+    assert abtest.expected_loss_ci(method="MC",
+        variant="A") == approx([0.02644029, 0.04853865], rel=1e-2)
+
+    assert abtest.expected_loss_ci(method="asymptotic",
+        variant="A") == approx([0.02644029, 0.04853865], rel=1e-1)
+
+    assert abtest.expected_loss_ci(method="MC",
+        variant="B") == approx([-0.04853865, -0.02644029], rel=1e-2)
+
+    assert abtest.expected_loss_ci(method="asymptotic",
+        variant="B") == approx([-0.04853865, -0.02644029], rel=1e-1)
+
+
+def test_beta_expected_loss_relative():
+    modelA = BetaModel(alpha=40, beta=60)
+    modelB = BetaModel(alpha=70, beta=90)
+    abtest = BetaABTest(modelA, modelB, 1000000, 42)
+
+    assert abtest.expected_loss_relative(method="exact",
+        variant="A") == approx(0.1105769230, rel=1e-8)
+
+    assert abtest.expected_loss_relative(method="MC",
+        variant="A") == approx(0.1105769230, rel=1e-2)
+
+    assert abtest.expected_loss_relative(method="exact",
+        variant="B") == approx(-0.0782608695, rel=1e-8)
+
+    assert abtest.expected_loss_relative(method="MC",
+        variant="B") == approx(-0.0782608695, rel=1e-2)
+
+
+def test_beta_expected_loss_relative_ci():
+    modelA = BetaModel(alpha=40, beta=60)
+    modelB = BetaModel(alpha=70, beta=90)
+    abtest = BetaABTest(modelA, modelB, 1000000, 42)
+
+    assert abtest.expected_loss_relative_ci(method="exact",
+        variant="A") == approx((-0.1424559672, 0.4175275191), rel=1e-8)
+
+    assert abtest.expected_loss_relative_ci(method="MC",
+        variant="A") == approx((-0.1424559672, 0.4175275191), rel=1e-2)
+
+    assert abtest.expected_loss_relative_ci(method="exact",
+        variant="B") == approx((-0.2945463234, 0.1661208775), rel=1e-8)
+
+    assert abtest.expected_loss_relative_ci(method="MC",
+        variant="B") == approx((-0.2945463234, 0.1661208775), rel=1e-2)
+
+
+def test_beta_expected_loss_relative_ci_large_params():
+    modelA = BetaModel(alpha=4000, beta=6000)
+    modelB = BetaModel(alpha=7000, beta=9000)
+    abtest = BetaABTest(modelA, modelB, 1000000, 42)
+
+
+    assert abtest.expected_loss_relative_ci(method="MC",
+        variant="A") == approx([0.06506319, 0.1233082], rel=1e-2)
+
+    assert abtest.expected_loss_relative_ci(method="asymptotic",
+        variant="A") == approx([0.06506319, 0.1233082], rel=1e-1)
+
+    assert abtest.expected_loss_relative_ci(method="MC",
+        variant="B") == approx([-0.10977237, -0.06108857], rel=1e-2)
+
+    assert abtest.expected_loss_relative_ci(method="asymptotic",
+        variant="B") == approx([-0.10977237, -0.06108857], rel=1e-1)

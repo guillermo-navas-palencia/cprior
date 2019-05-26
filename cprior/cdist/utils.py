@@ -36,7 +36,27 @@ def check_ab_method(method, method_options, variant, lift=0):
             " Select method='MC'.".format(method, lift))
 
 def check_mv_method(method, method_options, control, variant, variants, lift=0):
-    pass
+    if not method in method_options:
+        raise ValueError("Method '{}' is not a valid method. "
+                         "Available methods are {}."
+                         .format(method, method_options))
+
+    if not control is None:
+        if not control in variants:
+            raise ValueError("Control variant '{}' not available. "
+                "Variants = {}.".format(control, variants))
+
+    if not variant in variants:
+        raise ValueError("Variant '{}' not available. "
+                "Variants = {}.".format(variant, variants))
+
+    if not isinstance(lift, numbers.Number) or lift < 0:
+        raise ValueError("Lift must be a positive number;"
+            " got lift={}".format(lift))
+
+    if lift > 0 and method != "MC":
+        raise ValueError("Method {} cannot be used with lift={}."
+            " Select method='MC'.".format(method, lift))
 
 
 def check_models(refclass, *models):

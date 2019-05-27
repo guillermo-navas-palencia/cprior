@@ -1,7 +1,7 @@
 import numbers
 
 
-def check_ab_method(method, method_options, variant, lift):
+def check_ab_method(method, method_options, variant, lift=0):
     """
     Check parameters of A/B method.
 
@@ -36,7 +36,7 @@ def check_ab_method(method, method_options, variant, lift):
             " Select method='MC'.".format(method, lift))
 
 
-def check_mv_method(method, method_options, control, variant, variants, lift):
+def check_mv_method(method, method_options, control, variant, variants, lift=0):
     if not method in method_options:
         raise ValueError("Method '{}' is not a valid method. "
                          "Available methods are {}."

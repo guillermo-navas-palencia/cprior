@@ -183,7 +183,8 @@ class BetaABTest(BayesABTest):
     def __init__(self, modelA, modelB, simulations=None, random_state=None):
         super().__init__(modelA, modelB, simulations, random_state)
 
-    def probability(self, method="exact", variant="A", lift=0):
+    def probability(self, method="exact", variant="A", lift=0,
+        mlhs_samples=10000):
         """
         Compute the error probability or *chance to beat control*.
 
@@ -210,7 +211,7 @@ class BetaABTest(BayesABTest):
             Number of samples for MLHS method.
         """
         check_ab_method(method=method, method_options=("exact", "MC", "MLHS"),
-            variant=variant, lift=lift, mlhs_samples=10000)
+            variant=variant, lift=lift)
 
         if method == "exact":
             aA = self.modelA.alpha_posterior
@@ -232,10 +233,9 @@ class BetaABTest(BayesABTest):
             aB = self.modelB.alpha_posterior
             bB = self.modelB.beta_posterior
 
-            n = mlhs_samples
-            r = np.arange(n)
+            r = np.arange(mlhs_samples)
             np.random.shuffle(r)
-            v = (r - 0.5) / n
+            v = (r - 0.5) / mlhs_samples
 
             if variant == "A":
                 p = np.nanmean(special.betainc(aA, bA, self.modelB.ppf(v)))

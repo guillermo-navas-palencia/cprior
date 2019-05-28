@@ -670,8 +670,29 @@ class BetaMVTest(BayesMVTest):
     def expected_loss_relative_ci(self):
         pass
 
-    def expected_loss_vs_all(self, variant="B", lift=0):
-        pass
+    def expected_loss_vs_all(self, method="MC", variant="B", lift=0):
+        """
+        """
+        check_mv_method(method=method, method_options=("MC", "MLHS"),
+            control=None, variant=variant, variants=self.models.keys(),
+            lift=lift)
+
+        # exclude variant
+        variants = list(self.models.keys())
+        variants.remove(variant)
+
+        if method == "MC":
+            # generate samples from all models in parallel
+            xvariant = self.models[variant].rvs(self.simulations,
+                self.random_state)
+
+            pool = Pool(processes=self.n_jobs)
+            processes = [pool.apply_async(self._rvs, args=(v, ))
+                for v in variants]
+            xall = [p.get() for p in processes]
+            maxall = np.maximum.reduce(xall)
+
+            return np.maximum(maxall - xvariant - lift, 0).mean()
 
     def _rvs(self, variant):
         return self.models[variant].rvs(self.simulations, self.random_state)

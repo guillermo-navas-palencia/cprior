@@ -258,7 +258,8 @@ class BetaABTest(BayesABTest):
             else:
                 return (xA > xB + lift).mean(), (xB > xA + lift).mean()
 
-    def expected_loss(self, method="exact", variant="A", lift=0):
+    def expected_loss(self, method="exact", variant="A", lift=0,
+        mlhs_samples=10000):
         """
         Compute the expected loss. This is the expected uplift lost by choosing
         a given variant.
@@ -280,8 +281,11 @@ class BetaABTest(BayesABTest):
 
         lift : float (default=0.0)
             The amount of uplift.
+
+        mlhs_samples : int (default=10000)
+            Number of samples for MLHS method.
         """
-        check_ab_method(method=method, method_options=("exact", "MC"),
+        check_ab_method(method=method, method_options=("exact", "MC", "MLHS"),
             variant=variant, lift=lift)
 
         if method == "exact":
@@ -309,6 +313,38 @@ class BetaABTest(BayesABTest):
                 maxab = ta - tb
 
                 return maxba, maxab
+        elif method == "MLHS":
+            aA = self.modelA.alpha_posterior
+            bA = self.modelA.beta_posterior
+
+            aB = self.modelB.alpha_posterior
+            bB = self.modelB.beta_posterior
+
+            r = np.arange(mlhs_samples)
+            np.random.shuffle(r)
+            v = (r - 0.5) / mlhs_samples
+
+            if variant == "A":
+                x = self.modelB.ppf(v)
+                p = x * special.betainc(aA, bA, x)
+                q = aA / (aA + bA) * special.betainc(aA + 1, bA, x)
+                return np.nanmean(p - q)
+            elif variant == "B":
+                x = self.modelA.ppf(v)
+                p = x * special.betainc(aB, bB, x)
+                q = aB / (aB + bB) * special.betainc(aB + 1, bB, x)
+                return np.nanmean(p - q)
+            else:
+                x = self.modelB.ppf(v)
+                p = x * special.betainc(aA, bA, x)
+                q = aA / (aA + bA) * special.betainc(aA + 1, bA, x)
+                pa =  np.nanmean(p - q)
+
+                x = self.modelA.ppf(v)
+                p = x * special.betainc(aB, bB, x)
+                q = aB / (aB + bB) * special.betainc(aB + 1, bB, x)
+                pb =  np.nanmean(p - q)
+                return pa, pb
         else:
             xA = self.modelA.rvs(self.simulations, self.random_state)
             xB = self.modelB.rvs(self.simulations, self.random_state)

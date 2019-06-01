@@ -32,6 +32,13 @@ def func_ppf(x, a0, b0, a1, b1, p):
     return float(one - c * f) - p
 
 
+def mv_func_ppf(x, variant_params, p):
+    cdf = 1.0
+    for (a, b) in variant_params:
+        cdf *= special.betainc(a, b, x)
+    return cdf - p
+
+
 class BetaModel(BayesModel):
     """
     Beta conjugate prior distribution model.
@@ -637,7 +644,7 @@ class BetaMVTest(BayesMVTest):
             return (x1 > x0 + lift).mean()
 
     def probability_vs_all(self, method="MLHS", variant="B", lift=0,
-        mlhs_samples=10000):
+        mlhs_samples=1000):
         r"""
         Compute the error probability or *chance to beat all* variations. For
         example, given variants "A", "B", "C" and "D", and choosing variant="B",
@@ -658,7 +665,7 @@ class BetaMVTest(BayesMVTest):
         lift : float (default=0.0)
            The amount of uplift.
 
-        mlhs_samples : int (default=10000)
+        mlhs_samples : int (default=1000)
             Number of samples for MLHS method.
         """
         check_mv_method(method=method, method_options=("MC", "MLHS"),
@@ -706,7 +713,8 @@ class BetaMVTest(BayesMVTest):
     def expected_loss_relative_ci(self):
         pass
 
-    def expected_loss_vs_all(self, method="MC", variant="B", lift=0):
+    def expected_loss_vs_all(self, method="MC", variant="B", lift=0,
+        mlhs_samples=1000):
         """
         """
         check_mv_method(method=method, method_options=("MC", "MLHS"),
@@ -729,6 +737,28 @@ class BetaMVTest(BayesMVTest):
             maxall = np.maximum.reduce(xall)
 
             return np.maximum(maxall - xvariant - lift, 0).mean()
+        else:
+            r = np.arange(mlhs_samples)
+            np.random.shuffle(r)
+            v = (r - 0.5) / mlhs_samples
+            v = v[v >= 0]
+
+            # ppf of distribution of max(x0, x1, ..., xn), where x_i follows
+            # a beta distribution
+            variant_params = [(self.models[v].alpha_posterior,
+                self.models[v].beta_posterior) for v in variants]
+
+            # optimize (joblib)
+            x = np.array([optimize.brentq(f=mv_func_ppf,
+                args=(variant_params, p), a=0, b=1, xtol=1e-4, rtol=1e-4
+                ) for p in v])
+
+            a = self.models[variant].alpha_posterior
+            b = self.models[variant].beta_posterior
+            p = x * special.betainc(a, b, x)
+            # TODO: optimize I_x(a+1, b) using transformation
+            q = a / (a + b) * special.betainc(a + 1, b, x)
+            return np.nanmean(p - q)
 
     def _rvs(self, variant):
         return self.models[variant].rvs(self.simulations, self.random_state)

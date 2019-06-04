@@ -3,7 +3,7 @@ import numbers
 
 def check_ab_method(method, method_options, variant, lift=0):
     """
-    Check parameters of A/B method.
+    Check parameters of A/B testing method.
 
     Parameters
     ----------
@@ -37,6 +37,29 @@ def check_ab_method(method, method_options, variant, lift=0):
 
 
 def check_mv_method(method, method_options, control, variant, variants, lift=0):
+    """
+    Check parameters of Multivariate testing method.
+
+    Parameters
+    ----------
+    method : str
+        The default computational method.
+
+    method_options : list or tuple
+        The list of supported computational methods.
+
+    control : str
+        The control variant.
+
+    variant : str
+        The variation variant.
+
+    variants : list or tuple
+        The list of available variants.
+
+    lift : float (default=0.0)
+        The amount of uplift.
+    """
     if not method in method_options:
         raise ValueError("Method '{}' is not a valid method. "
                          "Available methods are {}."

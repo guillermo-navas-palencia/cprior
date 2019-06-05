@@ -33,6 +33,7 @@ def func_ppf(x, a0, b0, a1, b1, p):
 
 
 def mv_func_ppf(x, variant_params, p):
+    """Function CDF of max of beta random variables for root-finding."""
     cdf = 1.0
     for (a, b) in variant_params:
         cdf *= special.betainc(a, b, x)
@@ -267,12 +268,12 @@ class BetaABTest(BayesABTest):
 
     def expected_loss(self, method="exact", variant="A", lift=0,
         mlhs_samples=10000):
-        """
+        r"""
         Compute the expected loss. This is the expected uplift lost by choosing
         a given variant.
 
-        * If ``variant == "A"``, :math:`\\mathrm{E}[\\max(B - A - lift, 0)]`
-        * If ``variant == "B"``, :math:`\\mathrm{E}[\\max(A - B - lift, 0)]`
+        * If ``variant == "A"``, :math:`\mathrm{E}[\max(B - A - lift, 0)]`
+        * If ``variant == "B"``, :math:`\mathrm{E}[\max(A - B - lift, 0)]`
         * If ``variant == "all"``, both.
 
         If ``lift`` is positive value, the computation method must be Monte
@@ -427,12 +428,12 @@ class BetaABTest(BayesABTest):
                     stats.norm(-mu, sigma).ppf([lower, upper]))
 
     def expected_loss_relative(self, method="exact", variant="A"):
-        """
+        r"""
         Compute expected relative loss for choosing a variant. This can be seen
         as the negative expected relative improvement or uplift.
 
-        * If ``variant == "A"``, :math:`\\mathrm{E}[(B - A) / A]`
-        * If ``variant == "B"``, :math:`\\mathrm{E}[(A - B) / B]`
+        * If ``variant == "A"``, :math:`\mathrm{E}[(B - A) / A]`
+        * If ``variant == "B"``, :math:`\mathrm{E}[(A - B) / B]`
         * If ``variant == "all"``, both.
 
         Parameters
@@ -756,7 +757,6 @@ class BetaMVTest(BayesMVTest):
             a = self.models[variant].alpha_posterior
             b = self.models[variant].beta_posterior
             p = x * special.betainc(a, b, x)
-            # TODO: optimize I_x(a+1, b) using transformation
             q = a / (a + b) * special.betainc(a + 1, b, x)
             return np.nanmean(p - q)
 

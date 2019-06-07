@@ -225,34 +225,38 @@ class BayesMVTest(metaclass=ABCMeta):
 
     @abstractmethod
     def probability(self):
-        pass
+        """"""
 
     @abstractmethod
     def probability_vs_all(self):
-        pass
+        """"""
 
     @abstractmethod
     def expected_loss(self):
-        pass
+        """"""
 
     @abstractmethod
     def expected_loss_ci(self):
-        pass
+        """"""
 
     @abstractmethod
     def expected_loss_relative(self):
-        pass
+        """"""
 
     @abstractmethod
     def expected_loss_relative_ci(self):
-        pass
+        """"""
 
     @abstractmethod
     def expected_loss_vs_all(self):
-        pass
+        """"""
 
     def update(self, data, variant):
+        """"""
         if not variant in self.models.keys():
             raise ValueError("Variant '{}' not available. "
                 "Variants = {}.".format(variant, self.models.keys()))
         self.models[variant].update(data)
+
+    def _rvs(self, variant):
+        return self.models[variant].rvs(self.simulations, self.random_state)

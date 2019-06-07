@@ -41,7 +41,7 @@ def test_bernoulli_model_stats():
     assert model.ppvar() == approx(0.24)
 
 
-def test_bernoulli_ab_test_check_models():
+def test_bernoulli_ab_check_models():
     modelA = BernoulliModel(alpha=1, beta=1)
     modelB = GeometricModel(alpha=1, beta=1)
 
@@ -49,7 +49,7 @@ def test_bernoulli_ab_test_check_models():
         abtest = BernoulliABTest(modelA=modelA, modelB=modelB)
 
 
-def test_bernoulli_mv_test_check_model_input():
+def test_bernoulli_mv_check_model_input():
     modelA = BernoulliModel(alpha=1, beta=1)
     modelB = BernoulliModel(alpha=1, beta=1)
 
@@ -57,7 +57,7 @@ def test_bernoulli_mv_test_check_model_input():
         mvtest = BernoulliMVTest(models=[modelA, modelB])
 
 
-def test_bernoulli_mv_test_check_control():
+def test_bernoulli_mv_check_control():
     models = {
         "B": BernoulliModel(name="variant 1", alpha=1, beta=1),
         "C": BernoulliModel(name="variant 2", alpha=1, beta=1)
@@ -65,3 +65,16 @@ def test_bernoulli_mv_test_check_control():
 
     with raises(ValueError):
         mvtest = BernoulliMVTest(models=models)
+
+
+def test_bernoulli_mv_check_update():
+    models = {
+        "A": BernoulliModel(name="control", alpha=1, beta=1),
+        "B": BernoulliModel(name="variant 2", alpha=1, beta=1)
+    }
+
+    mvtest = BernoulliMVTest(models=models)
+
+    with raises(ValueError):
+        data = np.array([0, 0, 0, 1, 1])
+        mvtest.update(data=data, variant="C")

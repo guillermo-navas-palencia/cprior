@@ -162,17 +162,26 @@ def test_beta_ab_expected_loss():
     assert abtest.expected_loss(method="exact",
         variant="A") == approx(0.0481119843, rel=1e-8)
 
+    assert abtest.expected_loss(method="MLHS",
+        variant="A") == approx(0.0481119843, rel=1e-2)
+
     assert abtest.expected_loss(method="MC",
         variant="A") == approx(0.0481119843, rel=1e-2)
 
     assert abtest.expected_loss(method="exact",
         variant="B") == approx(0.0106119843, rel=1e-8)
 
+    assert abtest.expected_loss(method="MLHS",
+        variant="B") == approx(0.0106119843, rel=1e-2)
+
     assert abtest.expected_loss(method="MC",
         variant="B") == approx(0.0106119843, rel=1e-2)
 
     assert abtest.expected_loss(method="exact",
         variant="all") == approx([0.0481119843, 0.0106119843], rel=1e-8)
+
+    assert abtest.expected_loss(method="MLHS",
+        variant="all") == approx([0.0481119843, 0.0106119843], rel=1e-2)
 
     assert abtest.expected_loss(method="MC",
         variant="all") == approx([0.0481119843, 0.0106119843], rel=1e-2)
@@ -288,6 +297,18 @@ def test_beta_mv_check_method():
         mvtest.probability(method="new")
 
 
+def test_beta_mv_check_control():
+    models = {
+        "A": BetaModel(alpha=40, beta=60),
+        "B": BetaModel(alpha=70, beta=90)
+    }
+
+    mvtest = BetaMVTest(models)
+
+    with raises(ValueError):
+        mvtest.probability(control="C")
+
+
 def test_beta_mv_check_variant():
     models = {
         "A": BetaModel(alpha=40, beta=60),
@@ -362,4 +383,16 @@ def test_beta_mv_probability():
 
 
 def test_beta_mv_probability_vs_all():
-    pass
+    models = {
+        "A": BetaModel(alpha=40, beta=600),
+        "B": BetaModel(alpha=70, beta=900),
+        "C": BetaModel(alpha=100, beta=1400)
+    }
+
+    mvtest = BetaMVTest(models, 1000000, 42)
+
+    assert mvtest.probability_vs_all(method="MLHS",
+        variant="B") == approx(0.6003181, rel=1e-2)
+
+    assert mvtest.probability_vs_all(method="MC",
+        variant="B") == approx(0.6003181, rel=1e-2)

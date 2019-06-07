@@ -396,3 +396,56 @@ def test_beta_mv_probability_vs_all():
 
     assert mvtest.probability_vs_all(method="MC",
         variant="B") == approx(0.6003181, rel=1e-2)
+
+
+def test_beta_mv_expected_loss():
+    modelA = BetaModel(alpha=40, beta=60)
+    modelB = BetaModel(alpha=70, beta=90)
+    abtest = BetaABTest(modelA, modelB, 1000000, 42)
+    mvtest = BetaMVTest({"A": modelA, "B": modelB}, 1000000, 42)
+
+    ab_result = abtest.expected_loss(method="exact", variant="A")
+    mv_result = mvtest.expected_loss(method="exact", control="B", variant="A")
+
+    assert ab_result == approx(mv_result, rel=1e-8)
+
+    ab_result = abtest.expected_loss(method="MLHS", variant="A")
+    mv_result = mvtest.expected_loss(method="MLHS", control="B", variant="A")
+
+    assert ab_result == approx(mv_result, rel=1e-2)
+
+    ab_result = abtest.expected_loss(method="MC", variant="A")
+    mv_result = mvtest.expected_loss(method="MC", control="B", variant="A")
+
+    assert ab_result == approx(mv_result, rel=1e-2)
+
+    ab_result = abtest.expected_loss(method="exact", variant="B")
+    mv_result = mvtest.expected_loss(method="exact", variant="B")
+
+    assert ab_result == approx(mv_result, rel=1e-8)
+
+    ab_result = abtest.expected_loss(method="MLHS", variant="B")
+    mv_result = mvtest.expected_loss(method="MLHS", variant="B")
+
+    assert ab_result == approx(mv_result, rel=1e-2)
+
+    ab_result = abtest.expected_loss(method="MC", variant="B")
+    mv_result = mvtest.expected_loss(method="MC", variant="B")
+
+    assert ab_result == approx(mv_result, rel=1e-2)
+
+
+def test_beta_mv_expected_loss_vs_all():
+    models = {
+        "A": BetaModel(alpha=40, beta=600),
+        "B": BetaModel(alpha=70, beta=900),
+        "C": BetaModel(alpha=100, beta=1400)
+    }
+
+    mvtest = BetaMVTest(models, 1000000, 42)
+
+    assert mvtest.expected_loss_vs_all(method="MLHS",
+        variant="B") == approx(0.0030189172, rel=1e-2)
+
+    assert mvtest.expected_loss_vs_all(method="MC",
+        variant="B") == approx(0.0030189172, rel=1e-1)

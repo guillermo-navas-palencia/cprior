@@ -605,7 +605,7 @@ class BetaMVTest(BayesMVTest):
         control : str (default="A")
             The control variant.
 
-        variant : str (default="A")
+        variant : str (default="B")
             The tested variant.
 
         lift : float (default=0.0)
@@ -697,13 +697,79 @@ class BetaMVTest(BayesMVTest):
             r = np.arange(mlhs_samples)
             np.random.shuffle(r)
             v = (r - 0.5) / mlhs_samples
+            v = v[v >= 0]
             x = self.models[variant].ppf(v)
 
             return np.nanmean(np.prod([special.betainc(a, b, x)
                 for a, b in variant_params], axis=0))
 
-    def expected_loss(self, method="exact", control="A", variant="B", lift=0):
-        pass
+    def expected_loss(self, method="exact", control="A", variant="B", lift=0,
+        mlhs_samples=10000):
+        r"""
+        Compute the expected loss. This is the expected uplift lost by choosing
+        a given variant, i.e., :math:`\mathrm{E}[\max(control - variant -
+        lift, 0)]`.
+
+        If ``lift`` is positive value, the computation method must be Monte
+        Carlo sampling.
+
+        Parameters
+        ----------
+        method : str (default="exact")
+            The method of computation. Options are "exact", "MC" (Monte Carlo)
+            and "MLHS" (Monte Carlo + Median Latin Hypercube Sampling).
+
+        control : str (default="A")
+            The control variant.
+
+        variant : str (default="B")
+            The tested variant.
+
+        lift : float (default=0.0)
+           The amount of uplift.
+
+        mlhs_samples : int (default=10000)
+            Number of samples for MLHS method.
+        """
+        check_mv_method(method=method, method_options=("exact", "MC", "MLHS"),
+            control=control, variant=variant, variants=self.models.keys(),
+            lift=lift)
+
+        model_control = self.models[control]
+        model_variant = self.models[variant]
+
+        if method == "exact":
+            a0 = model_control.alpha_posterior
+            b0 = model_control.beta_posterior
+
+            a1 = model_variant.alpha_posterior
+            b1 = model_variant.beta_posterior
+
+            t0 = a0 / (a0 + b0) * beta_cprior(a1, b1, a0 + 1, b0)
+            t1 = a1 / (a1 + b1) * beta_cprior(a1 + 1, b1, a0, b0)
+
+            return t0 - t1
+        elif method == "MLHS":
+            a0 = model_control.alpha_posterior
+            b0 = model_control.beta_posterior
+
+            a1 = model_variant.alpha_posterior
+            b1 = model_variant.beta_posterior
+
+            r = np.arange(mlhs_samples)
+            np.random.shuffle(r)
+            v = (r - 0.5) / mlhs_samples
+
+            x = model_control.ppf(v)
+            p = x * special.betainc(a1, b1, x)
+            q = a1 / (a1 + b1) * special.betainc(a1 + 1, b1, x)
+
+            return np.nanmean(p - q)
+        else:
+            x0 = model_control.rvs(self.simulations, self.random_state)
+            x1 = model_variant.rvs(self.simulations, self.random_state)
+
+            return np.maximum(x0 - x1, 0).mean()
 
     def expected_loss_ci(self):
         pass
@@ -716,7 +782,28 @@ class BetaMVTest(BayesMVTest):
 
     def expected_loss_vs_all(self, method="MC", variant="B", lift=0,
         mlhs_samples=1000):
-        """
+        r"""
+        Compute the expected loss against all variations. For example, given
+        variants "A", "B", "C" and "D", and choosing variant="B", we compute
+        :math:`\mathrm{E}[\max(\max(A, B, C) - B, 0)]`.
+
+        If ``lift`` is positive value, the computation method must be Monte
+        Carlo sampling.
+
+        Parameters
+        ----------
+        method : str (default="exact")
+            The method of computation. Options are "exact", "MC" (Monte Carlo)
+            and "MLHS" (Monte Carlo + Median Latin Hypercube Sampling).
+
+        variant : str (default="B")
+            The chosen variant.
+
+        lift : float (default=0.0)
+           The amount of uplift.
+
+        mlhs_samples : int (default=1000)
+            Number of samples for MLHS method.
         """
         check_mv_method(method=method, method_options=("MC", "MLHS"),
             control=None, variant=variant, variants=self.models.keys(),
@@ -749,7 +836,7 @@ class BetaMVTest(BayesMVTest):
             variant_params = [(self.models[v].alpha_posterior,
                 self.models[v].beta_posterior) for v in variants]
 
-            # optimize (joblib)
+            # TODO: improve this
             x = np.array([optimize.brentq(f=mv_func_ppf,
                 args=(variant_params, p), a=0, b=1, xtol=1e-4, rtol=1e-4
                 ) for p in v])
@@ -759,6 +846,3 @@ class BetaMVTest(BayesMVTest):
             p = x * special.betainc(a, b, x)
             q = a / (a + b) * special.betainc(a + 1, b, x)
             return np.nanmean(p - q)
-
-    def _rvs(self, variant):
-        return self.models[variant].rvs(self.simulations, self.random_state)

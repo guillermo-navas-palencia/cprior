@@ -1,5 +1,6 @@
 from .bernoulli import BernoulliABTest
 from .bernoulli import BernoulliModel
+from .bernoulli import BernoulliMVTest
 
 from .binomial import BinomialABTest
 from .binomial import BinomialModel
@@ -19,6 +20,7 @@ from .poisson import PoissonModel
 
 __all__ = ['BernoulliABTest',
            "BernoulliModel",
+           "BernoulliMVTest",
            "BinomialABTest",
            "BinomialModel",
            "ExponentialABTest",

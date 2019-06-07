@@ -35,7 +35,7 @@ The cumulative distribution function is
 
 .. math::
 
-   F_{X_{max}}(z) = P\left[\underset{i=1, \ldots, n}\max{X_i} < z\right] = \prod_{i=1}^n P[X_i \le z] = \prod_{i=1}^n F_{X_i}(z),
+   F_{X_{max}}(z) = P\left[\underset{i=1, \ldots, n}\max{X_i} \le z\right] = \prod_{i=1}^n P[X_i \le z] = \prod_{i=1}^n F_{X_i}(z),
 
 where :math:`F_{X_i}(z)` is the cdf of each random variable :math:`X_i`. The probability density functions is obtain after derivation
 
@@ -49,7 +49,7 @@ The **probability to beat all** is defined as
 
 .. math::
 
-   P\left[X_i \ge \underset{j \neq i}\max{X_j}\right] = \int_{-\infty}^{\infty} f(x_i) \prod_{j \neq i} F_{X_j}(x_i) \mathop{dx_i}.
+   P\left[X_i > \underset{j \neq i}\max{X_j}\right] = \int_{-\infty}^{\infty} f(x_i) \prod_{j \neq i} F_{X_j}(x_i) \mathop{dx_i}.
 
 
 The **expected loss function vs all** is defined as

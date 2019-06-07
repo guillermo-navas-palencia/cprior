@@ -120,7 +120,7 @@ def check_mv_models(refclass, models):
     variants = models.keys()
     variant_control = "A"
 
-    if variant_control not in variants:
+    if not variant_control in variants:
         raise ValueError("A model variant 'A' (control) is required.")
 
     model_classes = models.values()

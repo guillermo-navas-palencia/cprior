@@ -771,8 +771,58 @@ class BetaMVTest(BayesMVTest):
 
             return np.maximum(x0 - x1, 0).mean()
 
-    def expected_loss_ci(self):
-        pass
+    def expected_loss_ci(self, method="MC", control="A", variant="B",
+        interval_length=0.9):
+        """
+        Compute credible intervals on the difference distribution of
+        :math:`Z = control-variant`.
+
+        Parameters
+        ----------
+        method : str (default="MC")
+            The method of computation. Options are "asymptotic" and "MC".
+
+        control : str (default="A")
+            The control variant.
+
+        variant : str (default="B")
+            The tested variant.
+
+        interval_length : float (default=0.9)
+            Compute ``interval_length``\% credible interval. This is a value in
+            [0, 1].
+        """
+        check_mv_method(method=method, method_options=("MC", "asymptotic"),
+            control=control, variant=variant, variants=self.models.keys())
+
+        # check interval length
+        lower = (1 - interval_length) / 2
+        upper = (1 + interval_length) / 2
+
+        model_control = self.models[control]
+        model_variant = self.models[variant]
+
+        if method == "MC":
+            x0 = model_control.rvs(self.simulations, self.random_state)
+            x1 = model_variant.rvs(self.simulations, self.random_state)
+
+            lower *= 100.0
+            upper *= 100.0
+
+            return np.percentile((x0 - x1), [lower, upper])
+        else:
+            a0 = model_control.alpha_posterior
+            b0 = model_control.beta_posterior
+
+            a1 = model_variant.alpha_posterior
+            b1 = model_variant.beta_posterior
+
+            mu = a1 / (a1 + b1) - a0 / (a0 + b0)
+            var0 = a0 * b0 / (a0 + b0) ** 2 / (a0 + b0 + 1)
+            var1 = a1 * b1 / (a1 + b1) ** 2 / (a1 + b1 + 1)
+            sigma = np.sqrt(var0 + var1)
+
+            return stats.norm(-mu, sigma).ppf([lower, upper])
 
     def expected_loss_relative(self):
         pass

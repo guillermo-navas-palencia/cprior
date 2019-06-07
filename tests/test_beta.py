@@ -449,3 +449,21 @@ def test_beta_mv_expected_loss_vs_all():
 
     assert mvtest.expected_loss_vs_all(method="MC",
         variant="B") == approx(0.0030189172, rel=1e-1)
+
+
+def test_beta_mv_expected_loss_ci():
+    modelA = BetaModel(alpha=40, beta=60)
+    modelB = BetaModel(alpha=70, beta=90)
+    abtest = BetaABTest(modelA, modelB, 1000000, 42)
+    mvtest = BetaMVTest({"A": modelA, "B": modelB}, 1000000, 42)
+
+    ab_result = abtest.expected_loss_ci(method="MC", variant="A")
+    mv_result = mvtest.expected_loss_ci(method="MC", control="B",
+        variant="A")
+
+    assert ab_result == approx(mv_result, rel=1e-2)
+
+    ab_result = abtest.expected_loss_ci(method="MC", variant="B")
+    mv_result = mvtest.expected_loss_ci(method="MC", variant="B")
+
+    assert ab_result == approx(mv_result, rel=1e-2)    

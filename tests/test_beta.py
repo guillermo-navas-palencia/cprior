@@ -463,7 +463,18 @@ def test_beta_mv_expected_loss_ci():
 
     assert ab_result == approx(mv_result, rel=1e-2)
 
+    ab_result = abtest.expected_loss_ci(method="asymptotic", variant="A")
+    mv_result = mvtest.expected_loss_ci(method="asymptotic", control="B",
+        variant="A")
+
+    assert ab_result == approx(mv_result, rel=1e-2)
+
     ab_result = abtest.expected_loss_ci(method="MC", variant="B")
     mv_result = mvtest.expected_loss_ci(method="MC", variant="B")
 
-    assert ab_result == approx(mv_result, rel=1e-2)    
+    assert ab_result == approx(mv_result, rel=1e-2)
+
+    ab_result = abtest.expected_loss_ci(method="asymptotic", variant="B")
+    mv_result = mvtest.expected_loss_ci(method="asymptotic", variant="B")
+
+    assert ab_result == approx(mv_result, rel=1e-2)

@@ -11,6 +11,7 @@ from pytest import approx, raises
 
 from cprior import BernoulliABTest
 from cprior import BernoulliModel
+from cprior import BernoulliMVTest
 from cprior import GeometricModel
 
 
@@ -46,3 +47,21 @@ def test_bernoulli_ab_test_check_models():
 
     with raises(TypeError):
         abtest = BernoulliABTest(modelA=modelA, modelB=modelB)
+
+
+def test_bernoulli_mv_test_check_model_input():
+    modelA = BernoulliModel(alpha=1, beta=1)
+    modelB = BernoulliModel(alpha=1, beta=1)
+
+    with raises(TypeError):
+        mvtest = BernoulliMVTest(models=[modelA, modelB])
+
+
+def test_bernoulli_mv_test_check_control():
+    models = {
+        "B": BernoulliModel(name="variant 1", alpha=1, beta=1),
+        "C": BernoulliModel(name="variant 2", alpha=1, beta=1)
+    }
+
+    with raises(ValueError):
+        mvtest = BernoulliMVTest(models=models)

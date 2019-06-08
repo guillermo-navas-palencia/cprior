@@ -367,7 +367,7 @@ class GammaABTest(BayesABTest):
             [0, 1].
         """
         check_ab_method(method=method, method_options=("MC", "asymptotic"),
-            variant=variant)
+            variant=variant, interval_length=interval_length)
 
         # check interval length
         lower = (1 - interval_length) / 2
@@ -431,7 +431,8 @@ class GammaABTest(BayesABTest):
             [0, 1].
         """
         check_ab_method(method=method,
-            method_options=("asymptotic", "exact", "MC"), variant=variant)
+            method_options=("asymptotic", "exact", "MC"), variant=variant,
+            interval_length=interval_length)
 
         lower = (1 - interval_length) / 2
         upper = (1 + interval_length) / 2        

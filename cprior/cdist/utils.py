@@ -1,7 +1,15 @@
+"""
+Utilities to check methods and models.
+"""
+
+# Guillermo Navas-Palencia <g.navas.palencia@gmail.com>
+# Copyright (C) 2019
+
 import numbers
 
 
-def check_ab_method(method, method_options, variant, lift=0):
+def check_ab_method(method, method_options, variant, lift=0,
+    interval_length=0.9):
     """
     Check parameters of A/B testing method.
 
@@ -35,8 +43,14 @@ def check_ab_method(method, method_options, variant, lift=0):
         raise ValueError("Method {} cannot be used with lift={}."
             " Select method='MC'.".format(method, lift))
 
+    if not isinstance(interval_length, numbers.Number) or (
+        interval_length < 0 or interval_length > 1):
+        raise ValueError("Interval length must a value in [0, 1]; got "
+            "interval_length={}.".format(interval_length))
 
-def check_mv_method(method, method_options, control, variant, variants, lift=0):
+
+def check_mv_method(method, method_options, control, variant, variants, lift=0,
+    interval_length=0.9):
     """
     Check parameters of Multivariate testing method.
 
@@ -76,11 +90,16 @@ def check_mv_method(method, method_options, control, variant, variants, lift=0):
 
     if not isinstance(lift, numbers.Number) or lift < 0:
         raise ValueError("Lift must be a positive number;"
-            " got lift={}".format(lift))
+            " got lift={}.".format(lift))
 
     if lift > 0 and method != "MC":
         raise ValueError("Method {} cannot be used with lift={}."
             " Select method='MC'.".format(method, lift))
+
+    if not isinstance(interval_length, numbers.Number) or (
+        interval_length < 0 or interval_length > 1):
+        raise ValueError("Interval length must a value in [0, 1]; got "
+            "interval_length={}.".format(interval_length))
 
 
 def check_models(refclass, *models):

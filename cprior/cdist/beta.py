@@ -387,9 +387,8 @@ class BetaABTest(BayesABTest):
             [0, 1].
         """
         check_ab_method(method=method, method_options=("MC", "asymptotic"),
-            variant=variant)
+            variant=variant, interval_length=interval_length)
 
-        # check interval length
         lower = (1 - interval_length) / 2
         upper = (1 + interval_length) / 2
 
@@ -496,7 +495,8 @@ class BetaABTest(BayesABTest):
             [0, 1].        
         """
         check_ab_method(method=method,
-            method_options=("asymptotic", "exact", "MC"), variant=variant)
+            method_options=("asymptotic", "exact", "MC"), variant=variant,
+            interval_length=interval_length)
 
         lower = (1 - interval_length) / 2
         upper = (1 + interval_length) / 2        
@@ -793,7 +793,8 @@ class BetaMVTest(BayesMVTest):
             [0, 1].
         """
         check_mv_method(method=method, method_options=("MC", "asymptotic"),
-            control=control, variant=variant, variants=self.models.keys())
+            control=control, variant=variant, variants=self.models.keys(),
+            interval_length=interval_length)
 
         # check interval length
         lower = (1 - interval_length) / 2
@@ -885,7 +886,7 @@ class BetaMVTest(BayesMVTest):
         """
         check_mv_method(method=method, method_options=("asymptotic", "exact",
             "MC"), control=control, variant=variant,
-            variants=self.models.keys())
+            variants=self.models.keys(), interval_length=interval_length)
 
         lower = (1 - interval_length) / 2
         upper = (1 + interval_length) / 2

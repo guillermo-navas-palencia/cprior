@@ -57,6 +57,9 @@ class NegativeBinomialModel(BetaModel):
         self.r = r
         self.n_samples_ = 0
 
+        if not isinstance(r, np.int) or r <= 0:
+            raise ValueError("r must be a positive integer > 0.")
+
     def update(self, data):
         """
         Update posterior parameters with new data samples.
@@ -99,17 +102,25 @@ class NegativeBinomialModel(BetaModel):
         pdf : float
             Probability density function evaluated at x.
         """
-        a = self._shape_posterior
-        b = self._rate_posterior
+        a = self._alpha_posterior
+        b = self._beta_posterior
+
+        k = np.floor(x)
+        pdf = np.zeros(k.shape)
+        idx = (k >= 0)
+        k = k[idx]
         
-        loggxr = special.gammaln(self.r + x)
-        loggr = special.gammaln(x + 1)
+        loggxr = special.gammaln(self.r + k)
+        loggr = special.gammaln(k + 1)
         loggx = special.gammaln(self.r)
 
         logcomb = loggxr - loggr - loggx
-        logbeta = special.betaln(a + self.r, b + x) - special.betaln(a, b)
+        logbeta = special.betaln(a + self.r, b + k) - special.betaln(a, b)
         logpdf = logcomb + logbeta
-        return np.exp(logpdf)
+
+        pdf[idx] = np.exp(logpdf)
+
+        return pdf
 
     def ppmean(self):
         r"""

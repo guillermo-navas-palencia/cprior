@@ -56,6 +56,9 @@ class BinomialModel(BetaModel):
         self.m = m
         self.n_samples_ = 0
 
+        if not isinstance(m, np.int) or m < 0:
+            raise ValueError("m must an integer >= 0.")
+
     def update(self, data):
         """
         Update posterior parameters with new data samples.
@@ -98,17 +101,25 @@ class BinomialModel(BetaModel):
         pdf : float
             Probability density function evaluated at x.        
         """
-        a = self._shape_posterior
-        b = self._rate_posterior
+        a = self._alpha_posterior
+        b = self._beta_posterior
+
+        k = np.floor(x)
+        pdf = np.zeros(k.shape)
+        idx = (k >= 0) & (k <= self.m)
+        k = k[idx]
         
         loggm = special.gammaln(self.m + 1)
-        loggx = special.gammaln(x + 1)
-        loggmx = special.gammaln(self.m - x + 1)
+        loggx = special.gammaln(k + 1)
+        loggmx = special.gammaln(self.m - k + 1)
 
         logcomb = loggm - loggx - loggmx
-        logbeta = special.betaln(a + x, b + self.m - x) - special.betaln(a, b)
+        logbeta = special.betaln(a + k, b + self.m - k) - special.betaln(a, b)
         logpdf = logcomb + logbeta
-        return np.exp(logpdf)
+
+        pdf[idx] = np.exp(logpdf)
+
+        return pdf
 
     def ppmean(self):
         r"""

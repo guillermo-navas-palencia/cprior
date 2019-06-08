@@ -1,5 +1,5 @@
 """
-Bernoulli distribution testing
+Bernoulli distribution testing.
 """
 
 # Guillermo Navas-Palencia <g.navas.palencia@gmail.com>

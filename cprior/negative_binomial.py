@@ -11,11 +11,13 @@ from scipy import special
 
 from .cdist import BetaABTest
 from .cdist import BetaModel
+from .cdist import BetaMVTest
 from .cdist.utils import check_models
+from .cdist.utils import check_mv_models
 
 
 class NegativeBinomialModel(BetaModel):
-    """
+    r"""
     Bayesian model with a negative binomial likelihood and a beta prior
     distribution.
 
@@ -25,10 +27,10 @@ class NegativeBinomialModel(BetaModel):
 
     .. math::
 
-        p | \\mathbf{x} \\sim \\mathcal{B}\\left(\\alpha + rn,
-        \\beta + \sum_{i=1}^n x_i\\right),
+        p | \mathbf{x} \sim \mathcal{B}\left(\alpha + rn,
+        \beta + \sum_{i=1}^n x_i\right),
     
-    with prior parameters :math:`\\alpha` and :math:`\\beta`.
+    with prior parameters :math:`\alpha` and :math:`\beta`.
 
     Parameters
     ----------
@@ -71,7 +73,7 @@ class NegativeBinomialModel(BetaModel):
         self.n_samples_ += n
 
     def pppdf(self, x):
-        """
+        r"""
         Posterior predictive probability density function.
         
         If :math:`X` follows a negative binomial distribution with parameters
@@ -80,11 +82,11 @@ class NegativeBinomialModel(BetaModel):
 
         .. math::
 
-            f(x; r, \\alpha, \\beta) = \\binom{x + r - 1}{r - 1}
-            \\frac{B(\\alpha + r, \\beta + x)}{B(\\alpha, \\beta)},
+            f(x; r, \alpha, \beta) = \binom{x + r - 1}{r - 1}
+            \frac{B(\alpha + r, \beta + x)}{B(\alpha, \beta)},
 
 
-        where :math:`\\alpha` and :math:`\\beta` are the posterior values
+        where :math:`\alpha` and :math:`\beta` are the posterior values
         of the parameters.
 
         Parameters
@@ -110,7 +112,7 @@ class NegativeBinomialModel(BetaModel):
         return np.exp(logpdf)
 
     def ppmean(self):
-        """
+        r"""
         Posterior predictive mean.
 
         If :math:`X` follows a negative binomial distribution with parameters
@@ -119,9 +121,9 @@ class NegativeBinomialModel(BetaModel):
 
         .. math::
             
-            \\mathrm{E}[X] = r \\frac{\\beta}{\\alpha - 1},
+            \mathrm{E}[X] = r \frac{\beta}{\alpha - 1},
 
-        where :math:`\\alpha` and :math:`\\beta` are the posterior values
+        where :math:`\alpha` and :math:`\beta` are the posterior values
         of the parameters.
 
         Returns
@@ -137,7 +139,7 @@ class NegativeBinomialModel(BetaModel):
             return np.nan
 
     def ppvar(self):
-        """
+        r"""
         Posterior predictive variance.
 
         If :math:`X` follows a negative binomial distribution with parameters
@@ -146,10 +148,10 @@ class NegativeBinomialModel(BetaModel):
 
         .. math::
 
-            \\mathrm{Var}[X] = \\frac{r \\beta (\\alpha + r - 1)(
-            \\alpha + \\beta - 1)}{(\\alpha - 1)^2 (\\alpha - 2)},
+            \mathrm{Var}[X] = \frac{r \beta (\alpha + r - 1)(
+            \alpha + \beta - 1)}{(\alpha - 1)^2 (\alpha - 2)},
 
-        where :math:`\\alpha` and :math:`\\beta` are the posterior values
+        where :math:`\alpha` and :math:`\beta` are the posterior values
         of the parameters.
 
         Returns
@@ -189,3 +191,25 @@ class NegativeBinomialABTest(BetaABTest):
         super().__init__(modelA, modelB, simulations, random_state)
 
         check_models(NegativeBinomialModel, modelA, modelB)
+
+
+class NegativeBinomialMVTest(BetaMVTest):
+    """
+    Negative binomial Multivariate test.
+
+    Parameters
+    ----------
+    models: dict
+        The control and variations models.
+
+    simulations : int or None (default=1000000)
+        Number of Monte Carlo simulations.
+
+    random_state : int or None (default=None)
+        The seed used by the random number generator.
+    """
+    def __init__(self, models, simulations=1000000, random_state=None,
+        n_jobs=None):
+        super().__init__(models, simulations, random_state, n_jobs)
+
+        check_mv_models(NegativeBinomialModel, models)

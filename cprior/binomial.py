@@ -11,11 +11,13 @@ from scipy import special
 
 from .cdist import BetaABTest
 from .cdist import BetaModel
+from .cdist import BetaMVTest
 from .cdist.utils import check_models
+from .cdist.utils import check_mv_models
 
 
 class BinomialModel(BetaModel):
-    """
+    r"""
     Bayesian model with a binomial likelihood and a beta prior distribution.
 
     Given data samples :math:`\mathbf{x} = (x_1, \ldots, x_n)`
@@ -24,10 +26,10 @@ class BinomialModel(BetaModel):
 
     .. math::
 
-        p | \\mathbf{x} \\sim \\mathcal{B}\\left(\\alpha + \\sum_{i=1}^n x_i,
-        \\beta + mn - \sum_{i=1}^n x_i\\right),
+        p | \mathbf{x} \sim \mathcal{B}\left(\alpha + \sum_{i=1}^n x_i,
+        \beta + mn - \sum_{i=1}^n x_i\right),
     
-    with prior parameters :math:`\\alpha` and :math:`\\beta`.
+    with prior parameters :math:`\alpha` and :math:`\beta`.
 
     Parameters
     ----------
@@ -71,7 +73,7 @@ class BinomialModel(BetaModel):
         self.n_samples_ += n
 
     def pppdf(self, x):
-        """
+        r"""
         Posterior predictive probability density function.
 
         If :math:`X` follows a binomial distribution with parameters :math:`m`
@@ -80,10 +82,10 @@ class BinomialModel(BetaModel):
 
         .. math::
 
-            f(x; m, \\alpha, \\beta) = \\binom{m}{x} \\frac{B(\\alpha + x,
-            \\beta + m - x)}{B(\\alpha, \\beta)},
+            f(x; m, \alpha, \beta) = \binom{m}{x} \frac{B(\alpha + x,
+            \beta + m - x)}{B(\alpha, \beta)},
 
-        where :math:`\\alpha` and :math:`\\beta` are the posterior values
+        where :math:`\alpha` and :math:`\beta` are the posterior values
         of the parameters.
 
         Parameters
@@ -109,7 +111,7 @@ class BinomialModel(BetaModel):
         return np.exp(logpdf)
 
     def ppmean(self):
-        """
+        r"""
         Posterior predictive mean.
 
         If :math:`X` follows a binomial distribution with parameters :math:`m`
@@ -117,9 +119,9 @@ class BinomialModel(BetaModel):
 
         .. math::
             
-            \\mathrm{E}[X] = m \\frac{\\alpha}{\\alpha + \\beta},
+            \mathrm{E}[X] = m \frac{\alpha}{\alpha + \beta},
 
-        where :math:`\\alpha` and :math:`\\beta` are the posterior values
+        where :math:`\alpha` and :math:`\beta` are the posterior values
         of the parameters.
 
         Returns
@@ -132,7 +134,7 @@ class BinomialModel(BetaModel):
         return self.m * a / (a + b)
 
     def ppvar(self):
-        """
+        r"""
         Posterior predictive variance.
 
         If :math:`X` follows a binomial distribution with parameters :math:`m`
@@ -140,10 +142,10 @@ class BinomialModel(BetaModel):
 
         .. math::
 
-            \\mathrm{Var}[X] = \\frac{m \\alpha \\beta (m + \\alpha + \\beta)}
-            {(\\alpha + \\beta)^2 (\\alpha + \\beta + 1)}
+            \mathrm{Var}[X] = \frac{m \alpha \beta (m + \alpha + \beta)}
+            {(\alpha + \beta)^2 (\alpha + \beta + 1)}
 
-        where :math:`\\alpha` and :math:`\\beta` are the posterior values
+        where :math:`\alpha` and :math:`\beta` are the posterior values
         of the parameters.
 
         Returns
@@ -178,3 +180,25 @@ class BinomialABTest(BetaABTest):
         super().__init__(modelA, modelB, simulations, random_state)
 
         check_models(BinomialModel, modelA, modelB)
+
+
+class BinomialMVTest(BetaMVTest):
+    """
+    Binomial Multivariate test.
+
+    Parameters
+    ----------
+    models: dict
+        The control and variations models.
+
+    simulations : int or None (default=1000000)
+        Number of Monte Carlo simulations.
+
+    random_state : int or None (default=None)
+        The seed used by the random number generator.
+    """
+    def __init__(self, models, simulations=1000000, random_state=None,
+        n_jobs=None):
+        super().__init__(models, simulations, random_state, n_jobs)
+
+        check_mv_models(BinomialModel, models)

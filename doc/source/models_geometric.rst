@@ -34,3 +34,8 @@ the first success.
    :members:
    :inherited-members:
    :show-inheritance:
+
+.. autoclass:: cprior.GeometricMVTest
+   :members:
+   :inherited-members:
+   :show-inheritance:

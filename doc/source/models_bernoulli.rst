@@ -35,3 +35,7 @@ The Bernoulli distribution is suitable for binary-outcome tests, for example, CR
    :inherited-members:  
    :show-inheritance:
 
+.. autoclass:: cprior.BernoulliMVTest
+   :members:
+   :inherited-members:
+   :show-inheritance:

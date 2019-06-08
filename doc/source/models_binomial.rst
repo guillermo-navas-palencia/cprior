@@ -35,3 +35,8 @@ CRO (conversion rate) or CTR (click-through rate) testing.
    :members:
    :inherited-members:
    :show-inheritance:
+
+.. autoclass:: cprior.BinomialMVTest
+   :members:
+   :inherited-members:
+   :show-inheritance:

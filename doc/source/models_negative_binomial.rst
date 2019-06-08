@@ -35,3 +35,8 @@ required before clicking a particular bottom of interest or stop clicking.
    :members:
    :inherited-members:
    :show-inheritance:
+
+.. autoclass:: cprior.NegativeBinomialMVTest
+   :members:
+   :inherited-members:
+   :show-inheritance:

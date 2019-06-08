@@ -15,7 +15,7 @@ from .cdist.utils import check_mv_models
 
 
 class BernoulliModel(BetaModel):
-    """
+    r"""
     Bayesian model with a Bernoulli likelihood and a beta prior distribution.
 
     Given data samples :math:`\mathbf{x} = (x_1, \ldots, x_n)`
@@ -24,10 +24,10 @@ class BernoulliModel(BetaModel):
 
     .. math::
 
-        p | \\mathbf{x} \\sim \\mathcal{B}\\left(\\alpha + \\sum_{i=1}^n x_i,
-        \\beta + n - \sum_{i=1}^n x_i\\right),
+        p | \mathbf{x} \sim \mathcal{B}\left(\alpha + \sum_{i=1}^n x_i,
+        \beta + n - \sum_{i=1}^n x_i\right),
     
-    with prior parameters :math:`\\alpha` and :math:`\\beta`.
+    with prior parameters :math:`\alpha` and :math:`\beta`.
 
     Parameters
     ----------
@@ -72,21 +72,21 @@ class BernoulliModel(BetaModel):
         self.n_success_ += n_success
 
     def pppdf(self, x):
-        """
+        r"""
         Posterior predictive probability density function.
 
         If :math:`X` is a Bernoulli trial with parameter
-        :math:`p \\sim \\mathcal{B}(\\alpha, \\beta)`, then the posterior
+        :math:`p \sim \mathcal{B}(\alpha, \beta)`, then the posterior
         predictive probability density function is given by
 
         .. math::
 
-            f(x; \\alpha, \\beta) = \\begin{cases}
-                \\frac{\\beta}{\\alpha+ \\beta} & \\text{if $x = 0$}\\\\
-                \\frac{\\alpha}{\\alpha+ \\beta} & \\text{if $x = 1$}\\,
-            \\end{cases}
+            f(x; \alpha, \beta) = \begin{cases}
+                \frac{\beta}{\alpha+ \beta} & \text{if $x = 0$}\\
+                \frac{\alpha}{\alpha+ \beta} & \text{if $x = 1$}\,
+            \end{cases}
 
-        where :math:`\\alpha` and :math:`\\beta` are the posterior values
+        where :math:`\alpha` and :math:`\beta` are the posterior values
         of the parameters.
 
         Parameters
@@ -111,18 +111,18 @@ class BernoulliModel(BetaModel):
             return a / (a + b)
 
     def ppmean(self):
-        """
+        r"""
         Posterior predictive mean.
 
         If :math:`X` is a Bernoulli trial with parameter
-        :math:`p \\sim \\mathcal{B}(\\alpha, \\beta)`, then the posterior
+        :math:`p \sim \mathcal{B}(\alpha, \beta)`, then the posterior
         predictive expected value is given by
 
         .. math::
             
-            \\mathrm{E}[X] = \\frac{\\alpha}{\\alpha + \\beta},
+            \mathrm{E}[X] = \frac{\alpha}{\alpha + \beta},
 
-        where :math:`\\alpha` and :math:`\\beta` are the posterior values
+        where :math:`\alpha` and :math:`\beta` are the posterior values
         of the parameters.
 
         Returns
@@ -135,18 +135,18 @@ class BernoulliModel(BetaModel):
         return a / (a + b)
 
     def ppvar(self):
-        """
+        r"""
         Posterior predictive variance.
 
         If :math:`X` is a Bernoulli trial with parameter
-        :math:`p \\sim \\mathcal{B}(\\alpha, \\beta)`, then the posterior
+        :math:`p \sim \mathcal{B}(\alpha, \beta)`, then the posterior
         predictive variance is given by
 
         .. math::
             
-            \\mathrm{Var}[X] = \\frac{\\alpha \\beta}{(\\alpha + \\beta)^2},
+            \mathrm{Var}[X] = \frac{\alpha \beta}{(\alpha + \beta)^2},
 
-        where :math:`\\alpha` and :math:`\\beta` are the posterior values
+        where :math:`\alpha` and :math:`\beta` are the posterior values
         of the parameters.
 
         Returns

@@ -99,16 +99,16 @@ class BernoulliModel(BetaModel):
         pdf : float
             Probability density function evaluated at x.
         """
-        if not x in (0, 1):
-            raise ValueError("x must follow a Bernoulli distribution.")
-
         a = self._alpha_posterior
         b = self._beta_posterior
 
-        if x == 0:
-            return b / (a + b)
-        else:
-            return a / (a + b)
+        k = np.floor(x)
+
+        pdf = np.zeros(k.shape)
+        pdf[k == 0] = b / (a + b)
+        pdf[k == 1] = a / (a + b)
+
+        return pdf
 
     def ppmean(self):
         r"""

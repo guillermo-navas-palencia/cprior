@@ -26,10 +26,9 @@ def test_bernoulli_model_update():
 
 
 def test_bernoulli_model_pppdf_x():
-    model = BernoulliModel(alpha=1, beta=1)
+    model = BernoulliModel(alpha=4, beta=6)
 
-    with raises(ValueError):
-        model.pppdf(2)
+    assert model.pppdf([0, 1, 2]) == approx([0.6, 0.4, 0])
 
 
 def test_bernoulli_model_stats():

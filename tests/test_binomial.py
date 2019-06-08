@@ -29,7 +29,7 @@ def test_binomial_model_update():
     assert model.n_samples_ == 10
 
 
-def test_binomial_pppdf_x():
+def test_binomial_model_pppdf_x():
     model = BinomialModel(m=10, alpha=4, beta=6)
 
     assert model.pppdf([-1, 0, 10, 20]) == approx(

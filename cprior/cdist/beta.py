@@ -824,8 +824,42 @@ class BetaMVTest(BayesMVTest):
 
             return stats.norm(-mu, sigma).ppf([lower, upper])
 
-    def expected_loss_relative(self):
-        pass
+    def expected_loss_relative(self, method="exact", control="A", variant="B"):
+        r"""
+        Compute expected relative loss for choosing a variant. This can be seen
+        as the negative expected relative improvement or uplift, i.e.,
+        :math:`\mathrm{E}[(control - variant) / variant]`.
+
+        Parameters
+        ----------
+        method : str (default="exact")
+            The method of computation. Options are "exact" and "MC".
+
+        control : str (default="A")
+            The control variant.
+
+        variant : str (default="B")
+            The tested variant.
+        """
+        check_mv_method(method=method, method_options=("exact", "MC"),
+            control=control, variant=variant, variants=self.models.keys())
+
+        model_control = self.models[control]
+        model_variant = self.models[variant]
+
+        if method == "exact":
+            a0 = model_control.alpha_posterior
+            b0 = model_control.beta_posterior
+
+            a1 = model_variant.alpha_posterior
+            b1 = model_variant.beta_posterior
+
+            return a0 * (a1 + b1 - 1) / (a0 + b0) / (a1 - 1) - 1
+        else:
+            x0 = model_control.rvs(self.simulations, self.random_state)
+            x1 = model_variant.rvs(self.simulations, self.random_state)
+
+            return ((x0 - x1) / x1).mean()
 
     def expected_loss_relative_ci(self):
         pass

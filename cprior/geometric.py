@@ -15,7 +15,7 @@ from .cdist.utils import check_models
 
 
 class GeometricModel(BetaModel):
-    """
+    r"""
     Bayesian model with geometric likelihood and a beta prior distribution.
 
     Given data samples :math:`\mathbf{x} = (x_1, \ldots, x_n)`
@@ -24,10 +24,10 @@ class GeometricModel(BetaModel):
 
     .. math::
 
-        p | \\mathbf{x} \\sim \\mathcal{B}\\left(\\alpha + n, \\beta +
-        \\sum_{i=1}^n x_i - n \\right),
+        p | \mathbf{x} \sim \mathcal{B}\left(\alpha + n, \beta +
+        \sum_{i=1}^n x_i - n \right),
 
-    with prior parameters :math:`\\alpha` and :math:`\\beta`.
+    with prior parameters :math:`\alpha` and :math:`\beta`.
 
     Parameters
     ----------
@@ -66,19 +66,19 @@ class GeometricModel(BetaModel):
         self.n_samples_ += n
 
     def pppdf(self, x):
-        """
+        r"""
         Posterior predictive probability density function.
 
         If :math:`X` follows a geometric distribution with parameter
-        :math:`p \\sim \\mathcal{B}(\\alpha, \\beta)`, then the posterior
+        :math:`p \sim \mathcal{B}(\alpha, \beta)`, then the posterior
         predictive probability density function is given by
 
         .. math::
 
-            f(x; \\alpha, \\beta) = \\frac{B(\\alpha + 1, \\beta + x - 1)}{B(
-            \\alpha + \\beta)},
+            f(x; \alpha, \beta) = \frac{B(\alpha + 1, \beta + x - 1)}{B(
+            \alpha + \beta)},
 
-        where :math:`\\alpha` and :math:`\\beta` are the posterior values
+        where :math:`\alpha` and :math:`\beta` are the posterior values
         of the parameters.
 
         Parameters
@@ -98,18 +98,18 @@ class GeometricModel(BetaModel):
         return np.exp(logpdf)
 
     def ppmean(self):
-        """
+        r"""
         Posterior predictive mean.
 
         If :math:`X` follows a geometric distribution with parameter
-        :math:`\\lambda`, then the posterior predictive expected value is given
+        :math:`\lambda`, then the posterior predictive expected value is given
         by
 
         .. math::
 
-            \\mathrm{E}[X] = \\frac{\\alpha + \\beta - 1}{\\alpha - 1},
+            \mathrm{E}[X] = \frac{\alpha + \beta - 1}{\alpha - 1},
 
-        where :math:`\\alpha` and :math:`\\beta` are the posterior values
+        where :math:`\alpha` and :math:`\beta` are the posterior values
         of the parameters.
 
         Returns
@@ -125,19 +125,19 @@ class GeometricModel(BetaModel):
             return np.nan
 
     def ppvar(self):
-        """
+        r"""
         Posterior predictive variance.
 
         If :math:`X` follows a geometric distribution with parameter
-        :math:`p \\sim \\mathcal{B}(\\alpha, \\beta)`, then the posterior
+        :math:`p \sim \mathcal{B}(\alpha, \beta)`, then the posterior
         predictive variance is given by
 
         .. math::
 
-            \\mathrm{Var}[X] = \\frac{\\beta (\\alpha + \\beta - 1)}{
-            (\\alpha - 1)^2 (\\alpha - 2)},
+            \mathrm{Var}[X] = \frac{\beta (\alpha + \beta - 1)}{
+            (\alpha - 1)^2 (\alpha - 2)},
 
-        where :math:`\\alpha` and :math:`\\beta` are the posterior values
+        where :math:`\alpha` and :math:`\beta` are the posterior values
         of the parameters.
 
         Returns

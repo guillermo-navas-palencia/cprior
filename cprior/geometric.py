@@ -78,7 +78,7 @@ class GeometricModel(BetaModel):
         .. math::
 
             f(x; \alpha, \beta) = \frac{B(\alpha + 1, \beta + x - 1)}{B(
-            \alpha + \beta)},
+            \alpha, \beta)},
 
         where :math:`\alpha` and :math:`\beta` are the posterior values
         of the parameters.
@@ -96,8 +96,16 @@ class GeometricModel(BetaModel):
         a = self._alpha_posterior
         b = self._beta_posterior
 
-        logpdf = special.betaln(a + 1, b + x - 1) - special.betaln(a, b)
-        return np.exp(logpdf)
+        k = np.floor(x)
+        pdf = np.zeros(k.shape)
+        idx = (k >= 1)
+        k = k[idx]
+
+        logpdf = special.betaln(a + 1, b + k - 1) - special.betaln(a, b)
+
+        pdf[idx] = np.exp(logpdf)
+
+        return pdf
 
     def ppmean(self):
         r"""

@@ -507,3 +507,46 @@ def test_beta_mv_expected_loss_relative():
     mv_result = mvtest.expected_loss_relative(method="MC", variant="B")
 
     assert ab_result == approx(mv_result, rel=1e-2)
+
+
+def test_beta_mv_expected_loss_relative_ci():
+    modelA = BetaModel(alpha=40, beta=60)
+    modelB = BetaModel(alpha=70, beta=90)
+    abtest = BetaABTest(modelA, modelB, 1000000, 42)
+    mvtest = BetaMVTest({"A": modelA, "B": modelB}, 1000000, 42)
+
+    ab_result = abtest.expected_loss_relative_ci(method="exact", variant="A")
+    mv_result = mvtest.expected_loss_relative_ci(method="exact", control="B",
+        variant="A")
+
+    assert ab_result == approx(mv_result, rel=1e-2)
+
+    ab_result = abtest.expected_loss_relative_ci(method="MC", variant="A")
+    mv_result = mvtest.expected_loss_relative_ci(method="MC", control="B",
+        variant="A")
+
+    assert ab_result == approx(mv_result, rel=1e-2)
+
+    ab_result = abtest.expected_loss_relative_ci(method="asymptotic",
+        variant="A")
+    mv_result = mvtest.expected_loss_relative_ci(method="asymptotic",
+        control="B", variant="A")
+
+    assert ab_result == approx(mv_result, rel=1e-2)
+
+    ab_result = abtest.expected_loss_relative_ci(method="exact", variant="B")
+    mv_result = mvtest.expected_loss_relative_ci(method="exact", variant="B")
+
+    assert ab_result == approx(mv_result, rel=1e-2)
+
+    ab_result = abtest.expected_loss_relative_ci(method="MC", variant="B")
+    mv_result = mvtest.expected_loss_relative_ci(method="MC", variant="B")
+
+    assert ab_result == approx(mv_result, rel=1e-2)
+
+    ab_result = abtest.expected_loss_relative_ci(method="asymptotic",
+        variant="B")
+    mv_result = mvtest.expected_loss_relative_ci(method="asymptotic",
+        variant="B")
+
+    assert ab_result == approx(mv_result, rel=1e-2)

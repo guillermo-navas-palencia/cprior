@@ -861,8 +861,71 @@ class BetaMVTest(BayesMVTest):
 
             return ((x0 - x1) / x1).mean()
 
-    def expected_loss_relative_ci(self):
-        pass
+    def expected_loss_relative_ci(self, method="MC", control="A", variant="B",
+        interval_length=0.9):
+        """
+        Compute credible intervals on the relative difference distribution of
+        :math:`Z = (control - variant) / variant`.
+
+        Parameters
+        ----------
+        method : str (default="MC")
+            The method of computation. Options are "asymptotic", "exact" and
+            "MC".
+
+        control : str (default="A")
+            The control variant.
+
+        variant : str (default="B")
+            The tested variant.
+
+        interval_length : float (default=0.9)
+            Compute ``interval_length``\% credible interval. This is a value in
+            [0, 1].
+        """
+        check_mv_method(method=method, method_options=("asymptotic", "exact",
+            "MC"), control=control, variant=variant,
+            variants=self.models.keys())
+
+        lower = (1 - interval_length) / 2
+        upper = (1 + interval_length) / 2
+
+        model_control = self.models[control]
+        model_variant = self.models[variant]
+
+        if method == "MC":
+            x0 = model_control.rvs(self.simulations, self.random_state)
+            x1 = model_variant.rvs(self.simulations, self.random_state)
+
+            lower *= 100.0
+            upper *= 100.0
+
+            return np.percentile((x0 - x1) / x1, [lower, upper])
+        else:
+            a0 = model_control.alpha_posterior
+            b0 = model_control.beta_posterior
+
+            a1 = model_variant.alpha_posterior
+            b1 = model_variant.beta_posterior
+
+            mu = a0 * (a1 + b1 - 1) / (a0 + b0) / (a1 - 1)
+            mup = (a0 + 1) * (a1 + b1 - 2) / (a0 + b0 + 1) / (a1 - 2)
+            var = mu * (mup - mu)
+            sigma = np.sqrt(var)
+
+            dist = stats.norm(mu, sigma)
+            ppfl, ppfu = dist.ppf([lower, upper])
+
+            if method == "asymptotic":
+                return ppfl - 1, ppfu - 1
+            else:
+                ppfl = optimize.newton(func=func_ppf, x0=ppfl,
+                    args=(a0, b0, a1, b1, lower), maxiter=1000)
+
+                ppfu = optimize.newton(func=func_ppf, x0=ppfu,
+                    args=(a0, b0, a1, b1, upper), maxiter=1000)
+
+                return ppfl - 1, ppfu - 1
 
     def expected_loss_vs_all(self, method="MC", variant="B", lift=0,
         mlhs_samples=1000):

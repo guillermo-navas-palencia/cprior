@@ -120,6 +120,14 @@ def test_beta_ab_check_lift_no_MC():
     with raises(ValueError):
         abtest.probability(method="exact", lift=0.1)
 
+def test_beta_ab_check_interval_length():
+    modelA = BetaModel(alpha=40, beta=60)
+    modelB = BetaModel(alpha=70, beta=90)
+    abtest = BetaABTest(modelA, modelB, 1000000, 42)
+
+    with raises(ValueError):
+        abtest.expected_loss_ci(interval_length=-0.1)
+
 
 def test_beta_ab_probability():
     modelA = BetaModel(alpha=40, beta=60)
@@ -343,6 +351,18 @@ def test_beta_mv_check_lift_no_MC():
 
     with raises(ValueError):
         mvtest.probability(method="exact", lift=0.1)
+
+
+def test_beta_mv_check_interval_length():
+    models = {
+        "A": BetaModel(alpha=40, beta=60),
+        "B": BetaModel(alpha=70, beta=90)
+    }
+
+    mvtest = BetaMVTest(models)
+
+    with raises(ValueError):
+        mvtest.expected_loss_ci(interval_length=1.1)
 
 
 def test_beta_mv_probability():

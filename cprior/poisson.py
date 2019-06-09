@@ -24,10 +24,10 @@ class PoissonModel(GammaModel):
 
     .. math::
 
-        \\lambda | \\mathbf{x} \\sim \\mathcal{G}\\left(\\alpha + \\sum_{i=1}^n
-        x_i, \\beta + n \\right).
+        \lambda | \mathbf{x} \sim \mathcal{G}\left(\alpha + \sum_{i=1}^n
+        x_i, \beta + n \right).
 
-    with prior parameters :math:`\\alpha` (shape) and :math:`\\beta` (rate).
+    with prior parameters :math:`\alpha` (shape) and :math:`\beta` (rate).
 
     Parameters
     ----------
@@ -70,23 +70,23 @@ class PoissonModel(GammaModel):
         Posterior predictive probability density function.
 
         If :math:`X` follows a Poisson distribution with parameter
-        :math:`\\lambda`, then the posterior predictive probability density
+        :math:`\lambda`, then the posterior predictive probability density
         function is given by
 
         .. math::
 
-            f(x; \\alpha, \\beta) = \\binom{x + \\alpha - 1}{\\alpha -1}
-            \\left(\\frac{\\beta}{\\beta + 1}\\right)^{\\alpha}
-            \\left(\\frac{1}{\\beta + 1}\\right)^x,
+            f(x; \alpha, \beta) = \binom{x + \alpha - 1}{\alpha -1}
+            \left(\frac{\beta}{\beta + 1}\right)^{\alpha}
+            \left(\frac{1}{\beta + 1}\right)^x,
 
-        where :math:`\\alpha` and :math:`\\beta` are the posterior values
+        where :math:`\alpha` and :math:`\beta` are the posterior values
         of the parameters. Note that this is the probability mass function
         of the negative binomial distribution, thus
 
         .. math::
 
-            X \\sim \\mathcal{NB}\\left(\\alpha,
-            \\frac{\\beta}{\\beta + 1}\\right)
+            X \sim \mathcal{NB}\left(\alpha,
+            \frac{\beta}{\beta + 1}\right)
 
         Parameters
         ----------
@@ -109,14 +109,14 @@ class PoissonModel(GammaModel):
         Posterior predictive mean.
 
         If :math:`X` follows a Poisson distribution with parameter
-        :math:`\\lambda`, then the posterior predictive expected value is given
+        :math:`\lambda`, then the posterior predictive expected value is given
         by
 
         .. math::
 
-            \\mathrm{E}[X] = \\frac{\\alpha}{\\beta},
+            \mathrm{E}[X] = \frac{\alpha}{\beta},
 
-        where :math:`\\alpha` and :math:`\\beta` are the posterior values
+        where :math:`\alpha` and :math:`\beta` are the posterior values
         of the parameters.
 
         Returns
@@ -133,13 +133,13 @@ class PoissonModel(GammaModel):
         Posterior predictive variance.
 
         If :math:`X` follows a Poisson distribution with parameter
-        :math:`\\lambda`, then the posterior predictive variance is given by
+        :math:`\lambda`, then the posterior predictive variance is given by
 
         .. math::
 
-            \\mathrm{Var}[X] = \\frac{\\alpha(\\beta + 1)}{\\beta^2},
+            \mathrm{Var}[X] = \frac{\alpha(\beta + 1)}{\beta^2},
 
-        where :math:`\\alpha` and :math:`\\beta` are the posterior values
+        where :math:`\alpha` and :math:`\beta` are the posterior values
         of the parameters.
 
         Returns

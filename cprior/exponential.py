@@ -13,7 +13,7 @@ from .cdist.utils import check_models
 
 
 class ExponentialModel(GammaModel):
-    """
+    r"""
     Bayesian model with an exponential likelihood and a gamma prior
     distribution.
 
@@ -23,10 +23,10 @@ class ExponentialModel(GammaModel):
 
     .. math::
 
-        \\lambda | \\mathbf{x} \\sim \\mathcal{G}\\left(\\alpha + n,
-        \\beta + \\sum_{i=1}^n x_i \\right).
+        \lambda | \mathbf{x} \sim \mathcal{G}\left(\alpha + n,
+        \beta + \sum_{i=1}^n x_i \right).
 
-    with prior parameters :math:`\\alpha` (shape) and :math:`\\beta` (rate).
+    with prior parameters :math:`\alpha` (shape) and :math:`\beta` (rate).
 
     Parameters
     ----------
@@ -65,19 +65,19 @@ class ExponentialModel(GammaModel):
         self.n_samples_ += n
 
     def pppdf(self, x):
-        """
+        r"""
         Posterior predictive probability density function.
 
         If :math:`X` follows an exponential distribution with parameter
-        :math:`\\lambda`, then the posterior predictive probability density
+        :math:`\lambda`, then the posterior predictive probability density
         function is given by
 
         .. math::
 
-            f(x; \\alpha, \\beta) = \\frac{\\alpha \\beta^{\\alpha}}{
-            (\\beta + x)^{\\alpha + 1}}.
+            f(x; \alpha, \beta) = \frac{\alpha \beta^{\alpha}}{
+            (\beta + x)^{\alpha + 1}}.
 
-        where :math:`\\alpha` and :math:`\\beta` are the posterior values
+        where :math:`\alpha` and :math:`\beta` are the posterior values
         of the parameters.
 
         Parameters
@@ -93,22 +93,28 @@ class ExponentialModel(GammaModel):
         a = self._shape_posterior
         b = self._rate_posterior
 
+        pdf = np.zeros(x,shape)
+        idx = (x >= 0)
+
         logpdf = np.log(a) + a * np.log(b) - (a + 1) * np.log(b + x)
-        return np.exp(logpdf)
+
+        pdf[idx] = np.exp(logpdf)
+
+        return pdf
 
     def ppmean(self):
-        """
+        r"""
         Posterior predictive mean.
 
         If :math:`X` follows an exponential distribution with parameter
-        :math:`\\lambda`, then the posterior predictive expected value is given
+        :math:`\lambda`, then the posterior predictive expected value is given
         by
 
         .. math::
 
-            \\mathrm{E}[X] = \\frac{\\beta}{\\alpha - 1},
+            \mathrm{E}[X] = \frac{\beta}{\alpha - 1},
 
-        where :math:`\\alpha` and :math:`\\beta` are the posterior values
+        where :math:`\alpha` and :math:`\beta` are the posterior values
         of the parameters.
 
         Returns
@@ -124,18 +130,18 @@ class ExponentialModel(GammaModel):
             return np.nan
 
     def ppvar(self):
-        """
+        r"""
         Posterior predictive variance.
 
         If :math:`X` follows a Poisson distribution with parameter
-        :math:`\\lambda`, then the posterior predictive variance is given by
+        :math:`\lambda`, then the posterior predictive variance is given by
 
         .. math::
 
-            \\mathrm{Var}[X] = \\frac{\\alpha \\beta^2}{(\\alpha - 1)^2
-            (\\alpha - 2)},
+            \mathrm{Var}[X] = \frac{\alpha \beta^2}{(\alpha - 1)^2
+            (\alpha - 2)},
 
-        where :math:`\\alpha` and :math:`\\beta` are the posterior values
+        where :math:`\alpha` and :math:`\beta` are the posterior values
         of the parameters.
 
         Returns
@@ -149,6 +155,7 @@ class ExponentialModel(GammaModel):
             return b ** 2 / ((a - 1) ** 2 * (a - 2))
         else:
             return np.nan
+
 
 class ExponentialABTest(GammaABTest):
     """

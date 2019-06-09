@@ -15,7 +15,7 @@ from .cdist.utils import check_models
 
 
 class PoissonModel(GammaModel):
-    """
+    r"""
     Bayesian model with a Poisson likelihood and a gamma prior distribution.
 
     Given data samples :math:`\mathbf{x} = (x_1, \ldots, x_n)`
@@ -66,7 +66,7 @@ class PoissonModel(GammaModel):
         self.n_samples_ += n
 
     def pppdf(self, x):
-        """
+        r"""
         Posterior predictive probability density function.
 
         If :math:`X` follows a Poisson distribution with parameter
@@ -105,7 +105,7 @@ class PoissonModel(GammaModel):
         return stats.nbinom.pmf(x, a, p)
 
     def ppmean(self):
-        """
+        r"""
         Posterior predictive mean.
 
         If :math:`X` follows a Poisson distribution with parameter
@@ -129,7 +129,7 @@ class PoissonModel(GammaModel):
         return a / b
 
     def ppvar(self):
-        """
+        r"""
         Posterior predictive variance.
 
         If :math:`X` follows a Poisson distribution with parameter

@@ -157,7 +157,7 @@ class GammaModel(BayesModel):
             Random variates of given size.
         """
         return stats.gamma(a=self._shape_posterior, loc=0,
-            scale=1.0 / self._rate_posterior).mean().rvs(
+            scale=1.0 / self._rate_posterior).rvs(
             size=size, random_state=random_state)
 
 

@@ -1,5 +1,5 @@
 """
-Beta distribution testing
+Beta distribution testing.
 """
 
 # Guillermo Navas-Palencia <g.navas.palencia@gmail.com>

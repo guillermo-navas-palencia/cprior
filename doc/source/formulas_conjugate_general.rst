@@ -24,7 +24,7 @@ Other metrics also considered are the **relative expected loss** or uplift and c
 Formulas for Multivariate testing
 ---------------------------------
 
-Let us first introduce some properties of the distribution of the maximum of a set of i.i.d. random variables with support on the whole real line.
+Let us first introduce some properties of the distribution of the maximum of a set of independent random variables with support on the whole real line.
 
 .. math::
 

@@ -93,8 +93,10 @@ class ExponentialModel(GammaModel):
         a = self._shape_posterior
         b = self._rate_posterior
 
-        pdf = np.zeros(x,shape)
+        x = np.asarray(x)
+        pdf = np.zeros(x.shape)
         idx = (x >= 0)
+        x = x[idx]
 
         logpdf = np.log(a) + a * np.log(b) - (a + 1) * np.log(b + x)
 
@@ -152,7 +154,7 @@ class ExponentialModel(GammaModel):
         b = self._rate_posterior
 
         if a > 2:
-            return b ** 2 / ((a - 1) ** 2 * (a - 2))
+            return a * b ** 2 / ((a - 1) ** 2 * (a - 2))
         else:
             return np.nan
 

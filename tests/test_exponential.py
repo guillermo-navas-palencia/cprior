@@ -11,6 +11,7 @@ from pytest import approx, raises
 
 from cprior import ExponentialABTest
 from cprior import ExponentialModel
+from cprior import ExponentialMVTest
 from cprior import PoissonModel
 
 
@@ -50,3 +51,11 @@ def test_exponential_ab_check_models():
 
     with raises(TypeError):
         abtest = ExponentialABTest(modelA=modelA, modelB=modelB)
+
+
+def test_exponential_mv_check_model_input():
+    modelA = ExponentialModel(shape=25, rate=1000)
+    modelB = ExponentialModel(shape=25, rate=1000)
+
+    with raises(TypeError):
+        mvtest = ExponentialMVTest(models=[modelA, modelB])

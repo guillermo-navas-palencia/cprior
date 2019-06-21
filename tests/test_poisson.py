@@ -12,6 +12,7 @@ from pytest import approx, raises
 from cprior import ExponentialModel
 from cprior import PoissonModel
 from cprior import PoissonABTest
+from cprior import PoissonMVTest
 
 
 def test_poisson_model_update():
@@ -43,3 +44,11 @@ def test_poisson_ab_check_models():
 
     with raises(TypeError):
         abtest = PoissonABTest(modelA=modelA, modelB=modelB)
+
+
+def test_poisson_mv_check_model_input():
+    modelA = PoissonModel(shape=25, rate=1000)
+    modelB = PoissonModel(shape=25, rate=1000)
+
+    with raises(TypeError):
+        mvtest = PoissonMVTest(models=[modelA, modelB])

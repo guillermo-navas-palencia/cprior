@@ -32,7 +32,7 @@ def func_ppf(x, a0, b0, a1, b1, p):
     return float(one - c * f) - p
 
 
-def mv_func_ppf(x, variant_params, p):
+def func_mv_ppf(x, variant_params, p):
     """Function CDF of max of beta random variables for root-finding."""
     cdf = 1.0
     for (a, b) in variant_params:
@@ -657,7 +657,7 @@ class BetaMVTest(BayesMVTest):
         Parameters
         ----------
         method : str (default="exact")
-            The method of computation. Options are "exact", "MC" (Monte Carlo)
+            The method of computation. Options are "MC" (Monte Carlo)
             and "MLHS" (Monte Carlo + Median Latin Hypercube Sampling).
 
         variant : str (default="B")
@@ -985,7 +985,7 @@ class BetaMVTest(BayesMVTest):
                 self.models[v].beta_posterior) for v in variants]
 
             # TODO: improve this
-            x = np.array([optimize.brentq(f=mv_func_ppf,
+            x = np.array([optimize.brentq(f=func_mv_ppf,
                 args=(variant_params, p), a=0, b=1, xtol=1e-4, rtol=1e-4
                 ) for p in v])
 

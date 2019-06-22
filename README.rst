@@ -71,3 +71,12 @@ CRO (conversion rate) or CTR (click-through rate) testing.
    # Compute posterior expected loss given a variant
    print("E[max(B - A, 0)] = {:.4f}".format(test.expected_loss(variant="A")))
    print("E[max(A - B, 0)] = {:.4f}".format(test.expected_loss(variant="B")))
+
+The output should be the following:
+
+.. code-block:: python
+
+   P[A > B] = 0.1024
+   P[B > A] = 0.8976
+   E[max(B - A, 0)] = 0.0147
+   E[max(A - B, 0)] = 0.0005

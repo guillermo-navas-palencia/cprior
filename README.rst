@@ -74,7 +74,7 @@ CRO (conversion rate) or CTR (click-through rate) testing.
 
 The output should be the following:
 
-.. code-block:: python
+.. code-block::
 
    P[A > B] = 0.1024
    P[B > A] = 0.8976

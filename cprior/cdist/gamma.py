@@ -775,6 +775,53 @@ class GammaMVTest(BayesMVTest):
 
             return ((x0 - x1) / x1).mean()
 
+    def expected_loss_relative_vs_all(self, method="MLHS", control="A",
+        variant="B", mlhs_samples=1000):
+        r"""
+        Compute the expected relative loss against all variations. For example,
+        given variants "A", "B", "C" and "D", and choosing variant="B",
+        we compute :math:`\mathrm{E}[(\max(A, C, D) - B) / B]`.
+
+        Parameters
+        ----------
+        method : str (default="MLHS")
+            The method of computation. Options are "MC" (Monte Carlo)
+            and "MLHS" (Monte Carlo + Median Latin Hypercube Sampling).
+
+        variant : str (default="B")
+            The chosen variant.
+
+        mlhs_samples : int (default=1000)
+            Number of samples for MLHS method.
+        """
+        check_mv_method(method=method, method_options=("MC", "MLHS"),
+            control=None, variant=variant, variants=self.models.keys())
+
+        # exclude variant
+        variants = list(self.models.keys())
+        variants.remove(variant)
+
+        if method == "MC":
+            # generate samples from all models in parallel
+            xvariant = self.models[variant].rvs(self.simulations,
+                self.random_state)
+
+            pool = Pool(processes=self.n_jobs)
+            processes = [pool.apply_async(self._rvs, args=(v, ))
+                for v in variants]
+            xall = [p.get() for p in processes]
+            maxall = np.maximum.reduce(xall)
+
+            return (maxall / xvariant).mean() - 1
+        else:
+            e_max = self._expected_value_max_mlhs(variants, mlhs_samples)
+
+            a = self.models[variant].shape_posterior
+            b = self.models[variant].rate_posterior
+            e_inv_x = b / (a - 1)
+
+            return e_max * e_inv_x - 1
+
     def expected_loss_relative_ci(self, method="MC", control="A", variant="B",
         interval_length=0.9):
         """
@@ -846,7 +893,7 @@ class GammaMVTest(BayesMVTest):
         r"""
         Compute the expected loss against all variations. For example, given
         variants "A", "B", "C" and "D", and choosing variant="B", we compute
-        :math:`\mathrm{E}[\max(\max(A, B, C) - B, 0)]`.
+        :math:`\mathrm{E}[\max(\max(A, C, D) - B, 0)]`.
 
         If ``lift`` is positive value, the computation method must be Monte
         Carlo sampling.
@@ -909,3 +956,21 @@ class GammaMVTest(BayesMVTest):
             p = x * special.gammainc(a, b * x)
             q = a /  b * special.gammainc(a + 1, b * x)
             return np.nanmean(p - q)
+
+    def _expected_value_max_mlhs(self, variants, mlhs_samples):
+        """Compute expected value of the maximum of gamma random variables."""
+        r = np.arange(mlhs_samples)
+        np.random.shuffle(r)
+        v = (r - 0.5) / mlhs_samples
+        v = v[v >= 0]
+
+        s = 0
+        for i in variants:
+            a = self.models[i].shape_posterior
+            b = self.models[i].rate_posterior
+            x = stats.gamma(a=a + 1, loc=0, scale=1.0 / b).ppf(v)
+            c = a / b
+            s += c * np.prod([self.models[j].cdf(x) for j in variants if j != i
+                ], axis=0).mean()
+
+        return s

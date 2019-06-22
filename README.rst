@@ -11,24 +11,52 @@ CPrior
 
 CPrior has functionalities to perform Bayesian statistics and running A/B and multivariate testing.
 
+**Website**: http://gnpalencia.org/cprior/
+
+
+Installation
+------------
+
+See http://gnpalencia.org/cprior/getting_started.html.
+
+Dependencies
+""""""""""""
+
+CPrior requires:
+
+* mpmath 1.0.0 or later. Website: http://mpmath.org/
+* numpy 1.15.0 or later. Website: https://www.numpy.org/
+* scipy 1.0.0 or later. Website: https://scipy.org/scipylib/
+* pytest
+* coverage
+
+Testing
+"""""""
+Run all unit tests
+
+.. code-block:: bash
+
+   python setup.py test
+
+
 Example
 -------
+
+A Bayesian A/B test with data following a Bernoulli distribution with two
+distinct success probability. This example is a simple use case for
+CRO (conversion rate) or CTR (click-through rate) testing.
 
 .. code-block:: python
 
    import scipy.stats as st
 
-   from cprior.bernoulli import BernoulliModel
-   from cprior.bernoulli import BernoulliABTest
-
-   # Two model variants A and B, and build A/B test
+   from cprior import BernoulliModel
+   from cprior import BernoulliABTest
 
    modelA = BernoulliModel()
    modelB = BernoulliModel()
 
    test = BernoulliABTest(modelA=modelA, modelB=modelB, simulations=1000000)
-
-   # Generate new data and update models
 
    data_A = st.bernoulli(p=0.10).rvs(size=1500, random_state=42)
    data_B = st.bernoulli(p=0.11).rvs(size=1600, random_state=42)

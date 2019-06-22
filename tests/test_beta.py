@@ -529,6 +529,22 @@ def test_beta_mv_expected_loss_relative():
     assert ab_result == approx(mv_result, rel=1e-2)
 
 
+def test_beta_mv_expected_loss_relative_vs_all():
+    models = {
+        "A": BetaModel(alpha=40, beta=600),
+        "B": BetaModel(alpha=70, beta=900),
+        "C": BetaModel(alpha=100, beta=1400)
+    }
+
+    mvtest = BetaMVTest(models, 1000000, 42)
+
+    assert mvtest.expected_loss_relative_vs_all(method="MLHS",
+        variant="B") == approx(-0.024717521, rel=1e-2)
+
+    assert mvtest.expected_loss_relative_vs_all(method="MC",
+        variant="B") == approx(-0.024717521, rel=1e-1)
+
+
 def test_beta_mv_expected_loss_relative_ci():
     modelA = BetaModel(alpha=40, beta=60)
     modelB = BetaModel(alpha=70, beta=90)

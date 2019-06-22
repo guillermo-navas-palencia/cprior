@@ -340,6 +340,22 @@ def test_gamma_mv_expected_loss_relative():
     assert ab_result == approx(mv_result, rel=1e-2)
 
 
+def test_gamma_mv_expected_loss_relative_vs_all():
+    models = {
+        "A": GammaModel(shape=25, rate=10000),
+        "B": GammaModel(shape=30, rate=10000),
+        "C": GammaModel(shape=40, rate=11000)
+    }
+
+    mvtest = GammaMVTest(models, 1000000, 42)
+
+    assert mvtest.expected_loss_relative_vs_all(method="MLHS",
+        variant="B") == approx(0.2616121568, rel=1e-2)
+
+    assert mvtest.expected_loss_relative_vs_all(method="MC",
+        variant="B") == approx(0.2616121568, rel=1e-2)
+
+
 def test_gamma_mv_expected_loss_ci_relative():
     modelA = GammaModel(shape=2500, rate=1000000)
     modelB = GammaModel(shape=3000, rate=1000000)

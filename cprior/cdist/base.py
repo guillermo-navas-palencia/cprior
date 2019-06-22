@@ -182,7 +182,7 @@ class BayesABTest(metaclass=ABCMeta):
 
     def update_A(self, data):
         """
-        Update posterior parameters with new data samples.
+        Update posterior parameters for variant A with new data samples.
 
         Parameters
         ----------
@@ -192,7 +192,7 @@ class BayesABTest(metaclass=ABCMeta):
 
     def update_B(self, data):
         """
-        Update posterior parameters with new data samples.
+        Update posterior parameters for variant B with new data samples.
 
         Parameters
         ----------
@@ -225,34 +225,51 @@ class BayesMVTest(metaclass=ABCMeta):
 
     @abstractmethod
     def probability(self):
-        """"""
+        """Compute the error probability or *chance to beat control*."""
 
     @abstractmethod
     def probability_vs_all(self):
-        """"""
+        """Compute the error probability or *chance to beat all* variations."""
 
     @abstractmethod
     def expected_loss(self):
-        """"""
+        """
+        Compute the expected loss. This is the expected uplift lost by choosing
+        a given variant.
+        """
 
     @abstractmethod
     def expected_loss_ci(self):
-        """"""
+        """Compute credible intervals on the difference between two variants."""
 
     @abstractmethod
     def expected_loss_relative(self):
-        """"""
+        """
+        Compute expected relative loss for choosing a variant. This can be seen
+        as the negative expected relative improvement or uplift.
+        """
 
     @abstractmethod
     def expected_loss_relative_ci(self):
-        """"""
+       """
+        Compute credible intervals on the relative difference between two
+        variants.
+        """
 
     @abstractmethod
     def expected_loss_vs_all(self):
-        """"""
+        """Compute the expected loss against all variations."""
 
     def update(self, data, variant):
-        """"""
+        """
+        Update posterior parameters for a given variant with new data samples.
+
+        Parameters
+        ----------
+        data : array-like, shape = (n_samples)
+
+        variant : str
+        """
         if not variant in self.models.keys():
             raise ValueError("Variant '{}' not available. "
                 "Variants = {}.".format(variant, self.models.keys()))

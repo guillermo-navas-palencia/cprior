@@ -249,12 +249,12 @@ class GammaABTest(BayesABTest):
                 return (xA > xB + lift).mean(), (xB > xA + lift).mean()
 
     def expected_loss(self, method="exact", variant="A", lift=0):
-        """
+        r"""
         Compute the expected loss. This is the expected uplift lost by choosing
         a given variant.
 
-        * If ``variant == "A"``, :math:`\\mathrm{E}[\\max(B - A - lift, 0)]`
-        * If ``variant == "B"``, :math:`\\mathrm{E}[\\max(A - B - lift, 0)]`
+        * If ``variant == "A"``, :math:`\mathrm{E}[\max(B - A - lift, 0)]`
+        * If ``variant == "B"``, :math:`\mathrm{E}[\max(A - B - lift, 0)]`
         * If ``variant == "all"``, both.
 
         If ``lift`` is positive value, the computation method must be Monte
@@ -312,12 +312,12 @@ class GammaABTest(BayesABTest):
                     np.maximum(xA - xB - lift, 0).mean())
 
     def expected_loss_relative(self, method="exact", variant="A"):
-        """
+        r"""
         Compute expected relative loss for choosing a variant. This can be seen
         as the negative expected relative improvement or uplift.
 
-        * If ``variant == "A"``, :math:`\\mathrm{E}[(B - A) / A]`
-        * If ``variant == "B"``, :math:`\\mathrm{E}[(A - B) / B]`
+        * If ``variant == "A"``, :math:`\mathrm{E}[(B - A) / A]`
+        * If ``variant == "B"``, :math:`\mathrm{E}[(A - B) / B]`
         * If ``variant == "all"``, both.
 
         Parameters
@@ -546,8 +546,7 @@ class GammaMVTest(BayesMVTest):
         Parameters
         ----------
         method : str (default="exact")
-            The method of computation. Options are "exact", "MC" (Monte Carlo)
-            and "MLHS" (Monte Carlo + Median Latin Hypercube Sampling).
+            The method of computation. Options are "exact" and "MC".
 
         control : str (default="A")
             The control variant.
@@ -585,14 +584,14 @@ class GammaMVTest(BayesMVTest):
         r"""
         Compute the error probability or *chance to beat all* variations. For
         example, given variants "A", "B", "C" and "D", and choosing variant="B",
-        we compute :math:`P[B > \max{A, C, D} + lift]`.
+        we compute :math:`P[B > \max(A, C, D) + lift]`.
 
         If ``lift`` is positive value, the computation method must be Monte
         Carlo sampling.
 
         Parameters
         ----------
-        method : str (default="exact")
+        method : str (default="MLHS")
             The method of computation. Options are "MC" (Monte Carlo)
             and "MLHS" (Monte Carlo + Median Latin Hypercube Sampling).
 
@@ -842,7 +841,7 @@ class GammaMVTest(BayesMVTest):
 
                 return ppfl - 1, ppfu - 1
 
-    def expected_loss_vs_all(self, method="MC", variant="B", lift=0,
+    def expected_loss_vs_all(self, method="MLHS", variant="B", lift=0,
         mlhs_samples=1000):
         r"""
         Compute the expected loss against all variations. For example, given
@@ -854,8 +853,8 @@ class GammaMVTest(BayesMVTest):
 
         Parameters
         ----------
-        method : str (default="exact")
-            The method of computation. Options are "exact", "MC" (Monte Carlo)
+        method : str (default="MLHS")
+            The method of computation. Options are "MC" (Monte Carlo)
             and "MLHS" (Monte Carlo + Median Latin Hypercube Sampling).
 
         variant : str (default="B")

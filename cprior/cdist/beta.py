@@ -282,7 +282,8 @@ class BetaABTest(BayesABTest):
         Parameters
         ----------
         method : str (default="exact")
-            The method of computation. Options are "exact" and "MC". 
+            The method of computation. Options are "exact", "MC" (Monte Carlo)
+            and "MLHS" (Monte Carlo + Median Latin Hypercube Sampling).
 
         variant : str (default="A")
             The chosen variant. Options are "A", "B", "all".
@@ -649,14 +650,14 @@ class BetaMVTest(BayesMVTest):
         r"""
         Compute the error probability or *chance to beat all* variations. For
         example, given variants "A", "B", "C" and "D", and choosing variant="B",
-        we compute :math:`P[B > \max{A, C, D} + lift]`.
+        we compute :math:`P[B > \max(A, C, D) + lift]`.
 
         If ``lift`` is positive value, the computation method must be Monte
         Carlo sampling.
 
         Parameters
         ----------
-        method : str (default="exact")
+        method : str (default="MLHS")
             The method of computation. Options are "MC" (Monte Carlo)
             and "MLHS" (Monte Carlo + Median Latin Hypercube Sampling).
 
@@ -928,7 +929,7 @@ class BetaMVTest(BayesMVTest):
 
                 return ppfl - 1, ppfu - 1
 
-    def expected_loss_vs_all(self, method="MC", variant="B", lift=0,
+    def expected_loss_vs_all(self, method="MLHS", variant="B", lift=0,
         mlhs_samples=1000):
         r"""
         Compute the expected loss against all variations. For example, given
@@ -940,8 +941,8 @@ class BetaMVTest(BayesMVTest):
 
         Parameters
         ----------
-        method : str (default="exact")
-            The method of computation. Options are "exact", "MC" (Monte Carlo)
+        method : str (default="MLHS")
+            The method of computation. Options are "MC" (Monte Carlo)
             and "MLHS" (Monte Carlo + Median Latin Hypercube Sampling).
 
         variant : str (default="B")

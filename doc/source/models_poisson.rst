@@ -27,3 +27,8 @@ The Poisson distribution is applied to forecast arrival of customers for service
    :members:
    :inherited-members:
    :show-inheritance:
+
+.. autoclass:: cprior.PoissonMVTest
+   :members:
+   :inherited-members:
+   :show-inheritance:

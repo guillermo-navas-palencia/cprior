@@ -36,3 +36,8 @@ The exponential distribution is often used to test revenue metrics like ARPPU
    :members:
    :inherited-members:
    :show-inheritance:
+
+.. autoclass:: cprior.ExponentialMVTest
+   :members:
+   :inherited-members:
+   :show-inheritance:

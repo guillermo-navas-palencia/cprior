@@ -30,3 +30,8 @@ This parametrization is commonly used in Bayesian statistics, where the gamma fu
    :members:
    :inherited-members:
    :show-inheritance:
+
+.. autoclass:: cprior.cdist.GammaMVTest
+   :members:
+   :inherited-members:
+   :show-inheritance:

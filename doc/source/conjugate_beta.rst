@@ -18,7 +18,7 @@ where :math:`B(\alpha, \beta)` is the beta function and :math:`I_x(\alpha, \beta
 .. math::
    \mathrm{E}[X] = \frac{\alpha}{\alpha + \beta}, \quad \mathrm{Var}[X] = \frac{\alpha \beta}{(\alpha + \beta)^2 (\alpha + \beta - 1)}.
 
-In Bayesian inference, the beta distribution is the conjugate prior probability distribution of the Bernoulli, binomial, negative binomial and geometric distribution. The beta distribution is a suitable model for the random behaviour of percentages and proportions.  
+In Bayesian inference, the beta distribution is the conjugate prior probability distribution for parameters of the Bernoulli, binomial, negative binomial and geometric distribution. The beta distribution is a suitable model for the random behaviour of percentages and proportions.
 
 .. autoclass:: cprior.cdist.BetaModel
    :members:

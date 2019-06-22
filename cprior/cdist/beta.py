@@ -537,10 +537,12 @@ class BetaABTest(BayesABTest):
                     return ppfl - 1, ppfu - 1
                 else:
                     ppfl = optimize.newton(func=func_ppf, x0=ppfl,
-                        args=(aB, bB, aA, bA, lower), maxiter=100)
+                        args=(float(aB), float(bB), float(aA), float(bA),
+                            lower), maxiter=100)
 
                     ppfu = optimize.newton(func=func_ppf, x0=ppfu,
-                        args=(aB, bB, aA, bA, upper), maxiter=100)
+                        args=(float(aB), float(bB), float(aA), float(bA),
+                            upper), maxiter=100)
 
                     return ppfl - 1, ppfu - 1
             elif variant == "B":
@@ -556,10 +558,12 @@ class BetaABTest(BayesABTest):
                     return ppfl - 1, ppfu - 1
                 else:
                     ppfl = optimize.newton(func=func_ppf, x0=ppfl,
-                        args=(aA, bA, aB, bB, lower), maxiter=1000)
+                        args=(float(aA), float(bA), float(aB), float(bB),
+                            lower), maxiter=1000)
 
                     ppfu = optimize.newton(func=func_ppf, x0=ppfu,
-                        args=(aA, bA, aB, bB, upper), maxiter=1000)
+                        args=(float(aA), float(bA), float(aB), float(bB),
+                            upper), maxiter=1000)
 
                     return ppfl - 1, ppfu - 1
             else:

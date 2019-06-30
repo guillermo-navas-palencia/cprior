@@ -341,8 +341,88 @@ class ParetoABTest(BayesABTest):
                 return (((xB - xA) / xA).mean(), ((xA - xB) / xB).mean())
 
     def expected_loss_ci(self, method="MC", variant="A", interval_length=0.9):
-        pass
+        """
+        Compute credible intervals on the difference distribution of
+        :math:`Z = B-A` and/or :math:`Z = A-B`.
+
+        * If ``variant == "A"``, :math:`Z = B - A`
+        * If ``variant == "B"``, :math:`Z = A - B`
+        * If ``variant == "all"``, both.
+
+        Parameters
+        ----------
+        method : str (default="MC")
+            The method of computation. Only option "MC".
+
+        variant : str (default="A")
+            The chosen variant. Options are "A", "B", "all".
+
+        interval_length : float (default=0.9)
+            Compute ``interval_length``\% credible interval. This is a value in
+            [0, 1].
+        """
+        check_ab_method(method=method, method_options=("MC"),
+            variant=variant, interval_length=interval_length)
+
+        # check interval length
+        lower = (1 - interval_length) / 2
+        upper = (1 + interval_length) / 2
+
+        if method == "MC":
+            xA = self.modelA.rvs(self.simulations, self.random_state)
+            xB = self.modelB.rvs(self.simulations, self.random_state)
+
+            lower *= 100.0
+            upper *= 100.0
+
+            if variant == "A":
+                return np.percentile((xB - xA), [lower, upper])
+            elif variant == "B":
+                return np.percentile((xA - xB), [lower, upper])
+            else:
+                return (np.percentile((xB - xA), [lower, upper]),
+                    np.percentile((xA - xB), [lower, upper]))
 
     def expected_loss_relative_ci(self, method="MC", variant="A",
         interval_length=0.9):
-        pass
+        """
+        Compute credible intervals on the relative difference distribution of
+        :math:`Z = (B-A)/A` and/or :math:`Z = (A-B)/B`.
+
+        * If ``variant == "A"``, :math:`Z = (B-A)/A`
+        * If ``variant == "B"``, :math:`Z = (A-B)/B`
+        * If ``variant == "all"``, both.
+
+        Parameters
+        ----------
+        method : str (default="MC")
+            The method of computation. Only option "MC".
+
+        variant : str (default="A")
+            The chosen variant. Options are "A", "B", "all".
+
+        interval_length : float (default=0.9)
+            Compute ``interval_length``\% credible interval. This is a value in
+            [0, 1].
+        """
+        check_ab_method(method=method,
+            method_options=("MC"), variant=variant,
+            interval_length=interval_length)
+
+        lower = (1 - interval_length) / 2
+        upper = (1 + interval_length) / 2
+
+        if method == "MC":
+            xA = self.modelA.rvs(self.simulations, self.random_state)
+            xB = self.modelB.rvs(self.simulations, self.random_state)
+
+            lower *= 100.0
+            upper *= 100.0
+
+            if variant == "A":
+                return np.percentile((xB - xA)/xA, [lower, upper])
+            elif variant == "B":
+                return np.percentile((xA - xB)/xB, [lower, upper])
+            else:
+                return (np.percentile((xB - xA)/xA, [lower, upper]),
+                    np.percentile((xA - xB)/xB, [lower, upper]))

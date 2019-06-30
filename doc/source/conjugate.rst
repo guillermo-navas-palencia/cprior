@@ -9,5 +9,4 @@ distribution.
 
 	conjugate_beta
 	conjugate_gamma
-
-
+	conjugate_pareto

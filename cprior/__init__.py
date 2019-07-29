@@ -21,3 +21,7 @@ from .negative_binomial import NegativeBinomialMVTest
 from .poisson import PoissonABTest
 from .poisson import PoissonModel
 from .poisson import PoissonMVTest
+
+from .uniform import UniformABTest
+from .uniform import UniformModel
+from .uniform import UniformMVTest

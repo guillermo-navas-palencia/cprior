@@ -11,7 +11,9 @@ from scipy import stats
 
 from .base import BayesABTest
 from .base import BayesModel
+from .base import BayesMVTest
 from .utils import check_ab_method
+from .utils import check_mv_method
 
 
 def probability_to_beat(a0, b0, a1, b1):
@@ -426,3 +428,328 @@ class ParetoABTest(BayesABTest):
             else:
                 return (np.percentile((xB - xA)/xA, [lower, upper]),
                     np.percentile((xA - xB)/xB, [lower, upper]))
+
+
+class ParetoMVTest(BayesMVTest):
+    """
+    Bayesian Multivariate testing with prior Pareto distribution.
+
+    Parameters
+    ----------
+    models : object
+        The gamma models.
+
+    simulations : int or None (default=1000000)
+        Number of Monte Carlo simulations.
+
+    random_state : int or None (default=None)
+        The seed used by the random number generator.
+    """
+    def __init__(self, models, simulations=None, random_state=None,
+        n_jobs=None):
+        super().__init__(models, simulations, random_state, n_jobs)
+
+    def probability(self, method="MC", control="A", variant="B", lift=0):
+        """
+        Compute the error probability or *chance to beat control*, i.e.,
+        :math:`P[variant > control + lift]`.
+
+        If ``lift`` is positive value, the computation method must be Monte
+        Carlo sampling.
+
+        Parameters
+        ----------
+        method : str (default="exact")
+            The method of computation. Options are "exact" and "MC".
+
+        control : str (default="A")
+            The control variant.
+
+        variant : str (default="B")
+            The tested variant.
+
+        lift : float (default=0.0)
+           The amount of uplift.
+        """
+        check_mv_method(method=method, method_options=("MC"),
+            control=control, variant=variant, variants=self.models.keys(),
+            lift=lift)
+
+        model_control = self.models[control]
+        model_variant = self.models[variant]
+
+        x0 = model_control.rvs(self.simulations, self.random_state)
+        x1 = model_variant.rvs(self.simulations, self.random_state)
+
+        return (x1 > x0 + lift).mean()
+
+    def probability_vs_all(self, method="MC", variant="B", lift=0,
+        mlhs_samples=1000):
+        r"""
+        Compute the error probability or *chance to beat all* variations. For
+        example, given variants "A", "B", "C" and "D", and choosing variant="B",
+        we compute :math:`P[B > \max(A, C, D) + lift]`.
+
+        If ``lift`` is positive value, the computation method must be Monte
+        Carlo sampling.
+
+        Parameters
+        ----------
+        method : str (default="MLHS")
+            The method of computation. Options are "MC" (Monte Carlo)
+            and "MLHS" (Monte Carlo + Median Latin Hypercube Sampling).
+
+        variant : str (default="B")
+            The chosen variant.
+
+        lift : float (default=0.0)
+           The amount of uplift.
+
+        mlhs_samples : int (default=1000)
+            Number of samples for MLHS method.
+        """
+        check_mv_method(method=method, method_options=("MC"),
+            control=None, variant=variant, variants=self.models.keys(),
+            lift=lift)
+
+        # exclude variant
+        variants = list(self.models.keys())
+        variants.remove(variant)
+
+        # generate samples from all models in parallel
+        xvariant = self.models[variant].rvs(self.simulations,
+            self.random_state)
+
+        pool = Pool(processes=self.n_jobs)
+        processes = [pool.apply_async(self._rvs, args=(v, ))
+            for v in variants]
+        xall = [p.get() for p in processes]
+        maxall = np.maximum.reduce(xall)
+
+        return (xvariant > maxall + lift).mean()
+
+    def expected_loss(self, method="MC", control="A", variant="B", lift=0):
+        r"""
+        Compute the expected loss. This is the expected uplift lost by choosing
+        a given variant, i.e., :math:`\mathrm{E}[\max(control - variant -
+        lift, 0)]`.
+
+        If ``lift`` is positive value, the computation method must be Monte
+        Carlo sampling.
+
+        Parameters
+        ----------
+        method : str (default="exact")
+            The method of computation. Options are "exact" and "MC".
+
+        control : str (default="A")
+            The control variant.
+
+        variant : str (default="B")
+            The tested variant.
+
+        lift : float (default=0.0)
+           The amount of uplift.
+        """
+        check_mv_method(method=method, method_options=("MC"),
+            control=control, variant=variant, variants=self.models.keys(),
+            lift=lift)
+
+        model_control = self.models[control]
+        model_variant = self.models[variant]
+
+        x0 = model_control.rvs(self.simulations, self.random_state)
+        x1 = model_variant.rvs(self.simulations, self.random_state)
+
+        return np.maximum(x0 - x1, 0).mean()
+
+    def expected_loss_ci(self, method="MC", control="A", variant="B",
+        interval_length=0.9):
+        """
+        Compute credible intervals on the difference distribution of
+        :math:`Z = control-variant`.
+
+        Parameters
+        ----------
+        method : str (default="MC")
+            The method of computation. Options are "asymptotic" and "MC".
+
+        control : str (default="A")
+            The control variant.
+
+        variant : str (default="B")
+            The tested variant.
+
+        interval_length : float (default=0.9)
+            Compute ``interval_length``\% credible interval. This is a value in
+            [0, 1].
+        """
+        check_mv_method(method=method, method_options=("MC"),
+            control=control, variant=variant, variants=self.models.keys(),
+            interval_length=interval_length)
+
+        # check interval length
+        lower = (1 - interval_length) / 2
+        upper = (1 + interval_length) / 2
+
+        model_control = self.models[control]
+        model_variant = self.models[variant]
+
+        x0 = model_control.rvs(self.simulations, self.random_state)
+        x1 = model_variant.rvs(self.simulations, self.random_state)
+
+        lower *= 100.0
+        upper *= 100.0
+
+        return np.percentile((x0 - x1), [lower, upper])
+
+    def expected_loss_relative(self, method="MC", control="A", variant="B"):
+        r"""
+        Compute expected relative loss for choosing a variant. This can be seen
+        as the negative expected relative improvement or uplift, i.e.,
+        :math:`\mathrm{E}[(control - variant) / variant]`.
+
+        Parameters
+        ----------
+        method : str (default="exact")
+            The method of computation. Options are "exact" and "MC".
+
+        control : str (default="A")
+            The control variant.
+
+        variant : str (default="B")
+            The tested variant.
+        """
+        check_mv_method(method=method, method_options=("MC"),
+            control=control, variant=variant, variants=self.models.keys())
+
+        model_control = self.models[control]
+        model_variant = self.models[variant]
+
+        x0 = model_control.rvs(self.simulations, self.random_state)
+        x1 = model_variant.rvs(self.simulations, self.random_state)
+
+        return ((x0 - x1) / x1).mean()
+
+    def expected_loss_relative_vs_all(self, method="MC", control="A",
+        variant="B", mlhs_samples=1000):
+        r"""
+        Compute the expected relative loss against all variations. For example,
+        given variants "A", "B", "C" and "D", and choosing variant="B",
+        we compute :math:`\mathrm{E}[(\max(A, C, D) - B) / B]`.
+
+        Parameters
+        ----------
+        method : str (default="MLHS")
+            The method of computation. Options are "MC" (Monte Carlo)
+            and "MLHS" (Monte Carlo + Median Latin Hypercube Sampling).
+
+        variant : str (default="B")
+            The chosen variant.
+
+        mlhs_samples : int (default=1000)
+            Number of samples for MLHS method.
+        """
+        check_mv_method(method=method, method_options=("MC", "MLHS"),
+            control=None, variant=variant, variants=self.models.keys())
+
+        # exclude variant
+        variants = list(self.models.keys())
+        variants.remove(variant)
+
+        # generate samples from all models in parallel
+        xvariant = self.models[variant].rvs(self.simulations,
+            self.random_state)
+
+        pool = Pool(processes=self.n_jobs)
+        processes = [pool.apply_async(self._rvs, args=(v, ))
+            for v in variants]
+        xall = [p.get() for p in processes]
+        maxall = np.maximum.reduce(xall)
+
+        return (maxall / xvariant).mean() - 1
+
+    def expected_loss_relative_ci(self, method="MC", control="A", variant="B",
+        interval_length=0.9):
+        """
+        Compute credible intervals on the relative difference distribution of
+        :math:`Z = (control - variant) / variant`.
+
+        Parameters
+        ----------
+        method : str (default="MC")
+            The method of computation. Options are "asymptotic", "exact" and
+            "MC".
+
+        control : str (default="A")
+            The control variant.
+
+        variant : str (default="B")
+            The tested variant.
+
+        interval_length : float (default=0.9)
+            Compute ``interval_length``\% credible interval. This is a value in
+            [0, 1].
+        """
+        check_mv_method(method=method, method_options=("MC"), control=control, variant=variant,
+            variants=self.models.keys(), interval_length=interval_length)
+
+        lower = (1 - interval_length) / 2
+        upper = (1 + interval_length) / 2
+
+        model_control = self.models[control]
+        model_variant = self.models[variant]
+
+
+        x0 = model_control.rvs(self.simulations, self.random_state)
+        x1 = model_variant.rvs(self.simulations, self.random_state)
+
+        lower *= 100.0
+        upper *= 100.0
+
+        return np.percentile((x0 - x1) / x1, [lower, upper])
+
+    def expected_loss_vs_all(self, method="MC", variant="B", lift=0,
+        mlhs_samples=1000):
+        r"""
+        Compute the expected loss against all variations. For example, given
+        variants "A", "B", "C" and "D", and choosing variant="B", we compute
+        :math:`\mathrm{E}[\max(\max(A, C, D) - B, 0)]`.
+
+        If ``lift`` is positive value, the computation method must be Monte
+        Carlo sampling.
+
+        Parameters
+        ----------
+        method : str (default="MLHS")
+            The method of computation. Options are "MC" (Monte Carlo)
+            and "MLHS" (Monte Carlo + Median Latin Hypercube Sampling).
+
+        variant : str (default="B")
+            The chosen variant.
+
+        lift : float (default=0.0)
+           The amount of uplift.
+
+        mlhs_samples : int (default=1000)
+            Number of samples for MLHS method.
+        """
+        check_mv_method(method=method, method_options=("MC", "MLHS"),
+            control=None, variant=variant, variants=self.models.keys(),
+            lift=lift)
+
+        # exclude variant
+        variants = list(self.models.keys())
+        variants.remove(variant)
+
+        # generate samples from all models in parallel
+        xvariant = self.models[variant].rvs(self.simulations,
+            self.random_state)
+
+        pool = Pool(processes=self.n_jobs)
+        processes = [pool.apply_async(self._rvs, args=(v, ))
+            for v in variants]
+        xall = [p.get() for p in processes]
+        maxall = np.maximum.reduce(xall)
+
+        return np.maximum(maxall - xvariant - lift, 0).mean()

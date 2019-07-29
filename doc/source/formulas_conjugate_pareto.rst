@@ -55,7 +55,7 @@ Integrating the joint distribution over all values of :math:`X_B > X_A` we obtai
 
 .. math::
 
-   P[X_B > X_A] &= \int_{\beta_A}^{\infty} \int_{\max(\beta_1, x_A)}^{\infty} \frac{\alpha_A \beta_A^{\alpha_A}}{x_A^{\alpha_A + 1}} \frac{\alpha_B \beta_B^{\alpha_B}}{x_B^{\alpha_B + 1}} \mathop{dx_B} \mathop{dx_A}\\
+   P[X_B > X_A] &= \int_{\beta_A}^{\infty} \int_{\max(\beta_B, x_A)}^{\infty} \frac{\alpha_A \beta_A^{\alpha_A}}{x_A^{\alpha_A + 1}} \frac{\alpha_B \beta_B^{\alpha_B}}{x_B^{\alpha_B + 1}} \mathop{dx_B} \mathop{dx_A}\\
    &= 1 - \int_{\beta_A}^{\infty} \frac{\alpha_A \beta_A^{\alpha_A}}{x_A^{\alpha_A + 1}} \left(1 - \left(\frac{\beta_B}{\max(\beta_B, x_A)}\right)^{\alpha_B}\right) \mathop{dx_A}\\
    &= \alpha_A \beta_A^{\alpha_A} \beta_B^{\alpha_B} \int_{\beta_A}^{\infty} \frac{1}{x^{\alpha_A + 1} \max(\beta_B, x)^{\alpha_B}} \mathop{dx}.
 

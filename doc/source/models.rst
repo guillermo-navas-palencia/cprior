@@ -24,3 +24,15 @@ List of supported sampling distributions using a conjugate gammma distribution f
 
    models_exponential
    models_poisson
+
+
+Pareto conjugate prior distribution
+-----------------------------------
+
+List of supported sampling distributions using a conjugate Pareto
+distribution for one of the their parameters
+
+.. toctree::
+   :maxdepth: 2
+
+   models_uniform

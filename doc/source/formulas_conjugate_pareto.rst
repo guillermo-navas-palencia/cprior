@@ -83,7 +83,3 @@ Case :math:`\beta_B \le \beta_A`:
 .. math::
 
    P[X_B > X_A] = \alpha_A \beta_A^{\alpha_A} \beta_B^{\alpha_B} \frac{\beta_A^{-\alpha_A - \alpha_B}}{\alpha_A + \alpha_B} = \frac{\alpha_A}{\alpha_A + \alpha_B}\left(\frac{\beta_B}{\beta_A}\right)^{\alpha_B}.
-
-
-Expected loss function
-""""""""""""""""""""""

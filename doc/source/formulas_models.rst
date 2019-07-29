@@ -20,3 +20,12 @@ Gamma conjugate prior distribution
 
    formulas_models_exponential
    formulas_models_poisson
+
+
+Pareto conjugate prior distribution
+-----------------------------------
+
+.. toctree::
+   :maxdepth: 2
+
+   formulas_models_uniform

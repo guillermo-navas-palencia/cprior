@@ -20,7 +20,7 @@ Expected loss function
 The expected loss function can easily be calculated from the `definition <formulas_conjugate_general.html>`__ yielding
 
 .. math::
-   
+
    \mathrm{EL}(X_B) = \begin{cases}
       \frac{\alpha_A \beta_A}{\alpha_A - 1}\left(1- \left(\frac{\beta_B}{\beta_A}\right)^{\alpha_B}\right) - \frac{\alpha_B}{\alpha_B - 1}\left(\beta_B - \beta_A \left(\frac{\beta_B}{\beta_A}\right)^{\alpha_B}\right) + \frac{\alpha_B \beta_A \left(\frac{\beta_B}{\beta_A}\right)^{\alpha_B} }{(\alpha_B + \alpha_A - 1)(\alpha_A - 1)}, & \beta_A > \beta_B\\
       \frac{\alpha_B \beta_B}{(\alpha_B + \alpha_A - 1)(\alpha_A - 1)}\left(\frac{\beta_A}{\beta_B}\right)^{\alpha_A}, & \beta_A \le \beta_B
@@ -38,6 +38,12 @@ and similarly for :math:`\mathrm{EL}(X_A)`,
 
 Credible intervals
 ------------------
+
+The expected value of the distribution :math:`Z = (X_A - X_B)/X_B = X_A / X_B - 1` can be computed using
+
+.. math::
+
+   \mathrm{E}\left[\frac{X_A}{X_B}\right] = \frac{\alpha_A}{\alpha_A - 1} \frac{\alpha_B \beta_A}{(\beta_B (\alpha_B + 1))}.
 
 Proofs
 ------

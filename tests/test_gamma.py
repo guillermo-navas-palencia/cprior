@@ -96,24 +96,24 @@ def test_gamma_ab_expected_loss_ci():
     abtest = GammaABTest(modelA, modelB, 1000000, 42)
 
     assert abtest.expected_loss_ci(method="MC",
-        variant="A") == approx([-0.00071135,  0.00171985], rel=1e-2)
+        variant="A") == approx([-0.00071135, 0.00171985], rel=1e-2)
 
     assert abtest.expected_loss_ci(method="asymptotic",
-        variant="A") == approx([-0.00071135,  0.00171985], rel=1e-1)
+        variant="A") == approx([-0.00071135, 0.00171985], rel=1e-1)
 
     assert abtest.expected_loss_ci(method="MC",
-        variant="B") == approx([-0.00171985,  0.00071135], rel=1e-2)
+        variant="B") == approx([-0.00171985, 0.00071135], rel=1e-2)
 
     assert abtest.expected_loss_ci(method="asymptotic",
-        variant="B") == approx([-0.00171985,  0.00071135], rel=1e-1)
+        variant="B") == approx([-0.00171985, 0.00071135], rel=1e-1)
 
     ci = abtest.expected_loss_ci(method="MC", variant="all")
-    assert ci[0]  == approx([-0.00071135,  0.00171985], rel=1e-2)
-    assert ci[1]  == approx([-0.00171985,  0.00071135], rel=1e-2)
+    assert ci[0] == approx([-0.00071135, 0.00171985], rel=1e-2)
+    assert ci[1] == approx([-0.00171985, 0.00071135], rel=1e-2)
 
     ci = abtest.expected_loss_ci(method="asymptotic", variant="all")
-    assert ci[0]  == approx([-0.00071135,  0.00171985], rel=1e-1)
-    assert ci[1]  == approx([-0.00171985,  0.00071135], rel=1e-1)
+    assert ci[0] == approx([-0.00071135, 0.00171985], rel=1e-1)
+    assert ci[1] == approx([-0.00171985, 0.00071135], rel=1e-1)
 
 
 def test_gamma_ab_expected_loss_relative():

@@ -120,6 +120,7 @@ def test_beta_ab_check_lift_no_MC():
     with raises(ValueError):
         abtest.probability(method="exact", lift=0.1)
 
+
 def test_beta_ab_check_interval_length():
     modelA = BetaModel(alpha=40, beta=60)
     modelB = BetaModel(alpha=70, beta=90)

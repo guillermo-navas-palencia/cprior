@@ -158,12 +158,12 @@ def test_gamma_ab_expected_loss_relative_ci():
         variant="B") == approx((-0.4711190487, 0.2991759050), rel=1e-2)
 
     ci = abtest.expected_loss_relative_ci(method="exact", variant="all")
-    assert ci[0]  == approx([-0.2302812912, 0.8907846796], rel=1e-8)
-    assert ci[1]  == approx([-0.4711190487, 0.2991759050], rel=1e-8)
+    assert ci[0] == approx([-0.2302812912, 0.8907846796], rel=1e-8)
+    assert ci[1] == approx([-0.4711190487, 0.2991759050], rel=1e-8)
 
     ci = abtest.expected_loss_relative_ci(method="MC", variant="all")
-    assert ci[0]  == approx([-0.2302812912, 0.8907846796], rel=1e-2)
-    assert ci[1]  == approx([-0.4711190487, 0.2991759050], rel=1e-2)
+    assert ci[0] == approx([-0.2302812912, 0.8907846796], rel=1e-2)
+    assert ci[1] == approx([-0.4711190487, 0.2991759050], rel=1e-2)
 
 
 def test_gamma_ab_expected_loss_relative_ci_large_params():

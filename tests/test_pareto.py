@@ -143,3 +143,58 @@ def test_pareto_ab_expected_loss_relative_ci():
     ci = abtest.expected_loss_relative_ci(method="MC", variant="all")
     assert ci[0] == approx([-0.45309435, 2.21632453], rel=1e-1)
     assert ci[1] == approx([-0.68873954, 0.82425856], rel=1e-1)
+
+
+def test_pareto_mv_check_method():
+    models = {
+        "A": ParetoModel(scale=3, shape=2),
+        "B": ParetoModel(scale=6, shape=4)
+    }
+
+    mvtest = ParetoMVTest(models)
+
+    with raises(ValueError):
+        mvtest.probability(method="new")
+
+
+def test_pareto_mv_probability():
+    modelA = ParetoModel(scale=3, shape=2)
+    modelB = ParetoModel(scale=6, shape=4)
+    abtest = ParetoABTest(modelA, modelB, 1000000)
+    mvtest = ParetoMVTest({"A": modelA, "B": modelB}, 1000000)
+
+    ab_result = abtest.probability(method="exact", variant="A")
+    mv_result = mvtest.probability(method="exact", control="B", variant="A")
+
+    assert ab_result == approx(mv_result, rel=1e-8)
+
+    ab_result = abtest.probability(method="MC", variant="A")
+    mv_result = mvtest.probability(method="MC", control="B", variant="A")
+
+    assert ab_result == approx(mv_result, rel=1e-2)
+
+    ab_result = abtest.probability(method="exact", variant="B")
+    mv_result = mvtest.probability(method="exact", variant="B")
+
+    assert ab_result == approx(mv_result, rel=1e-8)
+
+    ab_result = abtest.probability(method="MC", variant="B")
+    mv_result = mvtest.probability(method="MC", variant="B")
+
+    assert ab_result == approx(mv_result, rel=1e-2)
+
+
+def test_pareto_probability_vs_all():
+    models = {
+        "A": ParetoModel(scale=3, shape=2),
+        "B": ParetoModel(scale=6, shape=4),
+        "C": ParetoModel(scale=7, shape=5)
+    }
+
+    mvtest = ParetoMVTest(models, 1000000)
+
+    assert mvtest.probability_vs_all(method="MLHS",
+        variant="B") == approx(0.299145, rel=1e-2)
+
+    assert mvtest.probability_vs_all(method="MC",
+        variant="B") == approx(0.299145, rel=1e-2)

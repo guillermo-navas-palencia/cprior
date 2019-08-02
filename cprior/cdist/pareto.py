@@ -7,6 +7,7 @@ Pareto conjugate prior distribution model.
 
 import numpy as np
 
+from multiprocessing import Pool
 from scipy import stats
 
 from .base import BayesABTest
@@ -343,7 +344,7 @@ class ParetoABTest(BayesABTest):
                 return (((xB - xA) / xA).mean(), ((xA - xB) / xB).mean())
 
     def expected_loss_ci(self, method="MC", variant="A", interval_length=0.9):
-        """
+        r"""
         Compute credible intervals on the difference distribution of
         :math:`Z = B-A` and/or :math:`Z = A-B`.
 
@@ -387,7 +388,7 @@ class ParetoABTest(BayesABTest):
 
     def expected_loss_relative_ci(self, method="MC", variant="A",
         interval_length=0.9):
-        """
+        r"""
         Compute credible intervals on the relative difference distribution of
         :math:`Z = (B-A)/A` and/or :math:`Z = (A-B)/B`.
 
@@ -449,7 +450,7 @@ class ParetoMVTest(BayesMVTest):
         n_jobs=None):
         super().__init__(models, simulations, random_state, n_jobs)
 
-    def probability(self, method="MC", control="A", variant="B", lift=0):
+    def probability(self, method="exact", control="A", variant="B", lift=0):
         """
         Compute the error probability or *chance to beat control*, i.e.,
         :math:`P[variant > control + lift]`.
@@ -471,15 +472,25 @@ class ParetoMVTest(BayesMVTest):
         lift : float (default=0.0)
            The amount of uplift.
         """
-        check_mv_method(method=method, method_options=("MC"),
+        check_mv_method(method=method, method_options=("exact", "MC"),
             control=control, variant=variant, variants=self.models.keys(),
             lift=lift)
 
         model_control = self.models[control]
         model_variant = self.models[variant]
 
-        x0 = model_control.rvs(self.simulations, self.random_state)
-        x1 = model_variant.rvs(self.simulations, self.random_state)
+        if method == "exact":
+
+            bA = model_variant.scale_posterior
+            aA = model_variant.shape_posterior
+
+            bB = model_control.scale_posterior
+            aB = model_control.shape_posterior
+
+            return probability_to_beat(aB, bB, aA, bA)
+        else:
+            x0 = model_control.rvs(self.simulations, self.random_state)
+            x1 = model_variant.rvs(self.simulations, self.random_state)
 
         return (x1 > x0 + lift).mean()
 
@@ -508,7 +519,7 @@ class ParetoMVTest(BayesMVTest):
         mlhs_samples : int (default=1000)
             Number of samples for MLHS method.
         """
-        check_mv_method(method=method, method_options=("MC"),
+        check_mv_method(method=method, method_options=("MC", "MLHS"),
             control=None, variant=variant, variants=self.models.keys(),
             lift=lift)
 
@@ -516,17 +527,28 @@ class ParetoMVTest(BayesMVTest):
         variants = list(self.models.keys())
         variants.remove(variant)
 
-        # generate samples from all models in parallel
-        xvariant = self.models[variant].rvs(self.simulations,
-            self.random_state)
+        if method == "MC":
+            # generate samples from all models in parallel
+            xvariant = self.models[variant].rvs(self.simulations,
+                self.random_state)
 
-        pool = Pool(processes=self.n_jobs)
-        processes = [pool.apply_async(self._rvs, args=(v, ))
-            for v in variants]
-        xall = [p.get() for p in processes]
-        maxall = np.maximum.reduce(xall)
+            # pool = Pool(processes=self.n_jobs)
+            # processes = [pool.apply_async(self._rvs, args=(v, ))
+            #     for v in variants]
+            xall = [self.models[v].rvs(self.simulations, self.random_state) for
+                v in variants]
+            maxall = np.maximum.reduce(xall)
 
-        return (xvariant > maxall + lift).mean()
+            return (xvariant > maxall + lift).mean()
+        else:
+            r = np.arange(mlhs_samples)
+            np.random.shuffle(r)
+            v = (r - 0.5) / mlhs_samples
+            v = v[v >= 0]
+            x = self.models[variant].ppf(v)
+
+            return np.nanmean(np.prod([self.models[v].cdf(x)
+                for v in variants], axis=0))
 
     def expected_loss(self, method="MC", control="A", variant="B", lift=0):
         r"""
@@ -565,7 +587,7 @@ class ParetoMVTest(BayesMVTest):
 
     def expected_loss_ci(self, method="MC", control="A", variant="B",
         interval_length=0.9):
-        """
+        r"""
         Compute credible intervals on the difference distribution of
         :math:`Z = control-variant`.
 
@@ -581,7 +603,7 @@ class ParetoMVTest(BayesMVTest):
             The tested variant.
 
         interval_length : float (default=0.9)
-            Compute ``interval_length``\% credible interval. This is a value in
+            Compute ``interval_length``% credible interval. This is a value in
             [0, 1].
         """
         check_mv_method(method=method, method_options=("MC"),
@@ -671,7 +693,7 @@ class ParetoMVTest(BayesMVTest):
 
     def expected_loss_relative_ci(self, method="MC", control="A", variant="B",
         interval_length=0.9):
-        """
+        r"""
         Compute credible intervals on the relative difference distribution of
         :math:`Z = (control - variant) / variant`.
 
@@ -688,7 +710,7 @@ class ParetoMVTest(BayesMVTest):
             The tested variant.
 
         interval_length : float (default=0.9)
-            Compute ``interval_length``\% credible interval. This is a value in
+            Compute ``interval_length``% credible interval. This is a value in
             [0, 1].
         """
         check_mv_method(method=method, method_options=("MC"), control=control, variant=variant,

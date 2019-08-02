@@ -194,7 +194,7 @@ def test_pareto_probability_vs_all():
     mvtest = ParetoMVTest(models, 1000000)
 
     assert mvtest.probability_vs_all(method="MLHS",
-        variant="B") == approx(0.299145, rel=1e-2)
+        variant="B") == approx(0.26983118, rel=1e-2)
 
     assert mvtest.probability_vs_all(method="MC",
-        variant="B") == approx(0.299145, rel=1e-2)
+        variant="B") == approx(0.26983118, rel=1e-2)

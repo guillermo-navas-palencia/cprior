@@ -101,7 +101,7 @@ class BayesModel(metaclass=ABCMeta):
         """
 
     def credible_interval(self, interval_length):
-        """
+        r"""
         Credible interval of the posterior distribution.
 
         Parameters

@@ -299,6 +299,9 @@ def test_pareto_mv_expected_loss_relative_vs_all():
     assert mvtest.expected_loss_relative_vs_all(method="MC",
         variant="B") == approx(0.30986700, rel=1e-1)
 
+    assert mvtest.expected_loss_relative_vs_all(method="MLHS",
+        variant="B") == approx(0.30986700, rel=1e-1)
+
 
 def test_pareto_mv_expected_loss_ci_relative():
     modelA = ParetoModel(scale=3, shape=2)
@@ -310,9 +313,9 @@ def test_pareto_mv_expected_loss_ci_relative():
     mv_result = mvtest.expected_loss_relative_ci(method="MC", control="B",
         variant="A")
 
-    assert ab_result == approx(mv_result, rel=1e-2)
+    assert ab_result == approx(mv_result, rel=1e-1)
 
     ab_result = abtest.expected_loss_relative_ci(method="MC", variant="B")
     mv_result = mvtest.expected_loss_relative_ci(method="MC", variant="B")
 
-    assert ab_result == approx(mv_result, rel=1e-2)
+    assert ab_result == approx(mv_result, rel=1e-1)

@@ -666,8 +666,8 @@ class ParetoMVTest(BayesMVTest):
 
             return ((x0 - x1) / x1).mean()
 
-    def expected_loss_relative_vs_all(self, method="MC", control="A",
-        variant="B"):
+    def expected_loss_relative_vs_all(self, method="MLHS", control="A",
+        variant="B", mlhs_samples=1000):
         r"""
         Compute the expected relative loss against all variations. For example,
         given variants "A", "B", "C" and "D", and choosing variant="B",
@@ -675,8 +675,9 @@ class ParetoMVTest(BayesMVTest):
 
         Parameters
         ----------
-        method : str (default="MC")
-            The method of computation.
+        method : str (default="MLHS")
+            The method of computation. Options are "MC" (Monte Carlo)
+            and "MLHS" (Monte Carlo + Median Latin Hypercube Sampling).
 
         variant : str (default="B")
             The chosen variant.
@@ -684,22 +685,32 @@ class ParetoMVTest(BayesMVTest):
         mlhs_samples : int (default=1000)
             Number of samples for MLHS method.
         """
-        check_mv_method(method=method, method_options=("MC"),
+        check_mv_method(method=method, method_options=("MC", "MLHS"),
             control=None, variant=variant, variants=self.models.keys())
 
         # exclude variant
         variants = list(self.models.keys())
         variants.remove(variant)
 
-        # generate samples from all models in parallel
-        xvariant = self.models[variant].rvs(self.simulations,
-            self.random_state)
 
-        xall = [self.models[v].rvs(self.simulations, self.random_state) for
-            v in variants]
-        maxall = np.maximum.reduce(xall)
+        if method == "MC":
+            # generate samples from all models in parallel
+            xvariant = self.models[variant].rvs(self.simulations,
+                self.random_state)
 
-        return (maxall / xvariant).mean() - 1
+            xall = [self.models[v].rvs(self.simulations, self.random_state) for
+                v in variants]
+            maxall = np.maximum.reduce(xall)
+
+            return (maxall / xvariant).mean() - 1
+        else:
+            e_max = self._expected_value_max_mlhs(variants, mlhs_samples)
+
+            a = self.models[variant].shape_posterior
+            b = self.models[variant].scale_posterior
+            e_inv_x = a / (b * (a + 1))
+
+            return e_max * e_inv_x - 1
 
     def expected_loss_relative_ci(self, method="MC", control="A", variant="B",
         interval_length=0.9):
@@ -780,3 +791,21 @@ class ParetoMVTest(BayesMVTest):
         maxall = np.maximum.reduce(xall)
 
         return np.maximum(maxall - xvariant - lift, 0).mean()
+
+    def _expected_value_max_mlhs(self, variants, mlhs_samples):
+        """Compute expected value of the maximum of gamma random variables."""
+        r = np.arange(mlhs_samples)
+        np.random.shuffle(r)
+        v = (r - 0.5) / mlhs_samples
+        v = v[v >= 0]
+
+        s = 0
+        for i in variants:
+            a = self.models[i].shape_posterior
+            b = self.models[i].scale_posterior
+            x = stats.pareto(b=a - 1, scale=b).ppf(v)
+            c = a * b / (a - 1)
+            s += c * np.prod([self.models[j].cdf(x) for j in variants if j != i
+                ], axis=0).mean()
+
+        return s

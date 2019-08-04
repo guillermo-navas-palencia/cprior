@@ -366,7 +366,7 @@ def test_gamma_mv_expected_loss_ci_relative():
     mv_result = mvtest.expected_loss_relative_ci(method="exact", control="B",
         variant="A")
 
-    assert ab_result == approx(mv_result, rel=1e-2)
+    assert ab_result == approx(mv_result, rel=1e-8)
 
     ab_result = abtest.expected_loss_relative_ci(method="MC", variant="A")
     mv_result = mvtest.expected_loss_relative_ci(method="MC", control="B",
@@ -384,7 +384,7 @@ def test_gamma_mv_expected_loss_ci_relative():
     ab_result = abtest.expected_loss_relative_ci(method="exact", variant="B")
     mv_result = mvtest.expected_loss_relative_ci(method="exact", variant="B")
 
-    assert ab_result == approx(mv_result, rel=1e-2)
+    assert ab_result == approx(mv_result, rel=1e-8)
 
     ab_result = abtest.expected_loss_relative_ci(method="MC", variant="B")
     mv_result = mvtest.expected_loss_relative_ci(method="MC", variant="B")

@@ -7,7 +7,6 @@ Pareto conjugate prior distribution model.
 
 import numpy as np
 
-from multiprocessing import Pool
 from scipy import stats
 
 from .base import BayesABTest
@@ -480,7 +479,6 @@ class ParetoMVTest(BayesMVTest):
         model_variant = self.models[variant]
 
         if method == "exact":
-
             bA = model_variant.scale_posterior
             aA = model_variant.shape_posterior
 
@@ -494,7 +492,7 @@ class ParetoMVTest(BayesMVTest):
 
         return (x1 > x0 + lift).mean()
 
-    def probability_vs_all(self, method="MC", variant="B", lift=0,
+    def probability_vs_all(self, method="MLHS", variant="B", lift=0,
         mlhs_samples=1000):
         r"""
         Compute the error probability or *chance to beat all* variations. For
@@ -532,9 +530,6 @@ class ParetoMVTest(BayesMVTest):
             xvariant = self.models[variant].rvs(self.simulations,
                 self.random_state)
 
-            # pool = Pool(processes=self.n_jobs)
-            # processes = [pool.apply_async(self._rvs, args=(v, ))
-            #     for v in variants]
             xall = [self.models[v].rvs(self.simulations, self.random_state) for
                 v in variants]
             maxall = np.maximum.reduce(xall)
@@ -550,7 +545,7 @@ class ParetoMVTest(BayesMVTest):
             return np.nanmean(np.prod([self.models[v].cdf(x)
                 for v in variants], axis=0))
 
-    def expected_loss(self, method="MC", control="A", variant="B", lift=0):
+    def expected_loss(self, method="exact", control="A", variant="B", lift=0):
         r"""
         Compute the expected loss. This is the expected uplift lost by choosing
         a given variant, i.e., :math:`\mathrm{E}[\max(control - variant -
@@ -573,17 +568,26 @@ class ParetoMVTest(BayesMVTest):
         lift : float (default=0.0)
            The amount of uplift.
         """
-        check_mv_method(method=method, method_options=("MC"),
+        check_mv_method(method=method, method_options=("exact", "MC"),
             control=control, variant=variant, variants=self.models.keys(),
             lift=lift)
 
         model_control = self.models[control]
         model_variant = self.models[variant]
 
-        x0 = model_control.rvs(self.simulations, self.random_state)
-        x1 = model_variant.rvs(self.simulations, self.random_state)
+        if method == "exact":
+            bA = model_variant.scale_posterior
+            aA = model_variant.shape_posterior
 
-        return np.maximum(x0 - x1, 0).mean()
+            bB = model_control.scale_posterior
+            aB = model_control.shape_posterior
+
+            return expected_loss(aA, bA, aB, bB)
+        else:
+            x0 = model_control.rvs(self.simulations, self.random_state)
+            x1 = model_variant.rvs(self.simulations, self.random_state)
+
+            return np.maximum(x0 - x1, 0).mean()
 
     def expected_loss_ci(self, method="MC", control="A", variant="B",
         interval_length=0.9):
@@ -594,7 +598,7 @@ class ParetoMVTest(BayesMVTest):
         Parameters
         ----------
         method : str (default="MC")
-            The method of computation. Options are "asymptotic" and "MC".
+            The method of computation.
 
         control : str (default="A")
             The control variant.
@@ -603,7 +607,7 @@ class ParetoMVTest(BayesMVTest):
             The tested variant.
 
         interval_length : float (default=0.9)
-            Compute ``interval_length``% credible interval. This is a value in
+            Compute ``interval_length``\% credible interval. This is a value in
             [0, 1].
         """
         check_mv_method(method=method, method_options=("MC"),
@@ -625,7 +629,7 @@ class ParetoMVTest(BayesMVTest):
 
         return np.percentile((x0 - x1), [lower, upper])
 
-    def expected_loss_relative(self, method="MC", control="A", variant="B"):
+    def expected_loss_relative(self, method="exact", control="A", variant="B"):
         r"""
         Compute expected relative loss for choosing a variant. This can be seen
         as the negative expected relative improvement or uplift, i.e.,
@@ -642,19 +646,28 @@ class ParetoMVTest(BayesMVTest):
         variant : str (default="B")
             The tested variant.
         """
-        check_mv_method(method=method, method_options=("MC"),
+        check_mv_method(method=method, method_options=("exact", "MC"),
             control=control, variant=variant, variants=self.models.keys())
 
         model_control = self.models[control]
         model_variant = self.models[variant]
 
-        x0 = model_control.rvs(self.simulations, self.random_state)
-        x1 = model_variant.rvs(self.simulations, self.random_state)
+        if method == "exact":
+            bA = model_variant.scale_posterior
+            aA = model_variant.shape_posterior
 
-        return ((x0 - x1) / x1).mean()
+            bB = model_control.scale_posterior
+            aB = model_control.shape_posterior
+
+            return aB * bB / (aB - 1) * aA / (bA * (aA + 1)) - 1
+        else:
+            x0 = model_control.rvs(self.simulations, self.random_state)
+            x1 = model_variant.rvs(self.simulations, self.random_state)
+
+            return ((x0 - x1) / x1).mean()
 
     def expected_loss_relative_vs_all(self, method="MC", control="A",
-        variant="B", mlhs_samples=1000):
+        variant="B"):
         r"""
         Compute the expected relative loss against all variations. For example,
         given variants "A", "B", "C" and "D", and choosing variant="B",
@@ -662,9 +675,8 @@ class ParetoMVTest(BayesMVTest):
 
         Parameters
         ----------
-        method : str (default="MLHS")
-            The method of computation. Options are "MC" (Monte Carlo)
-            and "MLHS" (Monte Carlo + Median Latin Hypercube Sampling).
+        method : str (default="MC")
+            The method of computation.
 
         variant : str (default="B")
             The chosen variant.
@@ -672,7 +684,7 @@ class ParetoMVTest(BayesMVTest):
         mlhs_samples : int (default=1000)
             Number of samples for MLHS method.
         """
-        check_mv_method(method=method, method_options=("MC", "MLHS"),
+        check_mv_method(method=method, method_options=("MC"),
             control=None, variant=variant, variants=self.models.keys())
 
         # exclude variant
@@ -683,10 +695,8 @@ class ParetoMVTest(BayesMVTest):
         xvariant = self.models[variant].rvs(self.simulations,
             self.random_state)
 
-        pool = Pool(processes=self.n_jobs)
-        processes = [pool.apply_async(self._rvs, args=(v, ))
-            for v in variants]
-        xall = [p.get() for p in processes]
+        xall = [self.models[v].rvs(self.simulations, self.random_state) for
+            v in variants]
         maxall = np.maximum.reduce(xall)
 
         return (maxall / xvariant).mean() - 1
@@ -700,8 +710,7 @@ class ParetoMVTest(BayesMVTest):
         Parameters
         ----------
         method : str (default="MC")
-            The method of computation. Options are "asymptotic", "exact" and
-            "MC".
+            The method of computation.
 
         control : str (default="A")
             The control variant.
@@ -710,18 +719,18 @@ class ParetoMVTest(BayesMVTest):
             The tested variant.
 
         interval_length : float (default=0.9)
-            Compute ``interval_length``% credible interval. This is a value in
+            Compute ``interval_length``\% credible interval. This is a value in
             [0, 1].
         """
-        check_mv_method(method=method, method_options=("MC"), control=control, variant=variant,
-            variants=self.models.keys(), interval_length=interval_length)
+        check_mv_method(method=method, method_options=("MC"), control=control,
+            variant=variant, variants=self.models.keys(),
+            interval_length=interval_length)
 
         lower = (1 - interval_length) / 2
         upper = (1 + interval_length) / 2
 
         model_control = self.models[control]
         model_variant = self.models[variant]
-
 
         x0 = model_control.rvs(self.simulations, self.random_state)
         x1 = model_variant.rvs(self.simulations, self.random_state)
@@ -731,8 +740,7 @@ class ParetoMVTest(BayesMVTest):
 
         return np.percentile((x0 - x1) / x1, [lower, upper])
 
-    def expected_loss_vs_all(self, method="MC", variant="B", lift=0,
-        mlhs_samples=1000):
+    def expected_loss_vs_all(self, method="MC", variant="B", lift=0):
         r"""
         Compute the expected loss against all variations. For example, given
         variants "A", "B", "C" and "D", and choosing variant="B", we compute
@@ -743,9 +751,8 @@ class ParetoMVTest(BayesMVTest):
 
         Parameters
         ----------
-        method : str (default="MLHS")
-            The method of computation. Options are "MC" (Monte Carlo)
-            and "MLHS" (Monte Carlo + Median Latin Hypercube Sampling).
+        method : str (default="MC")
+            The method of computation.
 
         variant : str (default="B")
             The chosen variant.
@@ -756,7 +763,7 @@ class ParetoMVTest(BayesMVTest):
         mlhs_samples : int (default=1000)
             Number of samples for MLHS method.
         """
-        check_mv_method(method=method, method_options=("MC", "MLHS"),
+        check_mv_method(method=method, method_options=("MC"),
             control=None, variant=variant, variants=self.models.keys(),
             lift=lift)
 
@@ -768,10 +775,8 @@ class ParetoMVTest(BayesMVTest):
         xvariant = self.models[variant].rvs(self.simulations,
             self.random_state)
 
-        pool = Pool(processes=self.n_jobs)
-        processes = [pool.apply_async(self._rvs, args=(v, ))
-            for v in variants]
-        xall = [p.get() for p in processes]
+        xall = [self.models[v].rvs(self.simulations, self.random_state) for
+            v in variants]
         maxall = np.maximum.reduce(xall)
 
         return np.maximum(maxall - xvariant - lift, 0).mean()

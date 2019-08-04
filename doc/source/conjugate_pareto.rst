@@ -31,3 +31,9 @@ The Pareto distribution is used as a conjugate prior distribution for the unifor
    :members:
    :inherited-members:
    :show-inheritance:
+
+
+.. autoclass:: cprior.cdist.ParetoMVTest
+   :members:
+   :inherited-members:
+   :show-inheritance:

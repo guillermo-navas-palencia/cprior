@@ -42,7 +42,7 @@ Posterior predictive expected value
 .. math::
 
    \mathrm{E}[X] = \mathrm{E}[\mathrm{E}[X | p]] = r \mathrm{E}
-   \left[\frac{1 - p}{p}\right] = r\frac{\beta}{\alpha - 1},
+   \left[\frac{1 - p}{p}\right] = r\frac{\beta}{\alpha - 1}.
 
 
 Posterior predictive variance

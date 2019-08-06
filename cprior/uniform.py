@@ -101,11 +101,11 @@ class UniformModel(ParetoModel):
 
         x = np.asarray(x)
         pdf = np.zeros(x.shape)
-        idx = (x >= 0)
-        x = x[idx]
 
-        pdf[(x < b)] = a / ((a + 1) * b)
-        pdf[(x >= b)] = a * b ** a / ((a + 1) * x ** (a + 1))
+        idx = (x >= b)
+
+        pdf[~idx & (x > 0)] = a / ((a + 1) * b)
+        pdf[idx] = a * b ** a / ((a + 1) * x[idx] ** (a + 1))
 
         return pdf
 

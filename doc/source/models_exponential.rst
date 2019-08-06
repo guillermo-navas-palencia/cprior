@@ -1,7 +1,7 @@
 Exponential distribution
 ========================
 
-THe exponential distribution is the probability distribution that describes
+The exponential distribution is the probability distribution that describes
 the waiting times between successive events following a Poisson distribution
 with constant average rate :math:`\lambda`. The probability density function
 for :math:`x \ge 0` is given by

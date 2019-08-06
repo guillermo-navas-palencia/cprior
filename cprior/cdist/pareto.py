@@ -354,7 +354,7 @@ class ParetoABTest(BayesABTest):
         Parameters
         ----------
         method : str (default="MC")
-            The method of computation. Only option "MC".
+            The method of computation.
 
         variant : str (default="A")
             The chosen variant. Options are "A", "B", "all".
@@ -398,7 +398,7 @@ class ParetoABTest(BayesABTest):
         Parameters
         ----------
         method : str (default="MC")
-            The method of computation. Only option "MC".
+            The method of computation.
 
         variant : str (default="A")
             The chosen variant. Options are "A", "B", "all".

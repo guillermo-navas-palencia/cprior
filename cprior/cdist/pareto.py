@@ -216,9 +216,6 @@ class ParetoABTest(BayesABTest):
 
         lift : float (default=0.0)
            The amount of uplift.
-
-        mlhs_samples : int (default=10000)
-            Number of samples for MLHS method.
         """ 
         check_ab_method(method=method, method_options=("exact", "MC"),
             variant=variant, lift=lift)
@@ -692,7 +689,6 @@ class ParetoMVTest(BayesMVTest):
         variants = list(self.models.keys())
         variants.remove(variant)
 
-
         if method == "MC":
             # generate samples from all models in parallel
             xvariant = self.models[variant].rvs(self.simulations,
@@ -770,9 +766,6 @@ class ParetoMVTest(BayesMVTest):
 
         lift : float (default=0.0)
            The amount of uplift.
-
-        mlhs_samples : int (default=1000)
-            Number of samples for MLHS method.
         """
         check_mv_method(method=method, method_options=("MC"),
             control=None, variant=variant, variants=self.models.keys(),

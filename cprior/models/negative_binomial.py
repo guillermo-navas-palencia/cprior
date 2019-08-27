@@ -9,11 +9,11 @@ import numpy as np
 
 from scipy import special
 
-from .cdist import BetaABTest
-from .cdist import BetaModel
-from .cdist import BetaMVTest
-from .cdist.utils import check_models
-from .cdist.utils import check_mv_models
+from ..cdist import BetaABTest
+from ..cdist import BetaModel
+from ..cdist import BetaMVTest
+from ..cdist.utils import check_models
+from ..cdist.utils import check_mv_models
 
 
 class NegativeBinomialModel(BetaModel):

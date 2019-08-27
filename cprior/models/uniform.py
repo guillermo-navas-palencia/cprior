@@ -9,11 +9,11 @@ import numpy as np
 
 from scipy import stats
 
-from .cdist import ParetoABTest
-from .cdist import ParetoModel
-from .cdist import ParetoMVTest
-from .cdist.utils import check_models
-from .cdist.utils import check_mv_models
+from ..cdist import ParetoABTest
+from ..cdist import ParetoModel
+from ..cdist import ParetoMVTest
+from ..cdist.utils import check_models
+from ..cdist.utils import check_mv_models
 
 
 class UniformModel(ParetoModel):

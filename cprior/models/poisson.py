@@ -9,11 +9,11 @@ import numpy as np
 
 from scipy import stats
 
-from .cdist import GammaABTest
-from .cdist import GammaModel
-from .cdist import GammaMVTest
-from .cdist.utils import check_models
-from .cdist.utils import check_mv_models
+from ..cdist import GammaABTest
+from ..cdist import GammaModel
+from ..cdist import GammaMVTest
+from ..cdist.utils import check_models
+from ..cdist.utils import check_mv_models
 
 
 class PoissonModel(GammaModel):

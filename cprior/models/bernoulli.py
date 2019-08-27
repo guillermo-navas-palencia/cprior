@@ -7,11 +7,11 @@ Bayesian model with Bernoulli likelihood.
 
 import numpy as np
 
-from .cdist import BetaABTest
-from .cdist import BetaModel
-from .cdist import BetaMVTest
-from .cdist.utils import check_models
-from .cdist.utils import check_mv_models
+from ..cdist import BetaABTest
+from ..cdist import BetaModel
+from ..cdist import BetaMVTest
+from ..cdist.utils import check_models
+from ..cdist.utils import check_mv_models
 
 
 class BernoulliModel(BetaModel):

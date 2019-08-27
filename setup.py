@@ -63,7 +63,7 @@ install_requires = [
 
 setup(
     name="cprior",
-    version='0.2.0',
+    version='0.3.0',
     description='Fast conjugate prior for Bayesian statistics',
     author='Guillermo Navas-Palencia',
     author_email='g.navas.palencia@gmail.com',

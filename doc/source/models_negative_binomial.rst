@@ -26,17 +26,17 @@ expected value and variance are as follows
 The negative binomial distribution can be used to model how many clicks are
 required before clicking a particular bottom of interest or stop clicking.
 
-.. autoclass:: cprior.NegativeBinomialModel
+.. autoclass:: cprior.models.NegativeBinomialModel
    :members:
    :inherited-members:
    :show-inheritance:
 
-.. autoclass:: cprior.NegativeBinomialABTest
+.. autoclass:: cprior.models.NegativeBinomialABTest
    :members:
    :inherited-members:
    :show-inheritance:
 
-.. autoclass:: cprior.NegativeBinomialMVTest
+.. autoclass:: cprior.models.NegativeBinomialMVTest
    :members:
    :inherited-members:
    :show-inheritance:

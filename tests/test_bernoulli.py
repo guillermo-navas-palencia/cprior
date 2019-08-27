@@ -9,10 +9,10 @@ import numpy as np
 
 from pytest import approx, raises
 
-from cprior import BernoulliABTest
-from cprior import BernoulliModel
-from cprior import BernoulliMVTest
-from cprior import GeometricModel
+from cprior.models import BernoulliABTest
+from cprior.models import BernoulliModel
+from cprior.models import BernoulliMVTest
+from cprior.models import GeometricModel
 
 
 def test_bernoulli_model_update():

@@ -9,10 +9,10 @@ import numpy as np
 
 from pytest import approx, raises
 
-from cprior import UniformABTest
-from cprior import UniformModel
-from cprior import UniformMVTest
-from cprior import PoissonModel
+from cprior.models import UniformABTest
+from cprior.models import UniformModel
+from cprior.models import UniformMVTest
+from cprior.models import PoissonModel
 
 
 def test_uniform_model_update():

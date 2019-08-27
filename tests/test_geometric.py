@@ -9,10 +9,10 @@ import numpy as np
 
 from pytest import approx, raises
 
-from cprior import BernoulliModel
-from cprior import GeometricABTest
-from cprior import GeometricModel
-from cprior import GeometricMVTest
+from cprior.models import BernoulliModel
+from cprior.models import GeometricABTest
+from cprior.models import GeometricModel
+from cprior.models import GeometricMVTest
 
 
 def test_geometric_model_update():

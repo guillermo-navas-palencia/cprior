@@ -18,17 +18,17 @@ where :math:`Q(a, z)` is the regularized incomplete gamma function and
 
 The Poisson distribution is applied to forecast arrival of customers for service at the checkout or visits to a website.
 
-.. autoclass:: cprior.PoissonModel
+.. autoclass:: cprior.models.PoissonModel
    :members:
    :inherited-members:
    :show-inheritance:
 
-.. autoclass:: cprior.PoissonABTest
+.. autoclass:: cprior.models.PoissonABTest
    :members:
    :inherited-members:
    :show-inheritance:
 
-.. autoclass:: cprior.PoissonMVTest
+.. autoclass:: cprior.models.PoissonMVTest
    :members:
    :inherited-members:
    :show-inheritance:

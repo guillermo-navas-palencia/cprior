@@ -9,10 +9,10 @@ import numpy as np
 
 from pytest import approx, raises
 
-from cprior import ExponentialABTest
-from cprior import ExponentialModel
-from cprior import ExponentialMVTest
-from cprior import PoissonModel
+from cprior.models import ExponentialABTest
+from cprior.models import ExponentialModel
+from cprior.models import ExponentialMVTest
+from cprior.models import PoissonModel
 
 
 def test_exponential_model_update():

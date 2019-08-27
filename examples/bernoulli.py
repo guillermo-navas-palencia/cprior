@@ -7,8 +7,8 @@ Example Bayesian model with Bernoulli distribution.
 
 import scipy.stats as st
 
-from cprior import BernoulliModel
-from cprior import BernoulliABTest
+from cprior.models import BernoulliModel
+from cprior.models import BernoulliABTest
 
 # Two model variants A and B, and build A/B test
 modelA = BernoulliModel(alpha=1, beta=1)

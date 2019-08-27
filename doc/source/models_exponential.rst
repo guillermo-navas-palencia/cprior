@@ -27,17 +27,17 @@ The exponential distribution is often used to test revenue metrics like ARPPU
 (average revenue per paying user), i.e, ARPPU = Revenue / Paying Users.
 
 
-.. autoclass:: cprior.ExponentialModel
+.. autoclass:: cprior.models.ExponentialModel
    :members:
    :inherited-members:
    :show-inheritance:
 
-.. autoclass:: cprior.ExponentialABTest
+.. autoclass:: cprior.models.ExponentialABTest
    :members:
    :inherited-members:
    :show-inheritance:
 
-.. autoclass:: cprior.ExponentialMVTest
+.. autoclass:: cprior.models.ExponentialMVTest
    :members:
    :inherited-members:
    :show-inheritance:

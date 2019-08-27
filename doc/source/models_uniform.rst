@@ -25,17 +25,17 @@ The expected value and variance are as follows
 
 The uniform distribution is used to model events that are equally likely.
 
-.. autoclass:: cprior.UniformModel
+.. autoclass:: cprior.models.UniformModel
    :members:
    :inherited-members:
    :show-inheritance:
 
-.. autoclass:: cprior.UniformABTest
+.. autoclass:: cprior.models.UniformABTest
    :members:
    :inherited-members:
    :show-inheritance:
 
-.. autoclass:: cprior.UniformMVTest
+.. autoclass:: cprior.models.UniformMVTest
    :members:
    :inherited-members:
    :show-inheritance:

@@ -9,10 +9,10 @@ import numpy as np
 
 from pytest import approx, raises
 
-from cprior import BinomialABTest
-from cprior import BinomialModel
-from cprior import BinomialMVTest
-from cprior import GeometricModel
+from cprior.models import BinomialABTest
+from cprior.models import BinomialModel
+from cprior.models import BinomialMVTest
+from cprior.models import GeometricModel
 
 
 def test_binomial_model_m():

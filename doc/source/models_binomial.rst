@@ -26,17 +26,17 @@ expected value and variance are as follows
 The Bernoulli distribution is suitable for binary-outcome tests, for example,
 CRO (conversion rate) or CTR (click-through rate) testing.
 
-.. autoclass:: cprior.BinomialModel
+.. autoclass:: cprior.models.BinomialModel
    :members:
    :inherited-members:
    :show-inheritance:
 
-.. autoclass:: cprior.BinomialABTest
+.. autoclass:: cprior.models.BinomialABTest
    :members:
    :inherited-members:
    :show-inheritance:
 
-.. autoclass:: cprior.BinomialMVTest
+.. autoclass:: cprior.models.BinomialMVTest
    :members:
    :inherited-members:
    :show-inheritance:

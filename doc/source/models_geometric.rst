@@ -25,17 +25,17 @@ The expected value and variance are as follows
 The geometric distribution is suitable to model the number of failures before
 the first success.
 
-.. autoclass:: cprior.GeometricModel
+.. autoclass:: cprior.models.GeometricModel
    :members:
    :inherited-members:
    :show-inheritance:
 
-.. autoclass:: cprior.GeometricABTest
+.. autoclass:: cprior.models.GeometricABTest
    :members:
    :inherited-members:
    :show-inheritance:
 
-.. autoclass:: cprior.GeometricMVTest
+.. autoclass:: cprior.models.GeometricMVTest
    :members:
    :inherited-members:
    :show-inheritance:

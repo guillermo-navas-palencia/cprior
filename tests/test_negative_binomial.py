@@ -9,10 +9,10 @@ import numpy as np
 
 from pytest import approx, raises
 
-from cprior import BinomialModel
-from cprior import NegativeBinomialABTest
-from cprior import NegativeBinomialModel
-from cprior import NegativeBinomialMVTest
+from cprior.models import BinomialModel
+from cprior.models import NegativeBinomialABTest
+from cprior.models import NegativeBinomialModel
+from cprior.models import NegativeBinomialMVTest
 
 
 def test_negative_binomial_r():

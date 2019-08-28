@@ -37,22 +37,120 @@ class NormalInverseGamma(object):
         pass
 
     def logpdf(self, x, sig2):
-        pass
+        """
+        Log of the Normal-inverse-gamma probability density function.
+
+        Parameters
+        ----------
+        x: array-like
+            Quantiles.
+
+        sig2 : array-like
+            Quantiles.
+
+        Returns
+        -------
+        logpdf : numpy.ndarray
+            Log of the probability density function evaluated at (x, sig2).
+        """
+        self._check_input(x, sig2)
+
+        logsig2 = np.log(sig2)
+        t0 = 0.5 * np.log(self.variance_scale) - 0.9189385332046727
+        t1 = self.shape * np.log(self.scale) - special.gammaln(self.shape)
+        t2 = -(self.shape + 1.5) * logsig2
+        t3 = self.scale + 0.5 * self.variance_scale * (x - self.loc) ** 2
+
+        return t0 + t1 + t2 - t3 / sig2
 
     def pdf(self, x, sig2):
-        pass
+        """
+        Normal-inverse-gamma probability density function.
+
+        Parameters
+        ----------
+        x: array-like
+            Quantiles.
+
+        sig2 : array-like
+            Quantiles.
+
+        Returns
+        -------
+        pdf : numpy.ndarray
+            Probability density function evaluated at (x, sig2).
+        """
+        return np.exp(self.logpdf(x, sig2))
 
     def logcdf(self, x, sig2):
-        pass
+        """
+        Log of the Normal-inverse-gamma cumulative distribution function.
+
+        Parameters
+        ----------
+        x: array-like
+            Quantiles.
+
+        sig2 : array-like
+            Quantiles.
+
+        Returns
+        -------
+        logcdf : numpy.ndarray
+            Log of the cumulative distribution function evaluated at (x, sig2).
+        """
+        self._check_input(x, sig2)
+
+        xu = (self.variance_scale / sig2) ** 0.5 * (x - self.loc)
+        t0 = -self.scale / sig2 + self.shape * np.log(self.scale)
+        t1 = -(self.shape + 1) * np.log(sig2) - special.gammaln(self.shape)
+        t2 = special.log_ndtr(xu)
+
+        return t0 + t1 + t2
 
     def cdf(self, x, sig2):
-        pass
+        """
+        Normal-inverse-gamma cumulative distribution function.
 
-    def ppf(self, q):
-        pass
+        Parameters
+        ----------
+        x: array-like
+            Quantiles.
+
+        sig2 : array-like
+            Quantiles.
+
+        Returns
+        -------
+        cdf : numpy.ndarray
+            Cumulative distribution function evaluated at (x, sig2).
+        """
+        return np.exp(self.logcdf(x, sig2))
 
     def rvs(self, size=1, random_state=None):
-        pass
+        """
+        Normal-inverse-gamma random variates.
+
+        Parameters
+        ----------
+        size : int (default=1)
+            Number of random variates.
+
+        random_state : int or None (default=None)
+            The seed used by the random number generator.
+
+        Returns
+        -------
+        rvs : numpy.ndarray or scalar
+            Random variates of given size (size, 2).
+        """
+        sig2_rv = stats.invgamma(a=self.shape, scale=self.scale).rvs(size=size,
+            random_state=random_state)
+
+        x_rv = stats.norm(loc=self.loc, scale=np.sqrt(sig2_rv /
+            self.variance_scale)).rvs(size=size, random_state=random_state)
+
+        return np.c_[x_rv, sig2_rv]
 
     def _check_input(self, x, sig2):
         pass

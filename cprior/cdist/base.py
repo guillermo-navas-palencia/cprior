@@ -65,7 +65,6 @@ class BayesModel(metaclass=ABCMeta):
             Cumulative distribution function evaluated at x.
         """
 
-    @abstractmethod
     def ppf(self, q):
         """
         Percent point function (quantile) of the posterior distribution.

@@ -179,10 +179,10 @@ class GammaABTest(BayesABTest):
     Parameters
     ----------
     modelA : object
-        The beta model for variant A.
+        The gamma model for variant A.
 
     modelB : object
-        The beta model for variant B.
+        The gamma model for variant B.
 
     simulations : int or None (default=1000000)
         Number of Monte Carlo simulations.

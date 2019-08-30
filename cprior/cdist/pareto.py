@@ -181,10 +181,10 @@ class ParetoABTest(BayesABTest):
     Parameters
     ----------
     modelA : object
-        The beta model for variant A.
+        The pareto model for variant A.
 
     modelB : object
-        The beta model for variant B.
+        The pareto model for variant B.
 
     simulations : int or None (default=1000000)
         Number of Monte Carlo simulations.

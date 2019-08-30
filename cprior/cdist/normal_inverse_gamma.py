@@ -430,10 +430,10 @@ class NormalInverseGammaABTest(BayesABTest):
     Parameters
     ----------
     modelA : object
-        The beta model for variant A.
+        The normal-inverse-gamma model for variant A.
 
     modelB : object
-        The beta model for variant B.
+        The normal-inverse-gamma model for variant B.
 
     simulations : int or None (default=1000000)
         Number of Monte Carlo simulations.
@@ -443,3 +443,144 @@ class NormalInverseGammaABTest(BayesABTest):
     """
     def __init__(self, modelA, modelB, simulations=None, random_state=None):
         super().__init__(modelA, modelB, simulations, random_state)
+
+    def probability(self, method="exact", variant="A", lift=0):
+        """
+        Compute the error probability or *chance to beat control*.
+
+        * If ``variant == "A"``, :math:`P[A > B + lift]`
+        * If ``variant == "B"``, :math:`P[B > A + lift]`
+        * If ``variant == "all"``, both.
+
+        If ``lift`` is positive value, the computation method must be Monte
+        Carlo sampling.
+
+        Parameters
+        ----------
+        method : str (default="exact")
+            The method of computation. Options are "exact" and "MC".
+
+        variant : str (default="A")
+            The chosen variant. Options are "A", "B", "all".
+
+        lift : float (default=0.0)
+           The amount of uplift.
+        """
+        check_ab_method(method=method, method_options=("exact", "MC"),
+            variant=variant, lift=lift)
+
+        if method == "exact":
+            muA = self.modelA.loc_posterior
+            laA = self.modelA.variance_scale_posterior
+            aA = self.modelA.shape_posterior
+            bA = self.modelA.scale_posterior
+
+            muB = self.modelB.loc_posterior
+            laB = self.modelB.variance_scale_posterior
+            aB = self.modelB.shape_posterior
+            bB = self.modelB.scale_posterior
+
+            if variant == "A":
+                pass
+            elif variant == "B":
+                pass
+            else:
+                pass
+        else:
+            data_A = self.modelA.rvs(self.simulations, self.random_state)
+            data_B = self.modelB.rvs(self.simulations, self.random_state)
+
+            xA, sig2A = data_A[:, 0], data_A[:, 1]
+            xB, sig2B = data_B[:, 0], data_B[:, 1]
+
+            if variant == "A":
+                return (xA > xB + lift).mean(), (sig2A > sig2B + lift).mean()
+            elif variant == "B":
+                return (xB > xA + lift).mean(), (sig2B > sig2A + lift).mean()
+            else:
+                return ((xA > xB + lift).mean(),
+                (sig2A > sig2B + lift).mean(),
+                (xB > xA + lift).mean(),
+                (sig2B > sig2A + lift).mean())
+
+    def expected_loss(self, method="exact", variant="A", lift=0):
+        r"""
+        Compute the expected loss. This is the expected uplift lost by choosing
+        a given variant.
+
+        * If ``variant == "A"``, :math:`\mathrm{E}[\max(B - A - lift, 0)]`
+        * If ``variant == "B"``, :math:`\mathrm{E}[\max(A - B - lift, 0)]`
+        * If ``variant == "all"``, both.
+
+        If ``lift`` is positive value, the computation method must be Monte
+        Carlo sampling.
+
+        Parameters
+        ----------
+        method : str (default="exact")
+            The method of computation. Options are "exact" and "MC".
+
+        variant : str (default="A")
+            The chosen variant. Options are "A", "B", "all".
+
+        lift : float (default=0.0)
+            The amount of uplift.
+        """
+        check_ab_method(method=method, method_options=("exact", "MC"),
+            variant=variant, lift=lift)
+
+        if method == "exact":
+            muA = self.modelA.loc_posterior
+            laA = self.modelA.variance_scale_posterior
+            aA = self.modelA.shape_posterior
+            bA = self.modelA.scale_posterior
+
+            muB = self.modelB.loc_posterior
+            laB = self.modelB.variance_scale_posterior
+            aB = self.modelB.shape_posterior
+            bB = self.modelB.scale_posterior
+
+            if variant == "A":
+                pass
+            elif variant == "B":
+                pass
+            else:
+                pass
+        else:
+            data_A = self.modelA.rvs(self.simulations, self.random_state)
+            data_B = self.modelB.rvs(self.simulations, self.random_state)
+
+            xA, sig2A = data_A[:, 0], data_A[:, 1]
+            xB, sig2B = data_B[:, 0], data_B[:, 1]
+
+            if variant == "A":
+                return (np.maximum(xB - xA - lift, 0).mean(),
+                    np.maximum(sig2B - sig2A - lift, 0).mean())
+            elif variant == "B":
+                return (np.maximum(xA - xB - lift, 0).mean(),
+                    np.maximum(sig2A - sig2B - lift, 0).mean())
+            else:
+                return (np.maximum(xB - xA - lift, 0).mean(),
+                    np.maximum(sig2B - sig2A - lift, 0).mean(),
+                    np.maximum(xA - xB - lift, 0).mean(),
+                    np.maximum(sig2A - sig2B - lift, 0).mean())
+
+
+class NormalInverseGammaMVTest(BayesMVTest):
+    """
+    Bayesian Multivariate testing with prior normal-inverse-gamma distribution.
+
+    Parameters
+    ----------
+    models : object
+        The normal-inverse-gamma models.
+
+    simulations : int or None (default=1000000)
+        Number of Monte Carlo simulations.
+
+    random_state : int or None (default=None)
+        The seed used by the random number generator.
+    """
+    def __init__(self, models, simulations=None, random_state=None,
+        n_jobs=None):
+        super().__init__(models, simulations, random_state, n_jobs)

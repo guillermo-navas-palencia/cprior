@@ -28,13 +28,69 @@ class NormalInverseGamma(object):
         self._check_parameters()
 
     def mean(self):
-        pass
+        """
+        Mean of the Normal-inverse-gamma probability
+
+        Returns
+        -------
+        (x_mean, sig2_mean) : tuple of means.
+            Mean of the random variates.
+        """
+        x_mean = self.loc
+
+        if self.shape > 1:
+            sig2_mean = self.scale / (self.shape - 1)
+        else:
+            sig2_mean = np.nan
+
+        return x_mean, sig2_mean
+
+    def mode(self):
+        """
+        Mode of the Normal-inverse-gamma probability
+
+        Returns
+        -------
+        (x_mode, sig2_mode) : tuple of modes.
+            Mode of the random variates.
+        """
+        x_mode = self.loc
+        sig2_mode = self.scale / (self.shape + 1.5)
+
+        return x_mode, sig2_mode
 
     def var(self):
-        pass
+        """
+        Variance of the Normal-inverse-gamma probability
+
+        Returns
+        -------
+        (x_var, sig2_var) : tuple of variances.
+            Variance of the random variates.
+        """
+        if self.shape > 1:
+            x_var = self.scale / (self.shape - 1) / self.variance_scale
+        else:
+            x_var = np.nan
+
+        if self.shape > 2:
+            sig2_var = self.scale ** 2 / (self.shape - 1) ** 2
+            sig2_var /= (self.shape - 2)
+        else:
+            sig2_var = np.nan
+
+        return x_var, sig2_var
 
     def std(self):
-        pass
+        """
+        Standard deviation of the Normal-inverse-gamma probability
+
+        Returns
+        -------
+        (x_std, sig2_std) : tuple of standard deviations.
+            Standard deviation of the random variates.
+        """
+        return np.sqrt(self.var())
 
     def logpdf(self, x, sig2):
         """
@@ -53,7 +109,7 @@ class NormalInverseGamma(object):
         logpdf : numpy.ndarray
             Log of the probability density function evaluated at (x, sig2).
         """
-        self._check_input(x, sig2)
+        x, sig2 = self._check_input(x, sig2)
 
         logsig2 = np.log(sig2)
         t0 = 0.5 * np.log(self.variance_scale) - 0.9189385332046727
@@ -99,7 +155,7 @@ class NormalInverseGamma(object):
         logcdf : numpy.ndarray
             Log of the cumulative distribution function evaluated at (x, sig2).
         """
-        self._check_input(x, sig2)
+        x, sig2 = self._check_input(x, sig2)
 
         xu = (self.variance_scale / sig2) ** 0.5 * (x - self.loc)
         t0 = -self.scale / sig2 + self.shape * np.log(self.scale)
@@ -153,10 +209,30 @@ class NormalInverseGamma(object):
         return np.c_[x_rv, sig2_rv]
 
     def _check_input(self, x, sig2):
-        pass
+        x = np.asarray(x)
+        sig2 = np.asarray(sig2)
+
+        x_shape, sig2_shape = x.shape, sig2.shape
+
+        if x_shape != sig2_shape:
+            raise ValueError("Input variables with inconsistent dimensions. "
+                "{} != {}".format(x_shape, sig2_shape))
+
+        if np.any(sig2 <= 0):
+            raise ValueError("sig2 must be > 0.")
+
+        return x, sig2
 
     def _check_parameters(self):
-        pass
+        if self.variance_scale <= 0:
+            raise ValueError("variance_scale must be > 0; got {}.".format(
+                self.variance_scale))
+
+        if self.shape <= 0:
+            raise ValueError("shape must be > 0; got {}.".format(self.shape))
+
+        if self.scale <= 0:
+            raise ValueError("scale must be > 0; got {}.".format(self.scale))
 
 
 class NormalInverseGammaModel(BayesModel):

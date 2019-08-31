@@ -467,6 +467,11 @@ class NormalInverseGammaABTest(BayesABTest):
 
         lift : float (default=0.0)
            The amount of uplift.
+
+        Notes
+        -----
+        Method "exact" uses the normal approximation of the Student's
+        t-distribution for the error probability of the mean.
         """
         check_ab_method(method=method, method_options=("exact", "MC"),
             variant=variant, lift=lift)
@@ -483,11 +488,27 @@ class NormalInverseGammaABTest(BayesABTest):
             bB = self.modelB.scale_posterior
 
             if variant == "A":
-                pass
+                # mean using normal approximation
+                prob_mean = stats.norm.cdf((muA - muB) / np.hypot(sigA, sigB))
+
+                # variance
+                p = bA / (bA + bB)
+                prob_var = special.betainc(aA, aB, p)
+                return prob_mean, prob_var
             elif variant == "B":
-                pass
+                # mean using normal approximation
+                prob_mean = stats.norm.cdf((muB - muA) / np.hypot(sigA, sigB))
+
+                # variance
+                p = bB / (bA + bB)
+                prob_var = special.betainc(aB, aA, p)
+                return prob_mean, prob_var
             else:
-                pass
+                prob_mean_A = stats.norm.cdf((muA - muB) / np.hypot(sigA, sigB))
+                prob_var_A = special.betainc(aA, aB, bA / (bA + bB))
+                prob_mean_B = stats.norm.cdf((muB - muA) / np.hypot(sigA, sigB))
+                prob_var_B = special.betainc(aB, aA, bB / (bA + bB))
+                return (prob_mean_A, prob_var_A, prob_mean_B, prob_var_B)
         else:
             data_A = self.modelA.rvs(self.simulations, self.random_state)
             data_B = self.modelB.rvs(self.simulations, self.random_state)
@@ -566,6 +587,16 @@ class NormalInverseGammaABTest(BayesABTest):
                     np.maximum(sig2B - sig2A - lift, 0).mean(),
                     np.maximum(xA - xB - lift, 0).mean(),
                     np.maximum(sig2A - sig2B - lift, 0).mean())
+
+    def expected_loss_relative(self, method="exact", variant="A"):
+        pass
+
+    def expected_loss_ci(self, method="MC", variant="A", interval_length=0.9):
+        pass
+
+    def expected_loss_relative_ci(self, method="MC", variant="A",
+        interval_length=0.9):
+        pass
 
 
 class NormalInverseGammaMVTest(BayesMVTest):

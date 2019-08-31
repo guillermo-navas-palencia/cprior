@@ -18,6 +18,10 @@ from .negative_binomial import NegativeBinomialABTest
 from .negative_binomial import NegativeBinomialModel
 from .negative_binomial import NegativeBinomialMVTest
 
+from .normal import NormalABTest
+from .normal import NormalModel
+from .normal import NormalMVTest
+
 from .poisson import PoissonABTest
 from .poisson import PoissonModel
 from .poisson import PoissonMVTest

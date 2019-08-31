@@ -487,6 +487,9 @@ class NormalInverseGammaABTest(BayesABTest):
             aB = self.modelB.shape_posterior
             bB = self.modelB.scale_posterior
 
+            sigA = self.modelA.std()[0]
+            sigB = self.modelB.std()[0]
+
             if variant == "A":
                 # mean using normal approximation
                 prob_mean = stats.norm.cdf((muA - muB) / np.hypot(sigA, sigB))
@@ -548,6 +551,11 @@ class NormalInverseGammaABTest(BayesABTest):
 
         lift : float (default=0.0)
             The amount of uplift.
+
+        Notes
+        -----
+        Method "exact" uses the normal approximation of the Student's
+        t-distribution for the error probability of the mean.
         """
         check_ab_method(method=method, method_options=("exact", "MC"),
             variant=variant, lift=lift)
@@ -563,10 +571,28 @@ class NormalInverseGammaABTest(BayesABTest):
             aB = self.modelB.shape_posterior
             bB = self.modelB.scale_posterior
 
+            sigA = self.modelA.std()[0]
+            sigB = self.modelB.std()[0]
+
+            u = muB - muA
+            s = np.hypot(sigA, sigB)
+
+            t0 = s * np.exp(-0.5 * (u / s) ** 2) / np.sqrt(2 * np.pi)
+
             if variant == "A":
-                pass
+                # mean using normal approximation
+                el_mean = t0 + u * special.ndtr(u / s)
+
+                # variance
+                el_var = 0
+                return el_mean, el_var
             elif variant == "B":
-                pass
+                # mean using normal approximation
+                el_mean = t0 - u * special.ndtr(-u / s)
+
+                # variance
+                el_var = 0
+                return el_mean, el_var
             else:
                 pass
         else:

@@ -15,7 +15,9 @@ from scipy import stats
 
 from .base import BayesABTest
 from .base import BayesModel
+from .base import BayesMVTest
 from .utils import check_ab_method
+from .utils import check_mv_method
 
 
 class NormalInverseGamma(object):

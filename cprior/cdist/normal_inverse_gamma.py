@@ -633,10 +633,139 @@ class NormalInverseGammaABTest(BayesABTest):
                     np.maximum(sig2A - sig2B - lift, 0).mean())
 
     def expected_loss_relative(self, method="exact", variant="A"):
-        pass
+        r"""
+        Compute expected relative loss for choosing a variant. This can be seen
+        as the negative expected relative improvement or uplift.
+
+        * If ``variant == "A"``, :math:`\mathrm{E}[(B - A) / A]`
+        * If ``variant == "B"``, :math:`\mathrm{E}[(A - B) / B]`
+        * If ``variant == "all"``, both.
+
+        Parameters
+        ----------
+        method : str (default="exact")
+            The method of computation. Options are "exact" and "MC".
+
+        variant : str (default="A")
+            The chosen variant. Options are "A", "B", "all".
+        """
+        check_ab_method(method=method, method_options=("exact", "MC"),
+            variant=variant)
+
+        if method == "exact":
+            muA = self.modelA.loc_posterior
+            laA = self.modelA.variance_scale_posterior
+            aA = self.modelA.shape_posterior
+            bA = self.modelA.scale_posterior
+
+            muB = self.modelB.loc_posterior
+            laB = self.modelB.variance_scale_posterior
+            aB = self.modelB.shape_posterior
+            bB = self.modelB.scale_posterior
+
+            if variant == "A":
+                # variance
+                return bB / bA * aA / (aB - 1) - 1
+
+            elif variant == "B":
+                # variance
+                return bA / bB * aB / (aA - 1) - 1
+            else:
+                pass
+        else:
+            data_A = self.modelA.rvs(self.simulations, self.random_state)
+            data_B = self.modelB.rvs(self.simulations, self.random_state)
+
+            xA, sig2A = data_A[:, 0], data_A[:, 1]
+            xB, sig2B = data_B[:, 0], data_B[:, 1]
+
+            if variant == "A":
+                return ((xB - xA) / xA).mean(), ((sig2B - sig2A) / sig2A).mean()
+            elif variant == "B":
+                return ((xA - xB) / xB).mean(), ((sig2A - sig2B) / sig2B).mean()
+            else:
+                pass
 
     def expected_loss_ci(self, method="MC", variant="A", interval_length=0.9):
-        pass
+        """
+        Compute credible intervals on the difference distribution of
+        :math:`Z = B-A` and/or :math:`Z = A-B`.
+
+        * If ``variant == "A"``, :math:`Z = B - A`
+        * If ``variant == "B"``, :math:`Z = A - B`
+        * If ``variant == "all"``, both.
+
+        Parameters
+        ----------
+        method : str (default="MC")
+            The method of computation. Options are "asymptotic" and "MC".
+
+        variant : str (default="A")
+            The chosen variant. Options are "A", "B", "all".
+
+        interval_length : float (default=0.9)
+            Compute ``interval_length``\% credible interval. This is a value in
+            [0, 1].
+        """
+        check_ab_method(method=method, method_options=("MC", "asymptotic"),
+            variant=variant, interval_length=interval_length)
+
+        # check interval length
+        lower = (1 - interval_length) / 2
+        upper = (1 + interval_length) / 2
+
+        if method == "MC":
+            data_A = self.modelA.rvs(self.simulations, self.random_state)
+            data_B = self.modelB.rvs(self.simulations, self.random_state)
+
+            xA, sig2A = data_A[:, 0], data_A[:, 1]
+            xB, sig2B = data_B[:, 0], data_B[:, 1]
+
+            lower *= 100.0
+            upper *= 100.0
+
+            if variant == "A":
+                return (np.percentile((xB - xA), [lower, upper]),
+                    np.percentile((sig2B - sig2A), [lower, upper]))
+            elif variant == "B":
+                return (np.percentile((xA - xB), [lower, upper]),
+                    np.percentile((sig2A - sig2B), [lower, upper]))
+            else:
+                return (np.percentile((xB - xA), [lower, upper]),
+                    np.percentile((sig2B - sig2A), [lower, upper]),
+                    np.percentile((xA - xB), [lower, upper]),
+                    np.percentile((sig2A - sig2B), [lower, upper]))
+        else:
+            muA = self.modelA.loc_posterior
+            laA = self.modelA.variance_scale_posterior
+            aA = self.modelA.shape_posterior
+            bA = self.modelA.scale_posterior
+
+            muB = self.modelB.loc_posterior
+            laB = self.modelB.variance_scale_posterior
+            aB = self.modelB.shape_posterior
+            bB = self.modelB.scale_posterior
+
+            sig_mean_A, sig_var_A = self.modelA.std()
+            sig_mean_B, sig_var_B = self.modelB.std()
+
+            mu_mean = muB - muA
+            sigma_mean = np.hypot(sig_mean_A, sig_mean_B)
+
+            mu_var = bB / (aB - 1) - bA / (aA - 1)
+            sigma_var = np.hypot(sig_var_A, sig_var_B)
+
+            if variant == "A":
+                return (stats.norm(mu_mean, sigma_mean).ppf([lower, upper]),
+                    stats.norm(mu_var, sigma_var).ppf([lower, upper]))
+            elif variant == "B":
+                return (stats.norm(-mu_mean, sigma_mean).ppf([lower, upper]),
+                    stats.norm(-mu_var, sigma_var).ppf([lower, upper]))
+            else:
+                return (stats.norm(mu_mean, sigma_mean).ppf([lower, upper]),
+                    stats.norm(mu_var, sigma_var).ppf([lower, upper]),
+                    stats.norm(-mu_mean, sigma_mean).ppf([lower, upper]),
+                    stats.norm(-mu_var, sigma_var).ppf([lower, upper]))
 
     def expected_loss_relative_ci(self, method="MC", variant="A",
         interval_length=0.9):

@@ -492,7 +492,7 @@ class NormalInverseGammaABTest(BayesABTest):
 
             if variant == "A":
                 # mean using normal approximation
-                prob_mean = stats.norm.cdf((muA - muB) / np.hypot(sigA, sigB))
+                prob_mean = special.ndtr((muA - muB) / np.hypot(sigA, sigB))
 
                 # variance
                 p = bA / (bA + bB)
@@ -500,16 +500,16 @@ class NormalInverseGammaABTest(BayesABTest):
                 return prob_mean, prob_var
             elif variant == "B":
                 # mean using normal approximation
-                prob_mean = stats.norm.cdf((muB - muA) / np.hypot(sigA, sigB))
+                prob_mean = special.ndtr((muB - muA) / np.hypot(sigA, sigB))
 
                 # variance
                 p = bB / (bA + bB)
                 prob_var = special.betainc(aB, aA, p)
                 return prob_mean, prob_var
             else:
-                prob_mean_A = stats.norm.cdf((muA - muB) / np.hypot(sigA, sigB))
+                prob_mean_A = special.ndtr((muA - muB) / np.hypot(sigA, sigB))
                 prob_var_A = special.betainc(aA, aB, bA / (bA + bB))
-                prob_mean_B = stats.norm.cdf((muB - muA) / np.hypot(sigA, sigB))
+                prob_mean_B = special.ndtr((muB - muA) / np.hypot(sigA, sigB))
                 prob_var_B = special.betainc(aB, aA, bB / (bA + bB))
                 return (prob_mean_A, prob_var_A, prob_mean_B, prob_var_B)
         else:
@@ -555,7 +555,7 @@ class NormalInverseGammaABTest(BayesABTest):
         Notes
         -----
         Method "exact" uses the normal approximation of the Student's
-        t-distribution for the error probability of the mean.
+        t-distribution for the expected loss of the mean.
         """
         check_ab_method(method=method, method_options=("exact", "MC"),
             variant=variant, lift=lift)
@@ -584,17 +584,35 @@ class NormalInverseGammaABTest(BayesABTest):
                 el_mean = t0 + u * special.ndtr(u / s)
 
                 # variance
-                el_var = 0
+                ta = bA / (aA - 1) * special.betainc(aB, aA - 1, bB / (bA + bB))
+                tb = bB / (aB - 1) * special.betainc(aB - 1, aA, bB / (bA + bB))
+
+                el_var = tb - ta
                 return el_mean, el_var
             elif variant == "B":
                 # mean using normal approximation
                 el_mean = t0 - u * special.ndtr(-u / s)
 
                 # variance
-                el_var = 0
+                ta = bA / (aA - 1) * special.betainc(aA - 1, aB, bA / (bA + bB))
+                tb = bB / (aB - 1) * special.betainc(aA, aB - 1, bA / (bA + bB))
+
+                el_var = ta - tb
                 return el_mean, el_var
             else:
-                pass
+                el_mean_ba = t0 + u * special.ndtr(u / s)
+
+                ta = bA / (aA - 1) * special.betainc(aB, aA - 1, bB / (bA + bB))
+                tb = bB / (aB - 1) * special.betainc(aB - 1, aA, bB / (bA + bB))
+                el_var_ba = tb - ta
+
+                el_mean_ab = t0 - u * special.ndtr(-u / s)
+
+                ta = bA / (aA - 1) * special.betainc(aA - 1, aB, bA / (bA + bB))
+                tb = bB / (aB - 1) * special.betainc(aA, aB - 1, bA / (bA + bB))
+                el_var_ab = ta - tb
+
+                return (el_mean_ba, el_var_ba, el_mean_ab, el_var_ab)
         else:
             data_A = self.modelA.rvs(self.simulations, self.random_state)
             data_B = self.modelB.rvs(self.simulations, self.random_state)

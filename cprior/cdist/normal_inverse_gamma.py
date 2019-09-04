@@ -56,7 +56,7 @@ class NormalInverseGamma(object):
 
     def mean(self):
         """
-        Mean of the Normal-inverse-gamma probability
+        Mean of the Normal-inverse-gamma probability.
 
         Returns
         -------
@@ -74,7 +74,7 @@ class NormalInverseGamma(object):
 
     def mode(self):
         """
-        Mode of the Normal-inverse-gamma probability
+        Mode of the Normal-inverse-gamma probability.
 
         Returns
         -------
@@ -88,7 +88,7 @@ class NormalInverseGamma(object):
 
     def var(self):
         """
-        Variance of the Normal-inverse-gamma probability
+        Variance of the Normal-inverse-gamma probability.
 
         Returns
         -------
@@ -110,7 +110,7 @@ class NormalInverseGamma(object):
 
     def std(self):
         """
-        Standard deviation of the Normal-inverse-gamma probability
+        Standard deviation of the Normal-inverse-gamma probability.
 
         Returns
         -------
@@ -299,7 +299,7 @@ class NormalInverseGammaModel(BayesModel):
     @property
     def loc_posterior(self):
         """
-        Posterior parameter mu (location)
+        Posterior parameter mu (location).
 
         Returns
         -------
@@ -310,7 +310,7 @@ class NormalInverseGammaModel(BayesModel):
     @property
     def variance_scale_posterior(self):
         """
-        Posterior parameter lambda (variance_scale)
+        Posterior parameter lambda (variance_scale).
 
         Returns
         -------
@@ -332,7 +332,7 @@ class NormalInverseGammaModel(BayesModel):
     @property
     def scale_posterior(self):
         """
-        Posterior parameter beta (scale)
+        Posterior parameter beta (scale).
 
         Returns
         -------
@@ -443,7 +443,7 @@ class NormalInverseGammaABTest(BayesABTest):
     random_state : int or None (default=None)
         The seed used by the random number generator.    
     """
-    def __init__(self, modelA, modelB, simulations=None, random_state=None):
+    def __init__(self, modelA, modelB, simulations=1000000, random_state=None):
         super().__init__(modelA, modelB, simulations, random_state)
 
     def probability(self, method="exact", variant="A", lift=0):
@@ -663,15 +663,32 @@ class NormalInverseGammaABTest(BayesABTest):
             aB = self.modelB.shape_posterior
             bB = self.modelB.scale_posterior
 
-            if variant == "A":
-                # variance
-                return bB / bA * aA / (aB - 1) - 1
+            sig2A = self.modelA.var()[0]
+            sig2B = self.modelB.var()[0]
 
-            elif variant == "B":
+            if variant == "A":
+                # mean using asymptotic normal approximation
+                elr_mean = muB / muA + sig2A * muB / muA ** 3 - 1
+
                 # variance
-                return bA / bB * aB / (aA - 1) - 1
+                elr_var = bB / bA * aA / (aB - 1) - 1
+
+                return elr_mean, elr_var
+            elif variant == "B":
+                # mean using asymptotic normal approximation
+                elr_mean = muA / muB + sig2B * muA / muB ** 3 - 1
+
+                # variance
+                elr_var = bA / bB * aB / (aA - 1) - 1
+
+                return elr_mean, elr_var
             else:
-                pass
+                elr_mean_ba = muB / muA + sig2A * muB / muA ** 3 - 1
+                elr_var_ba = bB / bA * aA / (aB - 1) - 1
+                elr_mean_ab = muA / muB + sig2B * muA / muB ** 3 - 1
+                elr_var_ab = bA / bB * aB / (aA - 1) - 1
+
+                return (elr_mean_ba, elr_var_ba, elr_mean_ab, elr_var_ab)
         else:
             data_A = self.modelA.rvs(self.simulations, self.random_state)
             data_B = self.modelB.rvs(self.simulations, self.random_state)

@@ -10,12 +10,14 @@ References:
 
 import numpy as np
 
+from scipy import optimize
 from scipy import special
 from scipy import stats
 
 from .base import BayesABTest
 from .base import BayesModel
 from .base import BayesMVTest
+from .gamma import func_ppf
 from .utils import check_ab_method
 from .utils import check_mv_method
 
@@ -648,6 +650,11 @@ class NormalInverseGammaABTest(BayesABTest):
 
         variant : str (default="A")
             The chosen variant. Options are "A", "B", "all".
+
+        Notes
+        -----
+        Method "exact" uses the normal approximation of the Student's
+        t-distribution for the expected loss of the mean.
         """
         check_ab_method(method=method, method_options=("exact", "MC"),
             variant=variant)
@@ -701,7 +708,10 @@ class NormalInverseGammaABTest(BayesABTest):
             elif variant == "B":
                 return ((xA - xB) / xB).mean(), ((sig2A - sig2B) / sig2B).mean()
             else:
-                pass
+                return (((xB - xA) / xA).mean(),
+                    ((sig2B - sig2A) / sig2A).mean(),
+                    ((xA - xB) / xB).mean(),
+                    ((sig2A - sig2B) / sig2B).mean())
 
     def expected_loss_ci(self, method="MC", variant="A", interval_length=0.9):
         """
@@ -786,7 +796,73 @@ class NormalInverseGammaABTest(BayesABTest):
 
     def expected_loss_relative_ci(self, method="MC", variant="A",
         interval_length=0.9):
-        pass
+        """
+        Compute credible intervals on the relative difference distribution of
+        :math:`Z = (B-A)/A` and/or :math:`Z = (A-B)/B`.
+
+        * If ``variant == "A"``, :math:`Z = (B-A)/A`
+        * If ``variant == "B"``, :math:`Z = (A-B)/B`
+        * If ``variant == "all"``, both.
+
+        Parameters
+        ----------
+        method : str (default="MC")
+            The method of computation. Options are "asymptotic", "exact" and
+            "MC".
+
+        variant : str (default="A")
+            The chosen variant. Options are "A", "B", "all".
+
+        interval_length : float (default=0.9)
+            Compute ``interval_length``\% credible interval. This is a value in
+            [0, 1].
+        """
+        check_ab_method(method=method,
+            method_options=("asymptotic", "exact", "MC"), variant=variant,
+            interval_length=interval_length)
+
+        lower = (1 - interval_length) / 2
+        upper = (1 + interval_length) / 2
+
+        if method == "MC":
+            data_A = self.modelA.rvs(self.simulations, self.random_state)
+            data_B = self.modelB.rvs(self.simulations, self.random_state)
+
+            xA, sig2A = data_A[:, 0], data_A[:, 1]
+            xB, sig2B = data_B[:, 0], data_B[:, 1]
+
+            if variant == "A":
+                return (np.percentile((xB - xA) / xA, [lower, upper]),
+                    np.percentile((sig2B - sig2A) / sig2A, [lower, upper]))
+            elif variant == "B":
+                return (np.percentile((xA - xB) / xB, [lower, upper]),
+                    np.percentile((sig2A - sig2B) / sig2B, [lower, upper]))
+            else:
+                return (np.percentile((xB - xA) / xA, [lower, upper]),
+                    np.percentile((sig2B - sig2A) / sig2A, [lower, upper]),
+                    np.percentile((xA - xB) / xB, [lower, upper]),
+                    np.percentile((sig2A - sig2B) / sig2B, [lower, upper]))
+        else:
+            # compute asymptotic
+            muA = self.modelA.loc_posterior
+            laA = self.modelA.variance_scale_posterior
+            aA = self.modelA.shape_posterior
+            bA = self.modelA.scale_posterior
+
+            muB = self.modelB.loc_posterior
+            laB = self.modelB.variance_scale_posterior
+            aB = self.modelB.shape_posterior
+            bB = self.modelB.scale_posterior
+
+            if variant == "A":
+                pass
+            elif variant == "B":
+                pass
+            else:
+               return (self.expected_loss_relative_ci(method=method,
+                    variant="A", interval_length=interval_length),
+                    self.expected_loss_relative_ci(method=method,
+                    variant="B", interval_length=interval_length))
 
 
 class NormalInverseGammaMVTest(BayesMVTest):

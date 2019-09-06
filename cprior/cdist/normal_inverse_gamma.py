@@ -857,47 +857,62 @@ class NormalInverseGammaABTest(BayesABTest):
             aB = self.modelB.shape_posterior
             bB = self.modelB.scale_posterior
 
+            sig2A = self.modelA.var()[0]
+            sig2B = self.modelB.var()[0]
+
             if variant == "A":
+                # mean using asymptotic normal approximation
+                mu = muB / muA + sig2A * muB / muA ** 3
+                var = sig2A * muB / muA ** 4 + sig2B / muA ** 2
+                sigma = np.sqrt(var)
+                dist = stats.norm(mu, sigma)
+                ppfl_mean, ppfu_mean = dist.ppf([lower, upper])
+
+                # variance
                 mu = bB / bA * aA / (aB - 1)
                 var = aA * (aA + aB - 1) / (aB - 2) / (aB - 1)**2
                 var *= (bB / bA) ** 2
                 sigma = np.sqrt(var)
 
-                print(mu, var)
-
                 dist = stats.norm(mu, sigma)
-                ppfl, ppfu = dist.ppf([lower, upper])
+                ppfl_var, ppfu_var = dist.ppf([lower, upper])
 
-                if method == "asymptotic":
-                    return ppfl - 1, ppfu - 1
-                else:
-                    ppfl = optimize.newton(func=func_ppf, x0=ppfl,
+                if method == "exact":
+                    ppfl_var = optimize.newton(func=func_ppf, x0=ppfl_var,
                         args=(aA, bA, aB, bB, lower), maxiter=100)
 
-                    ppfu = optimize.newton(func=func_ppf, x0=ppfu,
+                    ppfu_var = optimize.newton(func=func_ppf, x0=ppfu_var,
                         args=(aA, bA, aB, bB, upper), maxiter=100)
 
-                    return ppfl - 1, ppfu - 1
+                return ([ppfl_mean - 1, ppfu_mean - 1],
+                    [ppfl_var - 1, ppfu_var - 1])
 
             elif variant == "B":
+                # mean using asymptotic normal approximation
+                mu = muA / muB + sig2B * muA / muB ** 3
+                var = sig2B * muA / muB ** 4 + sig2A / muB ** 2
+                sigma = np.sqrt(var)
+                dist = stats.norm(mu, sigma)
+                ppfl_mean, ppfu_mean = dist.ppf([lower, upper])
+
+                # variance
                 mu = bA / bB * aB / (aA - 1)
                 var = aB * (aB + aA - 1) / (aA - 2) / (aA - 1)**2
                 var *= (bA / bB) ** 2
                 sigma = np.sqrt(var)
 
                 dist = stats.norm(mu, sigma)
-                ppfl, ppfu = dist.ppf([lower, upper])
+                ppfl_var, ppfu_var = dist.ppf([lower, upper])
 
-                if method == "asymptotic":
-                    return ppfl - 1, ppfu - 1
-                else:
-                    ppfl = optimize.newton(func=func_ppf, x0=ppfl,
+                if method == "exact":
+                    ppfl_var = optimize.newton(func=func_ppf, x0=ppfl_var,
                         args=(aB, bB, aA, bA, lower), maxiter=100)
 
-                    ppfu = optimize.newton(func=func_ppf, x0=ppfu,
+                    ppfu_var = optimize.newton(func=func_ppf, x0=ppfu_var,
                         args=(aB, bB, aA, bA, upper), maxiter=100)
 
-                    return ppfl - 1, ppfu - 1
+                return ([ppfl_mean - 1, ppfu_mean - 1],
+                    [ppfl_var - 1, ppfu_var - 1])
             else:
                return (self.expected_loss_relative_ci(method=method,
                     variant="A", interval_length=interval_length),

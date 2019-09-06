@@ -831,6 +831,9 @@ class NormalInverseGammaABTest(BayesABTest):
             xA, sig2A = data_A[:, 0], data_A[:, 1]
             xB, sig2B = data_B[:, 0], data_B[:, 1]
 
+            lower *= 100.0
+            upper *= 100.0
+
             if variant == "A":
                 return (np.percentile((xB - xA) / xA, [lower, upper]),
                     np.percentile((sig2B - sig2A) / sig2A, [lower, upper]))
@@ -855,9 +858,46 @@ class NormalInverseGammaABTest(BayesABTest):
             bB = self.modelB.scale_posterior
 
             if variant == "A":
-                pass
+                mu = bB / bA * aA / (aB - 1)
+                var = aA * (aA + aB - 1) / (aB - 2) / (aB - 1)**2
+                var *= (bB / bA) ** 2
+                sigma = np.sqrt(var)
+
+                print(mu, var)
+
+                dist = stats.norm(mu, sigma)
+                ppfl, ppfu = dist.ppf([lower, upper])
+
+                if method == "asymptotic":
+                    return ppfl - 1, ppfu - 1
+                else:
+                    ppfl = optimize.newton(func=func_ppf, x0=ppfl,
+                        args=(aA, bA, aB, bB, lower), maxiter=100)
+
+                    ppfu = optimize.newton(func=func_ppf, x0=ppfu,
+                        args=(aA, bA, aB, bB, upper), maxiter=100)
+
+                    return ppfl - 1, ppfu - 1
+
             elif variant == "B":
-                pass
+                mu = bA / bB * aB / (aA - 1)
+                var = aB * (aB + aA - 1) / (aA - 2) / (aA - 1)**2
+                var *= (bA / bB) ** 2
+                sigma = np.sqrt(var)
+
+                dist = stats.norm(mu, sigma)
+                ppfl, ppfu = dist.ppf([lower, upper])
+
+                if method == "asymptotic":
+                    return ppfl - 1, ppfu - 1
+                else:
+                    ppfl = optimize.newton(func=func_ppf, x0=ppfl,
+                        args=(aB, bB, aA, bA, lower), maxiter=100)
+
+                    ppfu = optimize.newton(func=func_ppf, x0=ppfu,
+                        args=(aB, bB, aA, bA, upper), maxiter=100)
+
+                    return ppfl - 1, ppfu - 1
             else:
                return (self.expected_loss_relative_ci(method=method,
                     variant="A", interval_length=interval_length),

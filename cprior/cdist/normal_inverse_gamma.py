@@ -382,7 +382,7 @@ class NormalInverseGammaModel(BayesModel):
             shape=self._shape_posterior, scale=self._scale_posterior
             ).pdf(x, sig2)
 
-    def cdf(self, x):
+    def cdf(self, x, sig2):
         """
         Cumulative distribution function of the posterior distribution.
 
@@ -513,7 +513,7 @@ class NormalInverseGammaABTest(BayesABTest):
                 prob_var_A = special.betainc(aA, aB, bA / (bA + bB))
                 prob_mean_B = special.ndtr((muB - muA) / np.hypot(sigA, sigB))
                 prob_var_B = special.betainc(aB, aA, bB / (bA + bB))
-                return (prob_mean_A, prob_var_A, prob_mean_B, prob_var_B)
+                return (prob_mean_A, prob_var_A), (prob_mean_B, prob_var_B)
         else:
             data_A = self.modelA.rvs(self.simulations, self.random_state)
             data_B = self.modelB.rvs(self.simulations, self.random_state)
@@ -526,10 +526,8 @@ class NormalInverseGammaABTest(BayesABTest):
             elif variant == "B":
                 return (xB > xA + lift).mean(), (sig2B > sig2A + lift).mean()
             else:
-                return ((xA > xB + lift).mean(),
-                (sig2A > sig2B + lift).mean(),
-                (xB > xA + lift).mean(),
-                (sig2B > sig2A + lift).mean())
+                return ((xA > xB + lift).mean(),(sig2A > sig2B + lift).mean()
+                    ), ((xB > xA + lift).mean(), (sig2B > sig2A + lift).mean())
 
     def expected_loss(self, method="exact", variant="A", lift=0):
         r"""
@@ -614,7 +612,7 @@ class NormalInverseGammaABTest(BayesABTest):
                 tb = bB / (aB - 1) * special.betainc(aA, aB - 1, bA / (bA + bB))
                 el_var_ab = ta - tb
 
-                return (el_mean_ba, el_var_ba, el_mean_ab, el_var_ab)
+                return (el_mean_ba, el_var_ba), (el_mean_ab, el_var_ab)
         else:
             data_A = self.modelA.rvs(self.simulations, self.random_state)
             data_B = self.modelB.rvs(self.simulations, self.random_state)
@@ -630,8 +628,8 @@ class NormalInverseGammaABTest(BayesABTest):
                     np.maximum(sig2A - sig2B - lift, 0).mean())
             else:
                 return (np.maximum(xB - xA - lift, 0).mean(),
-                    np.maximum(sig2B - sig2A - lift, 0).mean(),
-                    np.maximum(xA - xB - lift, 0).mean(),
+                    np.maximum(sig2B - sig2A - lift, 0).mean()
+                    ), (np.maximum(xA - xB - lift, 0).mean(),
                     np.maximum(sig2A - sig2B - lift, 0).mean())
 
     def expected_loss_relative(self, method="exact", variant="A"):
@@ -974,9 +972,32 @@ class NormalInverseGammaMVTest(BayesMVTest):
         model_variant = self.models[variant]
 
         if method == "exact":
-            pass
+            mu0 = model_control.loc_posterior
+            a0 = model_control.shape_posterior
+            b0 = model_control.scale_posterior
+
+            mu1 = model_variant.loc_posterior
+            a1 = model_variant.shape_posterior
+            b1 = model_variant.scale_posterior
+
+            sig0 = model_control.std()[0]
+            sig1 = model_variant.std()[0]
+
+            # mean using normal approximation
+            prob_mean = special.ndtr((mu1 - mu0) / np.hypot(sig0, sig1))
+
+            # variance
+            p = b1 / (b0 + b1)
+            prob_var = special.betainc(a1, a0, p)
+            return prob_mean, prob_var
         else:
-            pass
+            data_0 = model_control.rvs(self.simulations, self.random_state)
+            data_1 = model_variant.rvs(self.simulations, self.random_state)
+
+            x0, sig20 = data_0[:, 0], data_0[:, 1]
+            x1, sig21 = data_1[:, 0], data_1[:, 1]
+
+            return (x1 > x0 + lift).mean(), (sig21 > sig20 + lift).mean()
 
     def probability_vs_all(self, method="MLHS", variant="B", lift=0,
         mlhs_samples=1000):
@@ -1047,9 +1068,37 @@ class NormalInverseGammaMVTest(BayesMVTest):
         model_variant = self.models[variant]
 
         if method == "exact":
-            pass
+            mu0 = model_control.loc_posterior
+            a0 = model_control.shape_posterior
+            b0 = model_control.scale_posterior
+
+            mu1 = model_variant.loc_posterior
+            a1 = model_variant.shape_posterior
+            b1 = model_variant.scale_posterior
+
+            sig0 = model_control.std()[0]
+            sig1 = model_variant.std()[0]
+
+            # mean using normal approximation
+            u = mu1 - mu0
+            s = np.hypot(sig0, sig1)
+            t = s * np.exp(-0.5 * (u / s) ** 2) / np.sqrt(2 * np.pi)
+            el_mean = t - u * special.ndtr(-u / s)
+
+            # variance
+            t0 = b0 / (a0 - 1) * special.betainc(a0 - 1, a1, b0 / (b0 + b1))
+            t1 = b1 / (a1 - 1) * special.betainc(a0, a1 - 1, b0 / (b0 + b1))
+            el_var = t0 - t1
+            return el_mean, el_var
         else:
-            pass
+            data_0 = model_control.rvs(self.simulations, self.random_state)
+            data_1 = model_variant.rvs(self.simulations, self.random_state)
+
+            x0, sig20 = data_0[:, 0], data_0[:, 1]
+            x1, sig21 = data_1[:, 0], data_1[:, 1]
+
+            return (np.maximum(x0 - x1 - lift, 0).mean(),
+                np.maximum(sig20 - sig21 - lift, 0).mean())
 
     def expected_loss_ci(self, method="MC", control="A", variant="B",
         interval_length=0.9):

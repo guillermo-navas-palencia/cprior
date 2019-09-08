@@ -844,8 +844,8 @@ class NormalInverseGammaABTest(BayesABTest):
                     np.percentile((sig2A - sig2B) / sig2B, [lower, upper]))
             else:
                 return (np.percentile((xB - xA) / xA, [lower, upper]),
-                    np.percentile((sig2B - sig2A) / sig2A, [lower, upper]),
-                    np.percentile((xA - xB) / xB, [lower, upper]),
+                    np.percentile((sig2B - sig2A) / sig2A, [lower, upper])
+                    ), (np.percentile((xA - xB) / xB, [lower, upper]),
                     np.percentile((sig2A - sig2B) / sig2B, [lower, upper]))
         else:
             # compute asymptotic
@@ -917,8 +917,8 @@ class NormalInverseGammaABTest(BayesABTest):
                     [ppfl_var - 1, ppfu_var - 1])
             else:
                return (self.expected_loss_relative_ci(method=method,
-                    variant="A", interval_length=interval_length),
-                    self.expected_loss_relative_ci(method=method,
+                    variant="A", interval_length=interval_length)
+                    ),(self.expected_loss_relative_ci(method=method,
                     variant="B", interval_length=interval_length))
 
 
@@ -1278,9 +1278,54 @@ class NormalInverseGammaMVTest(BayesMVTest):
         model_variant = self.models[variant]
 
         if method == "MC":
-            pass
+            data_0 = model_control.rvs(self.simulations, self.random_state)
+            data_1 = model_variant.rvs(self.simulations, self.random_state)
+
+            x0, sig20 = data_0[:, 0], data_0[:, 1]
+            x1, sig21 = data_1[:, 0], data_1[:, 1]
+
+            lower *= 100.0
+            upper *= 100.0
+
+            return (np.percentile((x0 - x1) / x1, [lower, upper]),
+                    np.percentile((sig20 - sig21) / sig21, [lower, upper]))
         else:
-            pass
+            mu0 = model_control.loc_posterior
+            a0 = model_control.shape_posterior
+            b0 = model_control.scale_posterior
+
+            mu1 = model_variant.loc_posterior
+            a1 = model_variant.shape_posterior
+            b1 = model_variant.scale_posterior
+
+            sig20 = model_control.var()[0]
+            sig21 = model_variant.var()[0]
+
+            # mean using asymptotic normal approximation
+            mu = mu0 / mu1 + sig21 * mu0 / mu1 ** 3
+            var = sig21 * mu0 / mu1 ** 4 + sig20 / mu1 ** 2
+            sigma = np.sqrt(var)
+            dist = stats.norm(mu, sigma)
+            ppfl_mean, ppfu_mean = dist.ppf([lower, upper])
+
+            # variance
+            mu = b0 / b1 * a1 / (a0 - 1)
+            var = a1 * (a1 + a0 - 1) / (a0 - 2) / (a0 - 1)**2
+            var *= (b0 / b1) ** 2
+            sigma = np.sqrt(var)
+
+            dist = stats.norm(mu, sigma)
+            ppfl_var, ppfu_var = dist.ppf([lower, upper])
+
+            if method == "exact":
+                ppfl_var = optimize.newton(func=func_ppf, x0=ppfl_var,
+                    args=(a1, b1, a0, b0, lower), maxiter=100)
+
+                ppfu_var = optimize.newton(func=func_ppf, x0=ppfu_var,
+                    args=(a1, b1, a0, b0, upper), maxiter=100)
+
+            return ([ppfl_mean - 1, ppfu_mean - 1],
+                [ppfl_var - 1, ppfu_var - 1])
 
     def expected_loss_vs_all(self, method="MLHS", variant="B", lift=0,
         mlhs_samples=1000):

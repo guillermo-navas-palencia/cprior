@@ -166,11 +166,53 @@ def test_normal_inverse_gamma_ab_expected_loss_relative():
 
 
 def test_normal_inverse_gamma_ab_expected_loss_relative_ci():
-    pass
+    modelA = NormalInverseGammaModel(loc=5.5, variance_scale=30, shape=140,
+        scale=5)
+    modelB = NormalInverseGammaModel(loc=6.0, variance_scale=40, shape=120,
+        scale=9)
+    abtest = NormalInverseGammaABTest(modelA, modelB, 1000000)
 
+    ci = abtest.expected_loss_relative_ci(method="exact", variant="A")
+    assert ci[0] == approx([0.0771545329, 0.1047501311], rel=1e-8)
+    assert ci[1] == approx([0.7123557350, 1.5802286416], rel=1e-8)
 
-def test_normal_inverse_gamma_ab_expected_loss_relative_ci_large_params():
-    pass
+    ci = abtest.expected_loss_relative_ci(method="asymptotic", variant="A")
+    assert ci[0] == approx([0.0771545329, 0.1047501311], rel=1e-1)
+    assert ci[1] == approx([0.7123557350, 1.5802286416], rel=1e-1)
+
+    ci = abtest.expected_loss_relative_ci(method="MC", variant="A")
+    assert ci[0] == approx([0.0771545329, 0.1047501311], rel=1e-1)
+    assert ci[1] == approx([0.7123557350, 1.5802286416], rel=1e-1)
+
+    ci = abtest.expected_loss_relative_ci(method="exact", variant="B")
+    assert ci[0] == approx([-0.0938597854, -0.0727105926], rel=1e-8)
+    assert ci[1] == approx([-0.6124374468, -0.4160091974], rel=1e-8)
+
+    ci = abtest.expected_loss_relative_ci(method="asymptotic", variant="B")
+    assert ci[0] == approx([-0.0938597854, -0.0727105926], rel=1e-1)
+    assert ci[1] == approx([-0.6124374468, -0.4160091974], rel=1e-1)
+
+    ci = abtest.expected_loss_relative_ci(method="MC", variant="B")
+    assert ci[0] == approx([-0.0938597854, -0.0727105926], rel=1e-1)
+    assert ci[1] == approx([-0.6124374468, -0.4160091974], rel=1e-1)
+
+    ci = abtest.expected_loss_relative_ci(method="exact", variant="all")
+    assert ci[0][0] == approx([0.0771545329, 0.1047501311], rel=1e-8)
+    assert ci[0][1] == approx([0.7123557350, 1.5802286416], rel=1e-8)
+    assert ci[1][0] == approx([-0.0938597854, -0.0727105926], rel=1e-8)
+    assert ci[1][1] == approx([-0.6124374468, -0.4160091974], rel=1e-8)
+
+    ci = abtest.expected_loss_relative_ci(method="asymptotic", variant="all")
+    assert ci[0][0] == approx([0.0771545329, 0.1047501311], rel=1e-1)
+    assert ci[0][1] == approx([0.7123557350, 1.5802286416], rel=1e-1)
+    assert ci[1][0] == approx([-0.0938597854, -0.0727105926], rel=1e-1)
+    assert ci[1][1] == approx([-0.6124374468, -0.4160091974], rel=1e-1)
+
+    ci = abtest.expected_loss_relative_ci(method="MC", variant="all")
+    assert ci[0][0] == approx([0.0771545329, 0.1047501311], rel=1e-1)
+    assert ci[0][1] == approx([0.7123557350, 1.5802286416], rel=1e-1)
+    assert ci[1][0] == approx([-0.0938597854, -0.0727105926], rel=1e-1)
+    assert ci[1][1] == approx([-0.6124374468, -0.4160091974], rel=1e-1)
 
 
 def test_normal_inverse_gamma_mv_check_method():
@@ -335,3 +377,58 @@ def test_normal_inverse_gamma_mv_expected_loss_relative():
     mv_result = mvtest.expected_loss_relative(method="MC", variant="B")
 
     assert ab_result == approx(mv_result, rel=1e-1)
+
+
+def test_normal_inverse_gamma_mv_expected_loss_relative_vs_all():
+    pass
+
+
+def test_normal_inverse_gamma_mv_expected_loss_ci_relative():
+    modelA = NormalInverseGammaModel(loc=5.5, variance_scale=3, shape=14,
+        scale=5)
+    modelB = NormalInverseGammaModel(loc=6.0, variance_scale=4, shape=12,
+        scale=9)
+    abtest = NormalInverseGammaABTest(modelA, modelB, 1000000)
+    mvtest = NormalInverseGammaMVTest({"A": modelA, "B": modelB}, 1000000)
+
+    ab_result = abtest.expected_loss_relative_ci(method="exact", variant="A")
+    mv_result = mvtest.expected_loss_relative_ci(method="exact", control="B",
+        variant="A")
+
+    assert ab_result[0] == approx(mv_result[0], rel=1e-8)
+    assert ab_result[1] == approx(mv_result[1], rel=1e-8)
+
+    ab_result = abtest.expected_loss_relative_ci(method="asymptotic",
+        variant="A")
+    mv_result = mvtest.expected_loss_relative_ci(method="asymptotic",
+        control="B", variant="A")
+
+    assert ab_result[0] == approx(mv_result[0], rel=1e-8)
+    assert ab_result[1] == approx(mv_result[1], rel=1e-8)
+
+    ab_result = abtest.expected_loss_relative_ci(method="MC", variant="A")
+    mv_result = mvtest.expected_loss_relative_ci(method="MC", control="B",
+        variant="A")
+
+    assert ab_result[0] == approx(mv_result[0], rel=1e-1)
+    assert ab_result[1] == approx(mv_result[1], rel=1e-1)
+
+    ab_result = abtest.expected_loss_relative_ci(method="exact", variant="B")
+    mv_result = mvtest.expected_loss_relative_ci(method="exact", variant="B")
+
+    assert ab_result[0] == approx(mv_result[0], rel=1e-8)
+    assert ab_result[1] == approx(mv_result[1], rel=1e-8)
+
+    ab_result = abtest.expected_loss_relative_ci(method="asymptotic",
+        variant="B")
+    mv_result = mvtest.expected_loss_relative_ci(method="asymptotic",
+        variant="B")
+
+    assert ab_result[0] == approx(mv_result[0], rel=1e-8)
+    assert ab_result[1] == approx(mv_result[1], rel=1e-8)
+
+    ab_result = abtest.expected_loss_relative_ci(method="MC", variant="B")
+    mv_result = mvtest.expected_loss_relative_ci(method="MC", variant="B")
+
+    assert ab_result[0] == approx(mv_result[0], rel=1e-1)
+    assert ab_result[1] == approx(mv_result[1], rel=1e-1)

@@ -10,6 +10,7 @@ References:
 
 import numpy as np
 
+from multiprocessing import Pool
 from scipy import optimize
 from scipy import special
 from scipy import stats
@@ -1032,9 +1033,49 @@ class NormalInverseGammaMVTest(BayesMVTest):
         variants.remove(variant)
 
         if method == "MC":
-            pass
+            # generate samples from all models in parallel
+            xvariant = self.models[variant].rvs(self.simulations,
+                self.random_state)
+
+            pool = Pool(processes=self.n_jobs)
+            processes = [pool.apply_async(self._rvs, args=(v, ))
+                for v in variants]
+
+            xall = [p.get() for p in processes]
+            maxall = np.maximum.reduce(xall)
+
+            return (xvariant > maxall + lift).mean(axis=0)
         else:
-            pass
+            # prepare parameters
+            variant_params = [(self.models[v].loc_posterior,
+                self.models[v].variance_scale_posterior,
+                self.models[v].shape_posterior,
+                self.models[v].scale_posterior) for v in variants]
+
+            r = np.arange(mlhs_samples)
+            np.random.shuffle(r)
+            v = (r - 0.5) / mlhs_samples
+            v = v[v >= 0]
+
+            mu = self.models[variant].loc_posterior
+            la = self.models[variant].variance_scale_posterior
+            a = self.models[variant].shape_posterior
+            b = self.models[variant].scale_posterior
+
+            # mean
+            x = stats.t(df=2 * a, loc=mu, scale=np.sqrt(b / a / la)).ppf(v)
+
+            prob_mean = np.nanmean(np.prod([stats.t(df=2*a, loc=mu,
+                scale=np.sqrt(b / a / la)).cdf(x)
+                for mu, la, a, b in variant_params], axis=0))
+
+            # variance
+            x = stats.invgamma(a=a, scale=b).ppf(v)
+            prob_var = np.nanmean(np.prod([stats.invgamma(a=a, scale=b).cdf(x)
+                for _, _, a, b in variant_params], axis=0))
+
+            return prob_mean, prob_var
+
 
     def expected_loss(self, method="exact", control="A", variant="B", lift=0):
         r"""

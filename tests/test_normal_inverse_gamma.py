@@ -264,11 +264,17 @@ def test_normal_inverse_gamma_mv_probability_vs_all():
             scale=5),
         "B": NormalInverseGammaModel(loc=6.0, variance_scale=4, shape=12,
             scale=9),
-        "C": NormalInverseGammaModel(loc=6.1, variance_scale=5, shape=13,
-            scale=6)
+        "C": NormalInverseGammaModel(loc=6.5, variance_scale=4, shape=13,
+            scale=4)
     }
 
-    mvtest = NormalInverseGammaMVTest(models)
+    mvtest = NormalInverseGammaMVTest(models, 1000000)
+
+    assert mvtest.probability_vs_all(method="MLHS",
+        variant="B") == approx((0.1703014512, 0.9576990666), rel=1e-2)
+
+    assert mvtest.probability_vs_all(method="MC",
+        variant="B") == approx((0.1703014512, 0.9576990666), rel=1e-1)
 
 
 def test_normal_inverse_gamma_mv_expected_loss():

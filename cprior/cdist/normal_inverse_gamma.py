@@ -693,7 +693,7 @@ class NormalInverseGammaABTest(BayesABTest):
                 elr_mean_ab = muA / muB + sig2B * muA / muB ** 3 - 1
                 elr_var_ab = bA / bB * aB / (aA - 1) - 1
 
-                return (elr_mean_ba, elr_var_ba, elr_mean_ab, elr_var_ab)
+                return (elr_mean_ba, elr_var_ba), (elr_mean_ab, elr_var_ab)
         else:
             data_A = self.modelA.rvs(self.simulations, self.random_state)
             data_B = self.modelB.rvs(self.simulations, self.random_state)
@@ -707,8 +707,7 @@ class NormalInverseGammaABTest(BayesABTest):
                 return ((xA - xB) / xB).mean(), ((sig2A - sig2B) / sig2B).mean()
             else:
                 return (((xB - xA) / xA).mean(),
-                    ((sig2B - sig2A) / sig2A).mean(),
-                    ((xA - xB) / xB).mean(),
+                    ((sig2B - sig2A) / sig2A).mean()), (((xA - xB) / xB).mean(),
                     ((sig2A - sig2B) / sig2B).mean())
 
     def expected_loss_ci(self, method="MC", variant="A", interval_length=0.9):
@@ -1189,9 +1188,31 @@ class NormalInverseGammaMVTest(BayesMVTest):
         model_variant = self.models[variant]
 
         if method == "exact":
-            pass
+            mu0 = model_control.loc_posterior
+            a0 = model_control.shape_posterior
+            b0 = model_control.scale_posterior
+
+            mu1 = model_variant.loc_posterior
+            a1 = model_variant.shape_posterior
+            b1 = model_variant.scale_posterior
+
+            sig21 = model_variant.var()[0]
+
+            # mean using asymptotic normal approximation
+            elr_mean = mu0 / mu1 + sig21 * mu0 / mu1 ** 3 - 1
+
+            # variance
+            elr_var = b0 / b1 * a1 / (a0 - 1) - 1
+
+            return elr_mean, elr_var
         else:
-            pass
+            data_0 = model_control.rvs(self.simulations, self.random_state)
+            data_1 = model_variant.rvs(self.simulations, self.random_state)
+
+            x0, sig20 = data_0[:, 0], data_0[:, 1]
+            x1, sig21 = data_1[:, 0], data_1[:, 1]
+
+            return ((x0 - x1) / x1).mean(), ((sig20 - sig21) / sig21).mean()
 
     def expected_loss_relative_vs_all(self, method="MLHS", control="A",
         variant="B", mlhs_samples=1000):

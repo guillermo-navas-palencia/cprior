@@ -757,8 +757,8 @@ class NormalInverseGammaABTest(BayesABTest):
                     np.percentile((sig2A - sig2B), [lower, upper]))
             else:
                 return (np.percentile((xB - xA), [lower, upper]),
-                    np.percentile((sig2B - sig2A), [lower, upper]),
-                    np.percentile((xA - xB), [lower, upper]),
+                    np.percentile((sig2B - sig2A), [lower, upper])
+                    ), (np.percentile((xA - xB), [lower, upper]),
                     np.percentile((sig2A - sig2B), [lower, upper]))
         else:
             muA = self.modelA.loc_posterior
@@ -788,8 +788,8 @@ class NormalInverseGammaABTest(BayesABTest):
                     stats.norm(-mu_var, sigma_var).ppf([lower, upper]))
             else:
                 return (stats.norm(mu_mean, sigma_mean).ppf([lower, upper]),
-                    stats.norm(mu_var, sigma_var).ppf([lower, upper]),
-                    stats.norm(-mu_mean, sigma_mean).ppf([lower, upper]),
+                    stats.norm(mu_var, sigma_var).ppf([lower, upper])
+                    ),(stats.norm(-mu_mean, sigma_mean).ppf([lower, upper]),
                     stats.norm(-mu_var, sigma_var).ppf([lower, upper]))
 
     def expected_loss_relative_ci(self, method="MC", variant="A",
@@ -1133,9 +1133,37 @@ class NormalInverseGammaMVTest(BayesMVTest):
         model_variant = self.models[variant]
 
         if method == "MC":
-            pass
+            data_0 = model_control.rvs(self.simulations, self.random_state)
+            data_1 = model_variant.rvs(self.simulations, self.random_state)
+
+            x0, sig20 = data_0[:, 0], data_0[:, 1]
+            x1, sig21 = data_1[:, 0], data_1[:, 1]
+
+            lower *= 100.0
+            upper *= 100.0
+
+            return (np.percentile((x0 - x1), [lower, upper]),
+                np.percentile((sig20 - sig21), [lower, upper]))
         else:
-            pass
+            mu0 = model_control.loc_posterior
+            a0 = model_control.shape_posterior
+            b0 = model_control.scale_posterior
+
+            mu1 = model_variant.loc_posterior
+            a1 = model_variant.shape_posterior
+            b1 = model_variant.scale_posterior
+
+            sig_mean_0, sig_var_0 = model_control.std()
+            sig_mean_1, sig_var_1 = model_variant.std()
+
+            mu_mean = mu1 - mu0
+            sigma_mean = np.hypot(sig_mean_0, sig_mean_1)
+
+            mu_var = b1 / (a1 - 1) - b0 / (a0 - 1)
+            sigma_var = np.hypot(sig_var_0, sig_var_1)
+
+            return (stats.norm(-mu_mean, sigma_mean).ppf([lower, upper]),
+                stats.norm(-mu_var, sigma_var).ppf([lower, upper]))
 
     def expected_loss_relative(self, method="exact", control="A", variant="B"):
         r"""

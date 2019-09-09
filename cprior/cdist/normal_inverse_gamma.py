@@ -1076,7 +1076,6 @@ class NormalInverseGammaMVTest(BayesMVTest):
 
             return prob_mean, prob_var
 
-
     def expected_loss(self, method="exact", control="A", variant="B", lift=0):
         r"""
         Compute the expected loss. This is the expected uplift lost by choosing
@@ -1282,7 +1281,17 @@ class NormalInverseGammaMVTest(BayesMVTest):
         variants.remove(variant)
 
         if method == "MC":
-            pass
+            # generate samples from all models in parallel
+            xvariant = self.models[variant].rvs(self.simulations,
+                self.random_state)
+
+            pool = Pool(processes=self.n_jobs)
+            processes = [pool.apply_async(self._rvs, args=(v, ))
+                for v in variants]
+            xall = [p.get() for p in processes]
+            maxall = np.maximum.reduce(xall)
+
+            return (maxall / xvariant).mean(axis=0) - 1
         else:
             pass
 
@@ -1402,6 +1411,16 @@ class NormalInverseGammaMVTest(BayesMVTest):
         variants.remove(variant)
 
         if method == "MC":
-            pass
+            # generate samples from all models in parallel
+            xvariant = self.models[variant].rvs(self.simulations,
+                self.random_state)
+
+            pool = Pool(processes=self.n_jobs)
+            processes = [pool.apply_async(self._rvs, args=(v, ))
+                for v in variants]
+            xall = [p.get() for p in processes]
+            maxall = np.maximum.reduce(xall)
+
+            return np.maximum(maxall - xvariant - lift, 0).mean(axis=0)
         else:
             pass

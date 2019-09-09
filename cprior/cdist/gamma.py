@@ -940,7 +940,7 @@ class GammaMVTest(BayesMVTest):
             v = v[v >= 0]
 
             # ppf of distribution of max(x0, x1, ..., xn), where x_i follows
-            # a beta distribution
+            # a gamma distribution
             variant_params = [(self.models[v].shape_posterior,
                 self.models[v].rate_posterior) for v in variants]
 

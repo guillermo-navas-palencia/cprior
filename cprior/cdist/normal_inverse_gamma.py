@@ -23,6 +23,25 @@ from .utils import check_ab_method
 from .utils import check_mv_method
 
 
+def func_mv_student_ppf(x, variant_params, p):
+    """Function CDF of max of student t random variables for root-finding."""
+    cdf = 1.0
+    for (mu, la, a, b) in variant_params:
+        cdf *= stats.t(df=2*a, loc=mu, scale=np.sqrt(b / a / la)).cdf(x)
+    return cdf - p
+
+
+def func_mv_inverse_gamma_ppf(x, variant_params, p):
+    """
+    Function CDF of max of inverse gamma random variables for root-finding.
+    """
+    cdf = 1.0
+    x = np.maximum(x, 1e-15)
+    for (_, _, a, b) in variant_params:
+        cdf *= special.gammaincc(a, b / x)
+    return cdf - p
+
+
 class NormalInverseGamma(object):
     """
     Normal-inverse-gamma distribution.
@@ -1423,4 +1442,31 @@ class NormalInverseGammaMVTest(BayesMVTest):
 
             return np.maximum(maxall - xvariant - lift, 0).mean(axis=0)
         else:
-            pass
+            # prepare parameters
+            variant_params = [(self.models[v].loc_posterior,
+                self.models[v].variance_scale_posterior,
+                self.models[v].shape_posterior,
+                self.models[v].scale_posterior) for v in variants]
+
+            r = np.arange(mlhs_samples)
+            np.random.shuffle(r)
+            v = (r - 0.5) / mlhs_samples
+            v = v[v >= 0]
+
+            mu = self.models[variant].loc_posterior
+            la = self.models[variant].variance_scale_posterior
+            a = self.models[variant].shape_posterior
+            b = self.models[variant].scale_posterior
+
+            # mean
+
+            # variance
+            maxb = stats.invgamma(a=a, scale=b).ppf(0.99999999)
+
+            x = np.array([optimize.brentq(f=func_mv_inverse_gamma_ppf,
+                args=(variant_params, p), a=0, b=maxb, xtol=1e-4, rtol=1e-4
+                ) for p in v])
+
+            p = x * special.gammaincc(a, b / x)
+            q = b / (a - 1) * special.gammaincc(a - 1, b / x)
+            return np.nanmean(p - q)

@@ -945,7 +945,7 @@ class GammaMVTest(BayesMVTest):
                 self.models[v].rate_posterior) for v in variants]
 
             # TODO: improve this
-            maxb = np.max(self.models[variant].ppf(0.99999999))
+            maxb = self.models[variant].ppf(0.99999999)
 
             x = np.array([optimize.brentq(f=func_mv_ppf,
                 args=(variant_params, p), a=0, b=maxb, xtol=1e-4, rtol=1e-4

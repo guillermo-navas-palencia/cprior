@@ -27,7 +27,7 @@ def func_mv_student_ppf(x, variant_params, p):
     """Function CDF of max of student t random variables for root-finding."""
     cdf = 1.0
     for (mu, la, a, b) in variant_params:
-        cdf *= stats.t(df=2*a, loc=mu, scale=np.sqrt(b / a / la)).cdf(x)
+        cdf *= special.stdtr(2*a, (x - mu) / np.sqrt(b / a / la))
     return cdf - p
 
 
@@ -1458,7 +1458,30 @@ class NormalInverseGammaMVTest(BayesMVTest):
             a = self.models[variant].shape_posterior
             b = self.models[variant].scale_posterior
 
+            n = 2 * a
+            s = np.sqrt(b / a / la)
+
             # mean
+            dist = stats.t(df=n, loc=mu, scale=s)
+
+            # TODO: improve root-finding bounds selection
+            # choose mina from the variant with smallest mean
+            # choose maxb from the variant with largest mean
+            mina = dist.ppf(1e-15)
+            maxb = dist.ppf(1-1e-15)
+
+            print(mina, maxb)
+
+            x = np.array([optimize.brentq(f=func_mv_student_ppf,
+                args=(variant_params, p), a=mina, b=maxb, xtol=1e-4, rtol=1e-4
+                ) for p in v])
+
+            # compute second integral
+            xt = (x - mu) / s
+            t = s * n ** 0.5 * (1 + xt * xt / n) ** ((1 - n) * 0.5) / (1 - n)
+            t /= special.beta(n / 2, 1 / 2)
+
+            el_mean = np.nanmean((x - mu) * special.stdtr(n, xt) - t)
 
             # variance
             maxb = stats.invgamma(a=a, scale=b).ppf(0.99999999)
@@ -1469,4 +1492,6 @@ class NormalInverseGammaMVTest(BayesMVTest):
 
             p = x * special.gammaincc(a, b / x)
             q = b / (a - 1) * special.gammaincc(a - 1, b / x)
-            return np.nanmean(p - q)
+            el_var = np.nanmean(p - q)
+
+            return el_mean, el_var

@@ -1312,7 +1312,21 @@ class NormalInverseGammaMVTest(BayesMVTest):
 
             return (maxall / xvariant).mean(axis=0) - 1
         else:
-            pass
+            e_max = self._expected_value_max_mlhs_student_t(variants,
+                mlhs_samples)
+            e_inv_x = self._expected_value_reciprocal_mlhs_student_t(variant,
+                mlhs_samples)
+            elr_mean = e_max * e_inv_x - 1
+
+            e_max = self._expected_value_max_mlhs_invgamma(variants,
+                mlhs_samples)
+            a = self.models[variant].shape_posterior
+            b = self.models[variant].scale_posterior
+            e_inv_x = a / b
+
+            elr_variance = e_max * e_inv_x - 1
+
+            return elr_mean, elr_variance
 
     def expected_loss_relative_ci(self, method="MC", control="A", variant="B",
         interval_length=0.9):
@@ -1495,3 +1509,71 @@ class NormalInverseGammaMVTest(BayesMVTest):
             el_var = np.nanmean(p - q)
 
             return el_mean, el_var
+
+    def _expected_value_max_mlhs_invgamma(self, variants, mlhs_samples):
+        """
+        Compute expected value of the maximum of inverse gamma random variables.
+        """
+        r = np.arange(mlhs_samples)
+        np.random.shuffle(r)
+        v = (r - 0.5) / mlhs_samples
+        v = v[v >= 0]
+
+        s = 0
+        for i in variants:
+            a = self.models[i].shape_posterior
+            b = self.models[i].scale_posterior
+            x = stats.invgamma(a=a-1, loc=0, scale=b).ppf(v)
+            c = b / (a - 1)
+            s += c * np.prod([special.gammaincc(self.models[j].shape_posterior,
+                self.models[j].scale_posterior / x) for j in variants if j != i
+                ], axis=0).mean()
+
+        return s
+
+    def _expected_value_max_mlhs_student_t(self, variants, mlhs_samples):
+        """
+        Compute expected value of the maximum of generalized student t random
+        variables.
+        """
+        r = np.arange(mlhs_samples)
+        np.random.shuffle(r)
+        v = (r - 0.5) / mlhs_samples
+        v = v[v >= 0]
+
+        s = 0
+        for i in variants:
+            mu = self.models[i].loc_posterior
+            la = self.models[i].variance_scale_posterior
+            a = self.models[i].shape_posterior
+            b = self.models[i].scale_posterior
+            x = stats.t(df=2*a, loc=mu, scale=np.sqrt(b / a / la)).ppf(v)
+            print(x)
+            prod_cdf = []
+            for j in variants:
+                if j != i:
+                    mu = self.models[j].loc_posterior
+                    la = self.models[j].variance_scale_posterior
+                    a = self.models[j].shape_posterior
+                    b = self.models[j].scale_posterior
+                    s = np.sqrt(b / a / la)
+                    xt = (x - mu) / s
+                    prod_cdf.append(stats.t(df=2*a, loc=mu, scale=s).cdf(x))
+
+            s += (x * np.prod(prod_cdf)).mean()
+
+        return s
+
+    def _expected_value_reciprocal_mlhs_student_t(self, variant, mlhs_samples):
+        r = np.arange(mlhs_samples)
+        np.random.shuffle(r)
+        v = (r - 0.5) / mlhs_samples
+        v = v[v >= 0]
+
+        mu = self.models[variant].loc_posterior
+        la = self.models[variant].variance_scale_posterior
+        a = self.models[variant].shape_posterior
+        b = self.models[variant].scale_posterior
+        x = stats.t(df=2*a, loc=mu, scale=np.sqrt(b / a / la)).ppf(v)
+
+        return (1.0 / x).mean()

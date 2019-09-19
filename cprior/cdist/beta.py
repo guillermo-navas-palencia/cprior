@@ -86,19 +86,37 @@ class BetaModel(BayesModel):
         Returns
         -------
         beta : float
-        """        
+        """
         return self._beta_posterior
 
     def mean(self):
-        """Mean of the posterior distribution."""
+        """
+        Mean of the posterior distribution.
+
+        Returns
+        -------
+        mean : float
+        """
         return stats.beta(self._alpha_posterior, self._beta_posterior).mean()
 
     def var(self):
-        """Variance of the posterior distribution."""
+        """
+        Variance of the posterior distribution.
+
+        Returns
+        -------
+        var : float
+        """
         return stats.beta(self._alpha_posterior, self._beta_posterior).var()
 
     def std(self):
-        """Standard deviation of the posterior distribution."""
+        """
+        Standard deviation of the posterior distribution.
+
+        Returns
+        -------
+        std : float
+        """
         return stats.beta(self._alpha_posterior, self._beta_posterior).std()
 
     def pdf(self, x):
@@ -166,8 +184,8 @@ class BetaModel(BayesModel):
         rvs : numpy.ndarray or scalar
             Random variates of given size.
         """
-        return stats.beta(self._alpha_posterior,
-            self._beta_posterior).rvs(size=size, random_state=random_state)
+        return stats.beta(self._alpha_posterior, self._beta_posterior).rvs(
+            size=size, random_state=random_state)
 
 
 class BetaABTest(BayesABTest):
@@ -192,7 +210,7 @@ class BetaABTest(BayesABTest):
         super().__init__(modelA, modelB, simulations, random_state)
 
     def probability(self, method="exact", variant="A", lift=0,
-        mlhs_samples=10000):
+                    mlhs_samples=10000):
         """
         Compute the error probability or *chance to beat control*.
 
@@ -217,9 +235,13 @@ class BetaABTest(BayesABTest):
 
         mlhs_samples : int (default=10000)
             Number of samples for MLHS method.
+
+        Returns
+        -------
+        probability : float or tuple of floats
         """
         check_ab_method(method=method, method_options=("exact", "MC", "MLHS"),
-            variant=variant, lift=lift)
+                        variant=variant, lift=lift)
 
         if method == "exact":
             aA = self.modelA.alpha_posterior
@@ -267,7 +289,7 @@ class BetaABTest(BayesABTest):
                 return (xA > xB + lift).mean(), (xB > xA + lift).mean()
 
     def expected_loss(self, method="exact", variant="A", lift=0,
-        mlhs_samples=10000):
+                      mlhs_samples=10000):
         r"""
         Compute the expected loss. This is the expected uplift lost by choosing
         a given variant.
@@ -293,16 +315,20 @@ class BetaABTest(BayesABTest):
 
         mlhs_samples : int (default=10000)
             Number of samples for MLHS method.
+
+        Returns
+        -------
+        expected_loss : float or tuple of floats
         """
         check_ab_method(method=method, method_options=("exact", "MC", "MLHS"),
-            variant=variant, lift=lift)
+                        variant=variant, lift=lift)
 
         if method == "exact":
             aA = self.modelA.alpha_posterior
             bA = self.modelA.beta_posterior
 
             aB = self.modelB.alpha_posterior
-            bB = self.modelB.beta_posterior        
+            bB = self.modelB.beta_posterior
 
             if variant == "A":
                 ta = aA / (aA + bA) * beta_cprior(aA + 1, bA, aB, bB)
@@ -347,12 +373,12 @@ class BetaABTest(BayesABTest):
                 x = self.modelB.ppf(v)
                 p = x * special.betainc(aA, bA, x)
                 q = aA / (aA + bA) * special.betainc(aA + 1, bA, x)
-                pa =  np.nanmean(p - q)
+                pa = np.nanmean(p - q)
 
                 x = self.modelA.ppf(v)
                 p = x * special.betainc(aB, bB, x)
                 q = aB / (aB + bB) * special.betainc(aB + 1, bB, x)
-                pb =  np.nanmean(p - q)
+                pb = np.nanmean(p - q)
                 return pa, pb
         else:
             xA = self.modelA.rvs(self.simulations, self.random_state)
@@ -364,10 +390,10 @@ class BetaABTest(BayesABTest):
                 return np.maximum(xA - xB - lift, 0).mean()
             else:
                 return (np.maximum(xB - xA - lift, 0).mean(),
-                    np.maximum(xA - xB - lift, 0).mean())
+                        np.maximum(xA - xB - lift, 0).mean())
 
     def expected_loss_ci(self, method="MC", variant="A", interval_length=0.9):
-        """
+        r"""
         Compute credible intervals on the difference distribution of
         :math:`Z = B-A` and/or :math:`Z = A-B`.
 
@@ -378,17 +404,21 @@ class BetaABTest(BayesABTest):
         Parameters
         ----------
         method : str (default="MC")
-            The method of computation. Options are "asymptotic" and "MC".  
+            The method of computation. Options are "asymptotic" and "MC".
 
         variant : str (default="A")
             The chosen variant. Options are "A", "B", "all".
 
         interval_length : float (default=0.9)
-            Compute ``interval_length``\% credible interval. This is a value in
-            [0, 1].
+            Compute ``interval_length`` \% credible interval. This is a value
+            in [0, 1].
+
+        Returns
+        -------
+        expected_loss_ci : np.ndarray or tuple of np.ndarray
         """
         check_ab_method(method=method, method_options=("MC", "asymptotic"),
-            variant=variant, interval_length=interval_length)
+                        variant=variant, interval_length=interval_length)
 
         lower = (1 - interval_length) / 2
         upper = (1 + interval_length) / 2
@@ -399,14 +429,14 @@ class BetaABTest(BayesABTest):
 
             lower *= 100.0
             upper *= 100.0
-            
+
             if variant == "A":
                 return np.percentile((xB - xA), [lower, upper])
             elif variant == "B":
                 return np.percentile((xA - xB), [lower, upper])
             else:
                 return (np.percentile((xB - xA), [lower, upper]),
-                    np.percentile((xA - xB), [lower, upper]))
+                        np.percentile((xA - xB), [lower, upper]))
         else:
             aA = self.modelA.alpha_posterior
             bA = self.modelA.beta_posterior
@@ -425,7 +455,7 @@ class BetaABTest(BayesABTest):
                 return stats.norm(-mu, sigma).ppf([lower, upper])
             else:
                 return (stats.norm(mu, sigma).ppf([lower, upper]),
-                    stats.norm(-mu, sigma).ppf([lower, upper]))
+                        stats.norm(-mu, sigma).ppf([lower, upper]))
 
     def expected_loss_relative(self, method="exact", variant="A"):
         r"""
@@ -443,9 +473,13 @@ class BetaABTest(BayesABTest):
 
         variant : str (default="A")
             The chosen variant. Options are "A", "B", "all".
+
+        Returns
+        -------
+        expected_loss_relative : float or tuple of floats
         """
         check_ab_method(method=method, method_options=("exact", "MC"),
-            variant=variant)
+                        variant=variant)
 
         if method == "exact":
             aA = self.modelA.alpha_posterior
@@ -460,7 +494,7 @@ class BetaABTest(BayesABTest):
                 return aA * (aB + bB - 1) / (aA + bA) / (aB - 1) - 1
             else:
                 return (aB * (aA + bA - 1) / (aB + bB) / (aA - 1) - 1,
-                    aA * (aB + bB - 1) / (aA + bA) / (aB - 1) - 1)
+                        aA * (aB + bB - 1) / (aA + bA) / (aB - 1) - 1)
         else:
             xA = self.modelA.rvs(self.simulations, self.random_state)
             xB = self.modelB.rvs(self.simulations, self.random_state)
@@ -473,8 +507,8 @@ class BetaABTest(BayesABTest):
                 return (((xB - xA) / xA).mean(), ((xA - xB) / xB).mean())
 
     def expected_loss_relative_ci(self, method="MC", variant="A",
-        interval_length=0.9):
-        """
+                                  interval_length=0.9):
+        r"""
         Compute credible intervals on the relative difference distribution of
         :math:`Z = (B-A)/A` and/or :math:`Z = (A-B)/B`.
 
@@ -486,21 +520,25 @@ class BetaABTest(BayesABTest):
         ----------
         method : str (default="MC")
             The method of computation. Options are "asymptotic", "exact" and
-            "MC".  
+            "MC".
 
         variant : str (default="A")
             The chosen variant. Options are "A", "B", "all".
 
         interval_length : float (default=0.9)
             Compute ``interval_length``\% credible interval. This is a value in
-            [0, 1].        
+            [0, 1].
+
+        Returns
+        -------
+        expected_loss_relative_ci : np.ndarray or tuple of np.ndarray
         """
         check_ab_method(method=method,
-            method_options=("asymptotic", "exact", "MC"), variant=variant,
-            interval_length=interval_length)
+                        method_options=("asymptotic", "exact", "MC"),
+                        variant=variant, interval_length=interval_length)
 
         lower = (1 - interval_length) / 2
-        upper = (1 + interval_length) / 2        
+        upper = (1 + interval_length) / 2
 
         if method == "MC":
             xA = self.modelA.rvs(self.simulations, self.random_state)
@@ -515,7 +553,7 @@ class BetaABTest(BayesABTest):
                 return np.percentile((xA - xB)/xB, [lower, upper])
             else:
                 return (np.percentile((xB - xA)/xA, [lower, upper]),
-                    np.percentile((xA - xB)/xB, [lower, upper]))
+                        np.percentile((xA - xB)/xB, [lower, upper]))
         else:
             # compute asymptotic
             aA = self.modelA.alpha_posterior
@@ -536,13 +574,13 @@ class BetaABTest(BayesABTest):
                 if method == "asymptotic":
                     return ppfl - 1, ppfu - 1
                 else:
-                    ppfl = optimize.newton(func=func_ppf, x0=ppfl,
-                        args=(float(aB), float(bB), float(aA), float(bA),
-                            lower), maxiter=100)
+                    ppfl = optimize.newton(func=func_ppf, x0=ppfl, args=(
+                        float(aB), float(bB), float(aA), float(bA), lower),
+                        maxiter=100)
 
-                    ppfu = optimize.newton(func=func_ppf, x0=ppfu,
-                        args=(float(aB), float(bB), float(aA), float(bA),
-                            upper), maxiter=100)
+                    ppfu = optimize.newton(func=func_ppf, x0=ppfu, args=(
+                        float(aB), float(bB), float(aA), float(bA), upper),
+                        maxiter=100)
 
                     return ppfl - 1, ppfu - 1
             elif variant == "B":
@@ -557,20 +595,20 @@ class BetaABTest(BayesABTest):
                 if method == "asymptotic":
                     return ppfl - 1, ppfu - 1
                 else:
-                    ppfl = optimize.newton(func=func_ppf, x0=ppfl,
-                        args=(float(aA), float(bA), float(aB), float(bB),
-                            lower), maxiter=1000)
+                    ppfl = optimize.newton(func=func_ppf, x0=ppfl, args=(
+                        float(aA), float(bA), float(aB), float(bB), lower),
+                        maxiter=1000)
 
-                    ppfu = optimize.newton(func=func_ppf, x0=ppfu,
-                        args=(float(aA), float(bA), float(aB), float(bB),
-                            upper), maxiter=1000)
+                    ppfu = optimize.newton(func=func_ppf, x0=ppfu, args=(
+                        float(aA), float(bA), float(aB), float(bB), upper),
+                        maxiter=1000)
 
                     return ppfl - 1, ppfu - 1
             else:
                 return (self.expected_loss_relative_ci(method=method,
-                    variant="A", interval_length=interval_length),
-                    self.expected_loss_relative_ci(method=method,
-                    variant="B", interval_length=interval_length))
+                        variant="A", interval_length=interval_length),
+                        self.expected_loss_relative_ci(method=method,
+                        variant="B", interval_length=interval_length))
 
 
 class BetaMVTest(BayesMVTest):
@@ -589,11 +627,11 @@ class BetaMVTest(BayesMVTest):
         The seed used by the random number generator.
     """
     def __init__(self, models, simulations=None, random_state=None,
-        n_jobs=None):
+                 n_jobs=None):
         super().__init__(models, simulations, random_state, n_jobs)
 
     def probability(self, method="exact", control="A", variant="B", lift=0,
-        mlhs_samples=10000):
+                    mlhs_samples=10000):
         """
         Compute the error probability or *chance to beat control*, i.e.,
         :math:`P[variant > control + lift]`.
@@ -618,10 +656,14 @@ class BetaMVTest(BayesMVTest):
 
         mlhs_samples : int (default=10000)
             Number of samples for MLHS method.
+
+        Returns
+        -------
+        probability : float
         """
         check_mv_method(method=method, method_options=("exact", "MC", "MLHS"),
-            control=control, variant=variant, variants=self.models.keys(),
-            lift=lift)
+                        control=control, variant=variant,
+                        variants=self.models.keys(), lift=lift)
 
         model_control = self.models[control]
         model_variant = self.models[variant]
@@ -650,11 +692,11 @@ class BetaMVTest(BayesMVTest):
             return (x1 > x0 + lift).mean()
 
     def probability_vs_all(self, method="MLHS", variant="B", lift=0,
-        mlhs_samples=1000):
+                           mlhs_samples=1000):
         r"""
         Compute the error probability or *chance to beat all* variations. For
-        example, given variants "A", "B", "C" and "D", and choosing variant="B",
-        we compute :math:`P[B > \max(A, C, D) + lift]`.
+        example, given variants "A", "B", "C" and "D", and choosing
+        variant="B", we compute :math:`P[B > \max(A, C, D) + lift]`.
 
         If ``lift`` is positive value, the computation method must be Monte
         Carlo sampling.
@@ -673,10 +715,14 @@ class BetaMVTest(BayesMVTest):
 
         mlhs_samples : int (default=1000)
             Number of samples for MLHS method.
+
+        Returns
+        -------
+        probability_vs_all : float
         """
         check_mv_method(method=method, method_options=("MC", "MLHS"),
-            control=None, variant=variant, variants=self.models.keys(),
-            lift=lift)
+                        control=None, variant=variant,
+                        variants=self.models.keys(), lift=lift)
 
         # exclude variant
         variants = list(self.models.keys())
@@ -685,11 +731,11 @@ class BetaMVTest(BayesMVTest):
         if method == "MC":
             # generate samples from all models in parallel
             xvariant = self.models[variant].rvs(self.simulations,
-                self.random_state)
+                                                self.random_state)
 
             pool = Pool(processes=self.n_jobs)
             processes = [pool.apply_async(self._rvs, args=(v, ))
-                for v in variants]
+                         for v in variants]
             xall = [p.get() for p in processes]
             maxall = np.maximum.reduce(xall)
 
@@ -697,7 +743,7 @@ class BetaMVTest(BayesMVTest):
         else:
             # prepare parameters
             variant_params = [(self.models[v].alpha_posterior,
-                self.models[v].beta_posterior) for v in variants]
+                              self.models[v].beta_posterior) for v in variants]
 
             r = np.arange(mlhs_samples)
             np.random.shuffle(r)
@@ -706,10 +752,10 @@ class BetaMVTest(BayesMVTest):
             x = self.models[variant].ppf(v)
 
             return np.nanmean(np.prod([special.betainc(a, b, x)
-                for a, b in variant_params], axis=0))
+                              for a, b in variant_params], axis=0))
 
     def expected_loss(self, method="exact", control="A", variant="B", lift=0,
-        mlhs_samples=10000):
+                      mlhs_samples=10000):
         r"""
         Compute the expected loss. This is the expected uplift lost by choosing
         a given variant, i.e., :math:`\mathrm{E}[\max(control - variant -
@@ -735,10 +781,14 @@ class BetaMVTest(BayesMVTest):
 
         mlhs_samples : int (default=10000)
             Number of samples for MLHS method.
+
+        Returns
+        -------
+        expected_loss : float
         """
         check_mv_method(method=method, method_options=("exact", "MC", "MLHS"),
-            control=control, variant=variant, variants=self.models.keys(),
-            lift=lift)
+                        control=control, variant=variant,
+                        variants=self.models.keys(), lift=lift)
 
         model_control = self.models[control]
         model_variant = self.models[variant]
@@ -777,8 +827,8 @@ class BetaMVTest(BayesMVTest):
             return np.maximum(x0 - x1, 0).mean()
 
     def expected_loss_ci(self, method="MC", control="A", variant="B",
-        interval_length=0.9):
-        """
+                         interval_length=0.9):
+        r"""
         Compute credible intervals on the difference distribution of
         :math:`Z = control-variant`.
 
@@ -796,10 +846,15 @@ class BetaMVTest(BayesMVTest):
         interval_length : float (default=0.9)
             Compute ``interval_length``\% credible interval. This is a value in
             [0, 1].
+
+        Returns
+        -------
+        expected_loss_ci : np.ndarray or tuple of np.ndarray
         """
         check_mv_method(method=method, method_options=("MC", "asymptotic"),
-            control=control, variant=variant, variants=self.models.keys(),
-            interval_length=interval_length)
+                        control=control, variant=variant,
+                        variants=self.models.keys(),
+                        interval_length=interval_length)
 
         # check interval length
         lower = (1 - interval_length) / 2
@@ -846,9 +901,14 @@ class BetaMVTest(BayesMVTest):
 
         variant : str (default="B")
             The tested variant.
+
+        Returns
+        -------
+        expected_loss_relative : float
         """
         check_mv_method(method=method, method_options=("exact", "MC"),
-            control=control, variant=variant, variants=self.models.keys())
+                        control=control, variant=variant,
+                        variants=self.models.keys())
 
         model_control = self.models[control]
         model_variant = self.models[variant]
@@ -868,7 +928,7 @@ class BetaMVTest(BayesMVTest):
             return ((x0 - x1) / x1).mean()
 
     def expected_loss_relative_vs_all(self, method="MLHS", control="A",
-        variant="B", mlhs_samples=1000):
+                                      variant="B", mlhs_samples=1000):
         r"""
         Compute the expected relative loss against all variations. For example,
         given variants "A", "B", "C" and "D", and choosing variant="B",
@@ -885,9 +945,14 @@ class BetaMVTest(BayesMVTest):
 
         mlhs_samples : int (default=1000)
             Number of samples for MLHS method.
+
+        Returns
+        -------
+        expected_loss_relative_vs_all : float
         """
         check_mv_method(method=method, method_options=("MC", "MLHS"),
-            control=None, variant=variant, variants=self.models.keys())
+                        control=None, variant=variant,
+                        variants=self.models.keys())
 
         # exclude variant
         variants = list(self.models.keys())
@@ -896,11 +961,11 @@ class BetaMVTest(BayesMVTest):
         if method == "MC":
             # generate samples from all models in parallel
             xvariant = self.models[variant].rvs(self.simulations,
-                self.random_state)
+                                                self.random_state)
 
             pool = Pool(processes=self.n_jobs)
             processes = [pool.apply_async(self._rvs, args=(v, ))
-                for v in variants]
+                         for v in variants]
             xall = [p.get() for p in processes]
             maxall = np.maximum.reduce(xall)
 
@@ -915,8 +980,8 @@ class BetaMVTest(BayesMVTest):
             return e_max * e_inv_x - 1
 
     def expected_loss_relative_ci(self, method="MC", control="A", variant="B",
-        interval_length=0.9):
-        """
+                                  interval_length=0.9):
+        r"""
         Compute credible intervals on the relative difference distribution of
         :math:`Z = (control - variant) / variant`.
 
@@ -935,10 +1000,16 @@ class BetaMVTest(BayesMVTest):
         interval_length : float (default=0.9)
             Compute ``interval_length``\% credible interval. This is a value in
             [0, 1].
+
+        Returns
+        -------
+        expected_loss_relative_ci : np.ndarray or tuple of np.ndarray
         """
-        check_mv_method(method=method, method_options=("asymptotic", "exact",
-            "MC"), control=control, variant=variant,
-            variants=self.models.keys(), interval_length=interval_length)
+        check_mv_method(method=method,
+                        method_options=("asymptotic", "exact", "MC"),
+                        control=control, variant=variant,
+                        variants=self.models.keys(),
+                        interval_length=interval_length)
 
         lower = (1 - interval_length) / 2
         upper = (1 + interval_length) / 2
@@ -972,16 +1043,16 @@ class BetaMVTest(BayesMVTest):
             if method == "asymptotic":
                 return ppfl - 1, ppfu - 1
             else:
-                ppfl = optimize.newton(func=func_ppf, x0=ppfl,
-                    args=(a0, b0, a1, b1, lower), maxiter=1000)
+                ppfl = optimize.newton(func=func_ppf, x0=ppfl, args=(
+                    a0, b0, a1, b1, lower), maxiter=1000)
 
-                ppfu = optimize.newton(func=func_ppf, x0=ppfu,
-                    args=(a0, b0, a1, b1, upper), maxiter=1000)
+                ppfu = optimize.newton(func=func_ppf, x0=ppfu, args=(
+                    a0, b0, a1, b1, upper), maxiter=1000)
 
                 return ppfl - 1, ppfu - 1
 
     def expected_loss_vs_all(self, method="MLHS", variant="B", lift=0,
-        mlhs_samples=1000):
+                             mlhs_samples=1000):
         r"""
         Compute the expected loss against all variations. For example, given
         variants "A", "B", "C" and "D", and choosing variant="B", we compute
@@ -1004,10 +1075,14 @@ class BetaMVTest(BayesMVTest):
 
         mlhs_samples : int (default=1000)
             Number of samples for MLHS method.
+
+        Returns
+        -------
+        expected_loss_vs_all : float
         """
         check_mv_method(method=method, method_options=("MC", "MLHS"),
-            control=None, variant=variant, variants=self.models.keys(),
-            lift=lift)
+                        control=None, variant=variant,
+                        variants=self.models.keys(), lift=lift)
 
         # exclude variant
         variants = list(self.models.keys())
@@ -1016,11 +1091,11 @@ class BetaMVTest(BayesMVTest):
         if method == "MC":
             # generate samples from all models in parallel
             xvariant = self.models[variant].rvs(self.simulations,
-                self.random_state)
+                                                self.random_state)
 
             pool = Pool(processes=self.n_jobs)
             processes = [pool.apply_async(self._rvs, args=(v, ))
-                for v in variants]
+                         for v in variants]
             xall = [p.get() for p in processes]
             maxall = np.maximum.reduce(xall)
 
@@ -1034,12 +1109,11 @@ class BetaMVTest(BayesMVTest):
             # ppf of distribution of max(x0, x1, ..., xn), where x_i follows
             # a beta distribution
             variant_params = [(self.models[v].alpha_posterior,
-                self.models[v].beta_posterior) for v in variants]
+                              self.models[v].beta_posterior) for v in variants]
 
-            # TODO: improve this
             x = np.array([optimize.brentq(f=func_mv_ppf,
-                args=(variant_params, p), a=0, b=1, xtol=1e-4, rtol=1e-4
-                ) for p in v])
+                         args=(variant_params, p), a=0, b=1, xtol=1e-4,
+                         rtol=1e-4) for p in v])
 
             a = self.models[variant].alpha_posterior
             b = self.models[variant].beta_posterior
@@ -1060,7 +1134,7 @@ class BetaMVTest(BayesMVTest):
             b = self.models[i].beta_posterior
             x = stats.beta(a + 1, b).ppf(v)
             c = a / (a + b)
-            s += c * np.prod([self.models[j].cdf(x) for j in variants if j != i
-                ], axis=0).mean()
+            s += c * np.prod([self.models[j].cdf(x) for j in variants
+                             if j != i], axis=0).mean()
 
         return s

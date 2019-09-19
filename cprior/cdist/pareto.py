@@ -88,19 +88,37 @@ class ParetoModel(BayesModel):
         return self._shape_posterior
 
     def mean(self):
-        """Mean of the posterior distribution."""
+        """
+        Mean of the posterior distribution.
+
+        Returns
+        -------
+        mean : float
+        """
         return stats.pareto(b=self._shape_posterior,
-            scale=self._scale_posterior).mean()
+                            scale=self._scale_posterior).mean()
 
     def var(self):
-        """Variance of the posterior distribution."""
+        """
+        Variance of the posterior distribution.
+
+        Returns
+        -------
+        var : float
+        """
         return stats.pareto(b=self._shape_posterior,
-            scale=self._scale_posterior).var()
+                            scale=self._scale_posterior).var()
 
     def std(self):
-        """Standard deviation of the posterior distribution."""
+        """
+        Standard deviation of the posterior distribution.
+
+        Returns
+        -------
+        std : float
+        """
         return stats.pareto(b=self._shape_posterior,
-            scale=self._scale_posterior).std()
+                            scale=self._scale_posterior).std()
 
     def pdf(self, x):
         """
@@ -117,7 +135,7 @@ class ParetoModel(BayesModel):
            Probability density function evaluated at x.
         """
         return stats.pareto(b=self._shape_posterior,
-            scale=self._scale_posterior).pdf(x)
+                            scale=self._scale_posterior).pdf(x)
 
     def cdf(self, x):
         """
@@ -134,7 +152,7 @@ class ParetoModel(BayesModel):
             Cumulative distribution function evaluated at x.
         """
         return stats.pareto(b=self._shape_posterior,
-            scale=self._scale_posterior).cdf(x)
+                            scale=self._scale_posterior).cdf(x)
 
     def ppf(self, q):
         """
@@ -151,7 +169,7 @@ class ParetoModel(BayesModel):
             Quantile corresponding to the lower tail probability q.
         """
         return stats.pareto(b=self._shape_posterior,
-            scale=self._scale_posterior).ppf(q)
+                            scale=self._scale_posterior).ppf(q)
 
     def rvs(self, size=1, random_state=None):
         """
@@ -170,8 +188,9 @@ class ParetoModel(BayesModel):
         rvs : numpy.ndarray or scalar
             Random variates of given size.
         """
-        return stats.pareto(b=self._shape_posterior, scale=self._scale_posterior
-            ).rvs(size=size, random_state=random_state)
+        return stats.pareto(b=self._shape_posterior,
+                            scale=self._scale_posterior).rvs(
+                            size=size, random_state=random_state)
 
 
 class ParetoABTest(BayesABTest):
@@ -190,7 +209,7 @@ class ParetoABTest(BayesABTest):
         Number of Monte Carlo simulations.
 
     random_state : int or None (default=None)
-        The seed used by the random number generator.    
+        The seed used by the random number generator.
     """
     def __init__(self, modelA, modelB, simulations=None, random_state=None):
         super().__init__(modelA, modelB, simulations, random_state)
@@ -216,16 +235,20 @@ class ParetoABTest(BayesABTest):
 
         lift : float (default=0.0)
            The amount of uplift.
-        """ 
+
+        Returns
+        -------
+        probability : float or tuple of floats
+        """
         check_ab_method(method=method, method_options=("exact", "MC"),
-            variant=variant, lift=lift)
+                        variant=variant, lift=lift)
 
         if method == "exact":
             bA = self.modelA.scale_posterior
             aA = self.modelA.shape_posterior
 
             bB = self.modelB.scale_posterior
-            aB = self.modelB.shape_posterior            
+            aB = self.modelB.shape_posterior
 
             if variant == "A":
                 return probability_to_beat(aB, bB, aA, bA)
@@ -233,7 +256,7 @@ class ParetoABTest(BayesABTest):
                 return probability_to_beat(aA, bA, aB, bB)
             else:
                 return (probability_to_beat(aB, bB, aA, bA),
-                    probability_to_beat(aA, bA, aB, bB))
+                        probability_to_beat(aA, bA, aB, bB))
         else:
             xA = self.modelA.rvs(self.simulations, self.random_state)
             xB = self.modelB.rvs(self.simulations, self.random_state)
@@ -260,14 +283,18 @@ class ParetoABTest(BayesABTest):
         Parameters
         ----------
         method : str (default="exact")
-            The method of computation. Options are "exact" and "MC". 
+            The method of computation. Options are "exact" and "MC".
 
         variant : str (default="A")
             The chosen variant. Options are "A", "B", "all".
 
         lift : float (default=0.0)
             The amount of uplift.
-        """        
+
+        Returns
+        -------
+        expected_loss : float or tuple of floats
+        """
         if method == "exact":
             bA = self.modelA.scale_posterior
             aA = self.modelA.shape_posterior
@@ -281,7 +308,7 @@ class ParetoABTest(BayesABTest):
                 return expected_loss(aB, bB, aA, bA)
             else:
                 return (expected_loss(aA, bA, aB, bB),
-                    expected_loss(aB, bB, aA, bA))
+                        expected_loss(aB, bB, aA, bA))
         else:
             xA = self.modelA.rvs(self.simulations, self.random_state)
             xB = self.modelB.rvs(self.simulations, self.random_state)
@@ -292,7 +319,7 @@ class ParetoABTest(BayesABTest):
                 return np.maximum(xA - xB - lift, 0).mean()
             else:
                 return (np.maximum(xB - xA - lift, 0).mean(),
-                    np.maximum(xA - xB - lift, 0).mean())        
+                        np.maximum(xA - xB - lift, 0).mean())
 
     def expected_loss_relative(self, method="exact", variant="A"):
         r"""
@@ -310,9 +337,13 @@ class ParetoABTest(BayesABTest):
 
         variant : str (default="A")
             The chosen variant. Options are "A", "B", "all".
+
+        Returns
+        -------
+        expected_loss_relative : float or tuple of floats
         """
         check_ab_method(method=method, method_options=("exact", "MC"),
-            variant=variant)
+                        variant=variant)
 
         if method == "exact":
             bA = self.modelA.scale_posterior
@@ -327,7 +358,7 @@ class ParetoABTest(BayesABTest):
                 return aA * bA / (aA - 1) * aB / (bB * (aB + 1)) - 1
             else:
                 return (aB * bB / (aB - 1) * aA / (bA * (aA + 1)) - 1,
-                    aA * bA / (aA - 1) * aB / (bB * (aB + 1)) - 1)
+                        aA * bA / (aA - 1) * aB / (bB * (aB + 1)) - 1)
         else:
             xA = self.modelA.rvs(self.simulations, self.random_state)
             xB = self.modelB.rvs(self.simulations, self.random_state)
@@ -359,9 +390,13 @@ class ParetoABTest(BayesABTest):
         interval_length : float (default=0.9)
             Compute ``interval_length``\% credible interval. This is a value in
             [0, 1].
+
+        Returns
+        -------
+        expected_loss_ci : np.ndarray or tuple of np.ndarray
         """
         check_ab_method(method=method, method_options=("MC"),
-            variant=variant, interval_length=interval_length)
+                        variant=variant, interval_length=interval_length)
 
         # check interval length
         lower = (1 - interval_length) / 2
@@ -380,10 +415,10 @@ class ParetoABTest(BayesABTest):
                 return np.percentile((xA - xB), [lower, upper])
             else:
                 return (np.percentile((xB - xA), [lower, upper]),
-                    np.percentile((xA - xB), [lower, upper]))
+                        np.percentile((xA - xB), [lower, upper]))
 
     def expected_loss_relative_ci(self, method="MC", variant="A",
-        interval_length=0.9):
+                                  interval_length=0.9):
         r"""
         Compute credible intervals on the relative difference distribution of
         :math:`Z = (B-A)/A` and/or :math:`Z = (A-B)/B`.
@@ -403,10 +438,13 @@ class ParetoABTest(BayesABTest):
         interval_length : float (default=0.9)
             Compute ``interval_length``\% credible interval. This is a value in
             [0, 1].
+
+        Returns
+        -------
+        expected_loss_relative_ci : np.ndarray or tuple of np.ndarray
         """
-        check_ab_method(method=method,
-            method_options=("MC"), variant=variant,
-            interval_length=interval_length)
+        check_ab_method(method=method, method_options=("MC"),
+                        variant=variant, interval_length=interval_length)
 
         lower = (1 - interval_length) / 2
         upper = (1 + interval_length) / 2
@@ -424,7 +462,7 @@ class ParetoABTest(BayesABTest):
                 return np.percentile((xA - xB)/xB, [lower, upper])
             else:
                 return (np.percentile((xB - xA)/xA, [lower, upper]),
-                    np.percentile((xA - xB)/xB, [lower, upper]))
+                        np.percentile((xA - xB)/xB, [lower, upper]))
 
 
 class ParetoMVTest(BayesMVTest):
@@ -443,7 +481,7 @@ class ParetoMVTest(BayesMVTest):
         The seed used by the random number generator.
     """
     def __init__(self, models, simulations=None, random_state=None,
-        n_jobs=None):
+                 n_jobs=None):
         super().__init__(models, simulations, random_state, n_jobs)
 
     def probability(self, method="exact", control="A", variant="B", lift=0):
@@ -467,10 +505,14 @@ class ParetoMVTest(BayesMVTest):
 
         lift : float (default=0.0)
            The amount of uplift.
+
+        Returns
+        -------
+        probability : float
         """
         check_mv_method(method=method, method_options=("exact", "MC"),
-            control=control, variant=variant, variants=self.models.keys(),
-            lift=lift)
+                        control=control, variant=variant,
+                        variants=self.models.keys(), lift=lift)
 
         model_control = self.models[control]
         model_variant = self.models[variant]
@@ -490,11 +532,11 @@ class ParetoMVTest(BayesMVTest):
         return (x1 > x0 + lift).mean()
 
     def probability_vs_all(self, method="MLHS", variant="B", lift=0,
-        mlhs_samples=1000):
+                           mlhs_samples=1000):
         r"""
         Compute the error probability or *chance to beat all* variations. For
-        example, given variants "A", "B", "C" and "D", and choosing variant="B",
-        we compute :math:`P[B > \max(A, C, D) + lift]`.
+        example, given variants "A", "B", "C" and "D", and choosing
+        variant="B", we compute :math:`P[B > \max(A, C, D) + lift]`.
 
         If ``lift`` is positive value, the computation method must be Monte
         Carlo sampling.
@@ -513,10 +555,14 @@ class ParetoMVTest(BayesMVTest):
 
         mlhs_samples : int (default=1000)
             Number of samples for MLHS method.
+
+        Returns
+        -------
+        probability_vs_all : float
         """
         check_mv_method(method=method, method_options=("MC", "MLHS"),
-            control=None, variant=variant, variants=self.models.keys(),
-            lift=lift)
+                        control=None, variant=variant,
+                        variants=self.models.keys(), lift=lift)
 
         # exclude variant
         variants = list(self.models.keys())
@@ -525,10 +571,10 @@ class ParetoMVTest(BayesMVTest):
         if method == "MC":
             # generate samples from all models in parallel
             xvariant = self.models[variant].rvs(self.simulations,
-                self.random_state)
+                                                self.random_state)
 
             xall = [self.models[v].rvs(self.simulations, self.random_state) for
-                v in variants]
+                    v in variants]
             maxall = np.maximum.reduce(xall)
 
             return (xvariant > maxall + lift).mean()
@@ -540,7 +586,7 @@ class ParetoMVTest(BayesMVTest):
             x = self.models[variant].ppf(v)
 
             return np.nanmean(np.prod([self.models[v].cdf(x)
-                for v in variants], axis=0))
+                              for v in variants], axis=0))
 
     def expected_loss(self, method="exact", control="A", variant="B", lift=0):
         r"""
@@ -564,10 +610,14 @@ class ParetoMVTest(BayesMVTest):
 
         lift : float (default=0.0)
            The amount of uplift.
+
+        Returns
+        -------
+        expected_loss : float
         """
         check_mv_method(method=method, method_options=("exact", "MC"),
-            control=control, variant=variant, variants=self.models.keys(),
-            lift=lift)
+                        control=control, variant=variant,
+                        variants=self.models.keys(), lift=lift)
 
         model_control = self.models[control]
         model_variant = self.models[variant]
@@ -587,7 +637,7 @@ class ParetoMVTest(BayesMVTest):
             return np.maximum(x0 - x1, 0).mean()
 
     def expected_loss_ci(self, method="MC", control="A", variant="B",
-        interval_length=0.9):
+                         interval_length=0.9):
         r"""
         Compute credible intervals on the difference distribution of
         :math:`Z = control-variant`.
@@ -606,10 +656,15 @@ class ParetoMVTest(BayesMVTest):
         interval_length : float (default=0.9)
             Compute ``interval_length``\% credible interval. This is a value in
             [0, 1].
+
+        Returns
+        -------
+        expected_loss_ci : np.ndarray or tuple of np.ndarray
         """
         check_mv_method(method=method, method_options=("MC"),
-            control=control, variant=variant, variants=self.models.keys(),
-            interval_length=interval_length)
+                        control=control, variant=variant,
+                        variants=self.models.keys(),
+                        interval_length=interval_length)
 
         # check interval length
         lower = (1 - interval_length) / 2
@@ -642,9 +697,14 @@ class ParetoMVTest(BayesMVTest):
 
         variant : str (default="B")
             The tested variant.
+
+        Returns
+        -------
+        expected_loss_relative : float
         """
         check_mv_method(method=method, method_options=("exact", "MC"),
-            control=control, variant=variant, variants=self.models.keys())
+                        control=control, variant=variant,
+                        variants=self.models.keys())
 
         model_control = self.models[control]
         model_variant = self.models[variant]
@@ -664,7 +724,7 @@ class ParetoMVTest(BayesMVTest):
             return ((x0 - x1) / x1).mean()
 
     def expected_loss_relative_vs_all(self, method="MLHS", control="A",
-        variant="B", mlhs_samples=1000):
+                                      variant="B", mlhs_samples=1000):
         r"""
         Compute the expected relative loss against all variations. For example,
         given variants "A", "B", "C" and "D", and choosing variant="B",
@@ -681,9 +741,14 @@ class ParetoMVTest(BayesMVTest):
 
         mlhs_samples : int (default=1000)
             Number of samples for MLHS method.
+
+        Returns
+        -------
+        expected_loss_relative_vs_all : float
         """
         check_mv_method(method=method, method_options=("MC", "MLHS"),
-            control=None, variant=variant, variants=self.models.keys())
+                        control=None, variant=variant,
+                        variants=self.models.keys())
 
         # exclude variant
         variants = list(self.models.keys())
@@ -692,10 +757,10 @@ class ParetoMVTest(BayesMVTest):
         if method == "MC":
             # generate samples from all models in parallel
             xvariant = self.models[variant].rvs(self.simulations,
-                self.random_state)
+                                                self.random_state)
 
             xall = [self.models[v].rvs(self.simulations, self.random_state) for
-                v in variants]
+                    v in variants]
             maxall = np.maximum.reduce(xall)
 
             return (maxall / xvariant).mean() - 1
@@ -709,7 +774,7 @@ class ParetoMVTest(BayesMVTest):
             return e_max * e_inv_x - 1
 
     def expected_loss_relative_ci(self, method="MC", control="A", variant="B",
-        interval_length=0.9):
+                                  interval_length=0.9):
         r"""
         Compute credible intervals on the relative difference distribution of
         :math:`Z = (control - variant) / variant`.
@@ -728,10 +793,14 @@ class ParetoMVTest(BayesMVTest):
         interval_length : float (default=0.9)
             Compute ``interval_length``\% credible interval. This is a value in
             [0, 1].
+
+        Returns
+        -------
+        expected_loss_relative_ci : np.ndarray or tuple of np.ndarray
         """
         check_mv_method(method=method, method_options=("MC"), control=control,
-            variant=variant, variants=self.models.keys(),
-            interval_length=interval_length)
+                        variant=variant, variants=self.models.keys(),
+                        interval_length=interval_length)
 
         lower = (1 - interval_length) / 2
         upper = (1 + interval_length) / 2
@@ -766,10 +835,14 @@ class ParetoMVTest(BayesMVTest):
 
         lift : float (default=0.0)
            The amount of uplift.
+
+        Returns
+        -------
+        expected_loss_vs_all : float
         """
-        check_mv_method(method=method, method_options=("MC"),
-            control=None, variant=variant, variants=self.models.keys(),
-            lift=lift)
+        check_mv_method(method=method, method_options=("MC"), control=None,
+                        variant=variant, variants=self.models.keys(),
+                        lift=lift)
 
         # exclude variant
         variants = list(self.models.keys())
@@ -777,10 +850,10 @@ class ParetoMVTest(BayesMVTest):
 
         # generate samples from all models in parallel
         xvariant = self.models[variant].rvs(self.simulations,
-            self.random_state)
+                                            self.random_state)
 
         xall = [self.models[v].rvs(self.simulations, self.random_state) for
-            v in variants]
+                v in variants]
         maxall = np.maximum.reduce(xall)
 
         return np.maximum(maxall - xvariant - lift, 0).mean()
@@ -798,7 +871,7 @@ class ParetoMVTest(BayesMVTest):
             b = self.models[i].scale_posterior
             x = stats.pareto(b=a - 1, scale=b).ppf(v)
             c = a * b / (a - 1)
-            s += c * np.prod([self.models[j].cdf(x) for j in variants if j != i
-                ], axis=0).mean()
+            s += c * np.prod([self.models[j].cdf(x) for j in variants
+                             if j != i], axis=0).mean()
 
         return s

@@ -9,7 +9,7 @@ import numbers
 
 
 def check_ab_method(method, method_options, variant, lift=0,
-    interval_length=0.9):
+                    interval_length=0.9):
     """
     Check parameters of A/B testing method.
 
@@ -27,30 +27,31 @@ def check_ab_method(method, method_options, variant, lift=0,
     lift : float (default=0.0)
         The amount of uplift.
     """
-    if not method in method_options:
+    if method not in method_options:
         raise ValueError("Method '{}' is not a valid method. "
                          "Available methods are {}."
                          .format(method, method_options))
 
-    if not variant in ("A", "B", "all"):
+    if variant not in ("A", "B", "all"):
         raise ValueError("Variant must be 'A', 'B' or 'all'.")
-    
+
     if not isinstance(lift, numbers.Number) or lift < 0:
         raise ValueError("Lift must be a positive number;"
-            " got lift={}".format(lift))
+                         " got lift={}".format(lift))
 
     if lift > 0 and method != "MC":
         raise ValueError("Method {} cannot be used with lift={}."
-            " Select method='MC'.".format(method, lift))
+                         " Select method='MC'.".format(method, lift))
 
-    if not isinstance(interval_length, numbers.Number) or (
-        interval_length < 0 or interval_length > 1):
+    invalid_length = (interval_length < 0 or interval_length > 1)
+
+    if not isinstance(interval_length, numbers.Number) or invalid_length:
         raise ValueError("Interval length must a value in [0, 1]; got "
-            "interval_length={}.".format(interval_length))
+                         "interval_length={}.".format(interval_length))
 
 
 def check_mv_method(method, method_options, control, variant, variants, lift=0,
-    interval_length=0.9):
+                    interval_length=0.9):
     """
     Check parameters of Multivariate testing method.
 
@@ -74,32 +75,33 @@ def check_mv_method(method, method_options, control, variant, variants, lift=0,
     lift : float (default=0.0)
         The amount of uplift.
     """
-    if not method in method_options:
+    if method not in method_options:
         raise ValueError("Method '{}' is not a valid method. "
                          "Available methods are {}."
                          .format(method, method_options))
 
-    if not control is None:
-        if not control in variants:
+    if control is not None:
+        if control not in variants:
             raise ValueError("Control variant '{}' not available. "
-                "Variants = {}.".format(control, variants))
+                             "Variants = {}.".format(control, variants))
 
-    if not variant in variants:
+    if variant not in variants:
         raise ValueError("Variant '{}' not available. "
-                "Variants = {}.".format(variant, variants))
+                         "Variants = {}.".format(variant, variants))
 
     if not isinstance(lift, numbers.Number) or lift < 0:
         raise ValueError("Lift must be a positive number;"
-            " got lift={}.".format(lift))
+                         " got lift={}.".format(lift))
 
     if lift > 0 and method != "MC":
         raise ValueError("Method {} cannot be used with lift={}."
-            " Select method='MC'.".format(method, lift))
+                         " Select method='MC'.".format(method, lift))
 
-    if not isinstance(interval_length, numbers.Number) or (
-        interval_length < 0 or interval_length > 1):
+    invalid_length = (interval_length < 0 or interval_length > 1)
+
+    if not isinstance(interval_length, numbers.Number) or invalid_length:
         raise ValueError("Interval length must a value in [0, 1]; got "
-            "interval_length={}.".format(interval_length))
+                         "interval_length={}.".format(interval_length))
 
 
 def check_models(refclass, *models):
@@ -118,7 +120,7 @@ def check_models(refclass, *models):
     for model_id, model in enumerate(models):
         if not isinstance(model, refclass):
             raise TypeError("Model {} is not an instance of {}."
-                .format(model_id, refclass.__name__))
+                            .format(model_id, refclass.__name__))
 
 
 def check_mv_models(refclass, models):
@@ -139,7 +141,7 @@ def check_mv_models(refclass, models):
     variants = models.keys()
     variant_control = "A"
 
-    if not variant_control in variants:
+    if variant_control not in variants:
         raise ValueError("A model variant 'A' (control) is required.")
 
     model_classes = models.values()

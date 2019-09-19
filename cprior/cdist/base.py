@@ -58,7 +58,7 @@ class BayesModel(metaclass=ABCMeta):
         ----------
         x : array-like
             Quantiles.
-        
+
         Returns
         -------
         cdf : numpy.ndarray
@@ -216,7 +216,7 @@ class BayesMVTest(metaclass=ABCMeta):
         The seed used by the random number generator.
     """
     def __init__(self, models, simulations=None, random_state=None,
-        n_jobs=None):
+                 n_jobs=None):
         self.models = models
         self.simulations = simulations
         self.random_state = random_state
@@ -239,7 +239,9 @@ class BayesMVTest(metaclass=ABCMeta):
 
     @abstractmethod
     def expected_loss_ci(self):
-        """Compute credible intervals on the difference between two variants."""
+        """
+        Compute credible intervals on the difference between two variants.
+        """
 
     @abstractmethod
     def expected_loss_relative(self):
@@ -250,7 +252,7 @@ class BayesMVTest(metaclass=ABCMeta):
 
     @abstractmethod
     def expected_loss_relative_ci(self):
-       """
+        """
         Compute credible intervals on the relative difference between two
         variants.
         """
@@ -269,9 +271,10 @@ class BayesMVTest(metaclass=ABCMeta):
 
         variant : str
         """
-        if not variant in self.models.keys():
+        if variant not in self.models.keys():
             raise ValueError("Variant '{}' not available. "
-                "Variants = {}.".format(variant, self.models.keys()))
+                             "Variants = {}."
+                             .format(variant, self.models.keys()))
         self.models[variant].update(data)
 
     def _rvs(self, variant):

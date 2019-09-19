@@ -85,19 +85,37 @@ class GammaModel(BayesModel):
         return self._rate_posterior
 
     def mean(self):
-        """Mean of the posterior distribution."""
+        """
+        Mean of the posterior distribution.
+
+        Returns
+        -------
+        mean : float
+        """
         return stats.gamma(a=self._shape_posterior, loc=0,
-            scale=1.0 / self._rate_posterior).mean()
+                           scale=1.0 / self._rate_posterior).mean()
 
     def var(self):
-        """Variance of the posterior distribution."""
+        """
+        Variance of the posterior distribution.
+
+        Returns
+        -------
+        var : float
+        """
         return stats.gamma(a=self._shape_posterior, loc=0,
-            scale=1.0 / self._rate_posterior).var()
+                           scale=1.0 / self._rate_posterior).var()
 
     def std(self):
-        """Standard deviation of the posterior distribution."""
+        """
+        Standard deviation of the posterior distribution.
+
+        Returns
+        -------
+        std : float
+        """
         return stats.gamma(a=self._shape_posterior, loc=0,
-            scale=1.0 / self._rate_posterior).std()
+                           scale=1.0 / self._rate_posterior).std()
 
     def pdf(self, x):
         """
@@ -114,7 +132,7 @@ class GammaModel(BayesModel):
            Probability density function evaluated at x.
         """
         return stats.gamma(a=self._shape_posterior, loc=0,
-            scale=1.0 / self._rate_posterior).pdf(x)
+                           scale=1.0 / self._rate_posterior).pdf(x)
 
     def cdf(self, x):
         """
@@ -131,7 +149,7 @@ class GammaModel(BayesModel):
             Cumulative distribution function evaluated at x.
         """
         return stats.gamma(a=self._shape_posterior, loc=0,
-            scale=1.0 / self._rate_posterior).cdf(x)
+                           scale=1.0 / self._rate_posterior).cdf(x)
 
     def ppf(self, q):
         """
@@ -148,7 +166,7 @@ class GammaModel(BayesModel):
             Quantile corresponding to the lower tail probability q.
         """
         return stats.gamma(a=self._shape_posterior, loc=0,
-            scale=1.0 / self._rate_posterior).ppf(q)
+                           scale=1.0 / self._rate_posterior).ppf(q)
 
     def rvs(self, size=1, random_state=None):
         """
@@ -168,8 +186,8 @@ class GammaModel(BayesModel):
             Random variates of given size.
         """
         return stats.gamma(a=self._shape_posterior, loc=0,
-            scale=1.0 / self._rate_posterior).rvs(
-            size=size, random_state=random_state)
+                           scale=1.0 / self._rate_posterior).rvs(
+                           size=size, random_state=random_state)
 
 
 class GammaABTest(BayesABTest):
@@ -214,9 +232,13 @@ class GammaABTest(BayesABTest):
 
         lift : float (default=0.0)
            The amount of uplift.
+
+        Returns
+        -------
+        probability : float or tuple of floats
         """
         check_ab_method(method=method, method_options=("exact", "MC"),
-            variant=variant, lift=lift)
+                        variant=variant, lift=lift)
 
         if method == "exact":
             aA = self.modelA.shape_posterior
@@ -236,7 +258,7 @@ class GammaABTest(BayesABTest):
                 pB = bA / (bA + bB)
 
                 return (special.betainc(aB, aA, pA),
-                    special.betainc(aA, aB, pB))
+                        special.betainc(aA, aB, pB))
         else:
             xA = self.modelA.rvs(self.simulations, self.random_state)
             xB = self.modelB.rvs(self.simulations, self.random_state)
@@ -263,16 +285,20 @@ class GammaABTest(BayesABTest):
         Parameters
         ----------
         method : str (default="exact")
-            The method of computation. Options are "exact" and "MC". 
+            The method of computation. Options are "exact" and "MC".
 
         variant : str (default="A")
             The chosen variant. Options are "A", "B", "all".
 
         lift : float (default=0.0)
             The amount of uplift.
+
+        Returns
+        -------
+        exoected_loss : float or tuple of floats
         """
         check_ab_method(method=method, method_options=("exact", "MC"),
-            variant=variant, lift=lift)
+                        variant=variant, lift=lift)
 
         if method == "exact":
             aA = self.modelA.shape_posterior
@@ -297,7 +323,7 @@ class GammaABTest(BayesABTest):
                 ta = aA / bA * special.betainc(aB, aA + 1, bB / (bA + bB))
                 tb = aB / bB * special.betainc(aB + 1, aA, bB / (bA + bB))
                 maxab = ta - tb
-                
+
                 return maxba, maxab
         else:
             xA = self.modelA.rvs(self.simulations, self.random_state)
@@ -309,7 +335,7 @@ class GammaABTest(BayesABTest):
                 return np.maximum(xA - xB - lift, 0).mean()
             else:
                 return (np.maximum(xB - xA - lift, 0).mean(),
-                    np.maximum(xA - xB - lift, 0).mean())
+                        np.maximum(xA - xB - lift, 0).mean())
 
     def expected_loss_relative(self, method="exact", variant="A"):
         r"""
@@ -327,9 +353,13 @@ class GammaABTest(BayesABTest):
 
         variant : str (default="A")
             The chosen variant. Options are "A", "B", "all".
+
+        Returns
+        -------
+        expected_loss_relative : float or tuple of floats
         """
         check_ab_method(method=method, method_options=("exact", "MC"),
-            variant=variant)
+                        variant=variant)
 
         if method == "exact":
             aA = self.modelA.shape_posterior
@@ -344,7 +374,7 @@ class GammaABTest(BayesABTest):
                 return bB / bA * aA / (aB - 1) - 1
             else:
                 return (bA / bB * aB / (aA - 1) - 1,
-                    bB / bA * aA / (aB - 1) - 1)
+                        bB / bA * aA / (aB - 1) - 1)
         else:
             xA = self.modelA.rvs(self.simulations, self.random_state)
             xB = self.modelB.rvs(self.simulations, self.random_state)
@@ -357,7 +387,7 @@ class GammaABTest(BayesABTest):
                 return (((xB - xA) / xA).mean(), ((xA - xB) / xB).mean())
 
     def expected_loss_ci(self, method="MC", variant="A", interval_length=0.9):
-        """
+        r"""
         Compute credible intervals on the difference distribution of
         :math:`Z = B-A` and/or :math:`Z = A-B`.
 
@@ -376,9 +406,13 @@ class GammaABTest(BayesABTest):
         interval_length : float (default=0.9)
             Compute ``interval_length``\% credible interval. This is a value in
             [0, 1].
+
+        Returns
+        -------
+        expected_loss_ci : np.ndarray or tuple of np.ndarray
         """
         check_ab_method(method=method, method_options=("MC", "asymptotic"),
-            variant=variant, interval_length=interval_length)
+                        variant=variant, interval_length=interval_length)
 
         # check interval length
         lower = (1 - interval_length) / 2
@@ -390,14 +424,14 @@ class GammaABTest(BayesABTest):
 
             lower *= 100.0
             upper *= 100.0
-            
+
             if variant == "A":
                 return np.percentile((xB - xA), [lower, upper])
             elif variant == "B":
                 return np.percentile((xA - xB), [lower, upper])
             else:
                 return (np.percentile((xB - xA), [lower, upper]),
-                    np.percentile((xA - xB), [lower, upper]))
+                        np.percentile((xA - xB), [lower, upper]))
         else:
             aA = self.modelA.shape_posterior
             bA = self.modelA.rate_posterior
@@ -416,11 +450,11 @@ class GammaABTest(BayesABTest):
                 return stats.norm(-mu, sigma).ppf([lower, upper])
             else:
                 return (stats.norm(mu, sigma).ppf([lower, upper]),
-                    stats.norm(-mu, sigma).ppf([lower, upper]))            
+                        stats.norm(-mu, sigma).ppf([lower, upper]))
 
     def expected_loss_relative_ci(self, method="MC", variant="A",
-        interval_length=0.9):
-        """
+                                  interval_length=0.9):
+        r"""
         Compute credible intervals on the relative difference distribution of
         :math:`Z = (B-A)/A` and/or :math:`Z = (A-B)/B`.
 
@@ -440,13 +474,17 @@ class GammaABTest(BayesABTest):
         interval_length : float (default=0.9)
             Compute ``interval_length``\% credible interval. This is a value in
             [0, 1].
+
+        Returns
+        -------
+        expected_loss_relative_ci : np.ndarray or tuple of np.ndarray
         """
         check_ab_method(method=method,
-            method_options=("asymptotic", "exact", "MC"), variant=variant,
-            interval_length=interval_length)
+                        method_options=("asymptotic", "exact", "MC"),
+                        variant=variant, interval_length=interval_length)
 
         lower = (1 - interval_length) / 2
-        upper = (1 + interval_length) / 2        
+        upper = (1 + interval_length) / 2
 
         if method == "MC":
             xA = self.modelA.rvs(self.simulations, self.random_state)
@@ -461,7 +499,7 @@ class GammaABTest(BayesABTest):
                 return np.percentile((xA - xB)/xB, [lower, upper])
             else:
                 return (np.percentile((xB - xA)/xA, [lower, upper]),
-                    np.percentile((xA - xB)/xB, [lower, upper]))
+                        np.percentile((xA - xB)/xB, [lower, upper]))
         else:
             # compute asymptotic
             aA = self.modelA.shape_posterior
@@ -482,11 +520,11 @@ class GammaABTest(BayesABTest):
                 if method == "asymptotic":
                     return ppfl - 1, ppfu - 1
                 else:
-                    ppfl = optimize.newton(func=func_ppf, x0=ppfl,
-                        args=(aB, bB, aA, bA, lower), maxiter=100)
+                    ppfl = optimize.newton(func=func_ppf, x0=ppfl, args=(
+                        aB, bB, aA, bA, lower), maxiter=100)
 
-                    ppfu = optimize.newton(func=func_ppf, x0=ppfu,
-                        args=(aB, bB, aA, bA, upper), maxiter=100)
+                    ppfu = optimize.newton(func=func_ppf, x0=ppfu, args=(
+                        aB, bB, aA, bA, upper), maxiter=100)
 
                     return ppfl - 1, ppfu - 1
 
@@ -502,18 +540,18 @@ class GammaABTest(BayesABTest):
                 if method == "asymptotic":
                     return ppfl - 1, ppfu - 1
                 else:
-                    ppfl = optimize.newton(func=func_ppf, x0=ppfl,
-                        args=(aA, bA, aB, bB, lower), maxiter=100)
+                    ppfl = optimize.newton(func=func_ppf, x0=ppfl, args=(
+                        aA, bA, aB, bB, lower), maxiter=100)
 
-                    ppfu = optimize.newton(func=func_ppf, x0=ppfu,
-                        args=(aA, bA, aB, bB, upper), maxiter=100)
+                    ppfu = optimize.newton(func=func_ppf, x0=ppfu, args=(
+                        aA, bA, aB, bB, upper), maxiter=100)
 
                     return ppfl - 1, ppfu - 1
             else:
-               return (self.expected_loss_relative_ci(method=method,
-                    variant="A", interval_length=interval_length),
-                    self.expected_loss_relative_ci(method=method,
-                    variant="B", interval_length=interval_length))                
+                return (self.expected_loss_relative_ci(method=method,
+                        variant="A", interval_length=interval_length),
+                        self.expected_loss_relative_ci(method=method,
+                        variant="B", interval_length=interval_length))
 
 
 class GammaMVTest(BayesMVTest):
@@ -532,7 +570,7 @@ class GammaMVTest(BayesMVTest):
         The seed used by the random number generator.
     """
     def __init__(self, models, simulations=None, random_state=None,
-        n_jobs=None):
+                 n_jobs=None):
         super().__init__(models, simulations, random_state, n_jobs)
 
     def probability(self, method="exact", control="A", variant="B", lift=0):
@@ -556,10 +594,14 @@ class GammaMVTest(BayesMVTest):
 
         lift : float (default=0.0)
            The amount of uplift.
+
+        Returns
+        -------
+        probability : float
         """
         check_mv_method(method=method, method_options=("exact", "MC"),
-            control=control, variant=variant, variants=self.models.keys(),
-            lift=lift)
+                        control=control, variant=variant,
+                        variants=self.models.keys(), lift=lift)
 
         model_control = self.models[control]
         model_variant = self.models[variant]
@@ -580,11 +622,11 @@ class GammaMVTest(BayesMVTest):
             return (x1 > x0 + lift).mean()
 
     def probability_vs_all(self, method="MLHS", variant="B", lift=0,
-        mlhs_samples=1000):
+                           mlhs_samples=1000):
         r"""
         Compute the error probability or *chance to beat all* variations. For
-        example, given variants "A", "B", "C" and "D", and choosing variant="B",
-        we compute :math:`P[B > \max(A, C, D) + lift]`.
+        example, given variants "A", "B", "C" and "D", and choosing
+        variant="B", we compute :math:`P[B > \max(A, C, D) + lift]`.
 
         If ``lift`` is positive value, the computation method must be Monte
         Carlo sampling.
@@ -603,10 +645,14 @@ class GammaMVTest(BayesMVTest):
 
         mlhs_samples : int (default=1000)
             Number of samples for MLHS method.
+
+        Returns
+        -------
+        probability_vs_all : float
         """
         check_mv_method(method=method, method_options=("MC", "MLHS"),
-            control=None, variant=variant, variants=self.models.keys(),
-            lift=lift)
+                        control=None, variant=variant,
+                        variants=self.models.keys(), lift=lift)
 
         # exclude variant
         variants = list(self.models.keys())
@@ -615,11 +661,11 @@ class GammaMVTest(BayesMVTest):
         if method == "MC":
             # generate samples from all models in parallel
             xvariant = self.models[variant].rvs(self.simulations,
-                self.random_state)
+                                                self.random_state)
 
             pool = Pool(processes=self.n_jobs)
             processes = [pool.apply_async(self._rvs, args=(v, ))
-                for v in variants]
+                         for v in variants]
             xall = [p.get() for p in processes]
             maxall = np.maximum.reduce(xall)
 
@@ -627,7 +673,7 @@ class GammaMVTest(BayesMVTest):
         else:
             # prepare parameters
             variant_params = [(self.models[v].shape_posterior,
-                self.models[v].rate_posterior) for v in variants]
+                              self.models[v].rate_posterior) for v in variants]
 
             r = np.arange(mlhs_samples)
             np.random.shuffle(r)
@@ -636,7 +682,7 @@ class GammaMVTest(BayesMVTest):
             x = self.models[variant].ppf(v)
 
             return np.nanmean(np.prod([special.gammainc(a, b * x)
-                for a, b in variant_params], axis=0))
+                              for a, b in variant_params], axis=0))
 
     def expected_loss(self, method="exact", control="A", variant="B", lift=0):
         r"""
@@ -660,10 +706,14 @@ class GammaMVTest(BayesMVTest):
 
         lift : float (default=0.0)
            The amount of uplift.
+
+        Returns
+        -------
+        expected_loss : float
         """
         check_mv_method(method=method, method_options=("exact", "MC"),
-            control=control, variant=variant, variants=self.models.keys(),
-            lift=lift)
+                        control=control, variant=variant,
+                        variants=self.models.keys(), lift=lift)
 
         model_control = self.models[control]
         model_variant = self.models[variant]
@@ -685,8 +735,8 @@ class GammaMVTest(BayesMVTest):
             return np.maximum(x0 - x1, 0).mean()
 
     def expected_loss_ci(self, method="MC", control="A", variant="B",
-        interval_length=0.9):
-        """
+                         interval_length=0.9):
+        r"""
         Compute credible intervals on the difference distribution of
         :math:`Z = control-variant`.
 
@@ -704,10 +754,15 @@ class GammaMVTest(BayesMVTest):
         interval_length : float (default=0.9)
             Compute ``interval_length``\% credible interval. This is a value in
             [0, 1].
+
+        Returns
+        -------
+        expected_loss_ci : np.ndarray or tuple of np.ndarray
         """
         check_mv_method(method=method, method_options=("MC", "asymptotic"),
-            control=control, variant=variant, variants=self.models.keys(),
-            interval_length=interval_length)
+                        control=control, variant=variant,
+                        variants=self.models.keys(),
+                        interval_length=interval_length)
 
         # check interval length
         lower = (1 - interval_length) / 2
@@ -754,9 +809,14 @@ class GammaMVTest(BayesMVTest):
 
         variant : str (default="B")
             The tested variant.
+
+        Returns
+        -------
+        expected_loss_relative : float
         """
         check_mv_method(method=method, method_options=("exact", "MC"),
-            control=control, variant=variant, variants=self.models.keys())
+                        control=control, variant=variant,
+                        variants=self.models.keys())
 
         model_control = self.models[control]
         model_variant = self.models[variant]
@@ -776,7 +836,7 @@ class GammaMVTest(BayesMVTest):
             return ((x0 - x1) / x1).mean()
 
     def expected_loss_relative_vs_all(self, method="MLHS", control="A",
-        variant="B", mlhs_samples=1000):
+                                      variant="B", mlhs_samples=1000):
         r"""
         Compute the expected relative loss against all variations. For example,
         given variants "A", "B", "C" and "D", and choosing variant="B",
@@ -793,9 +853,14 @@ class GammaMVTest(BayesMVTest):
 
         mlhs_samples : int (default=1000)
             Number of samples for MLHS method.
+
+        Returns
+        -------
+        expected_loss_relative_vs_all : float
         """
         check_mv_method(method=method, method_options=("MC", "MLHS"),
-            control=None, variant=variant, variants=self.models.keys())
+                        control=None, variant=variant,
+                        variants=self.models.keys())
 
         # exclude variant
         variants = list(self.models.keys())
@@ -804,11 +869,11 @@ class GammaMVTest(BayesMVTest):
         if method == "MC":
             # generate samples from all models in parallel
             xvariant = self.models[variant].rvs(self.simulations,
-                self.random_state)
+                                                self.random_state)
 
             pool = Pool(processes=self.n_jobs)
             processes = [pool.apply_async(self._rvs, args=(v, ))
-                for v in variants]
+                         for v in variants]
             xall = [p.get() for p in processes]
             maxall = np.maximum.reduce(xall)
 
@@ -823,8 +888,8 @@ class GammaMVTest(BayesMVTest):
             return e_max * e_inv_x - 1
 
     def expected_loss_relative_ci(self, method="MC", control="A", variant="B",
-        interval_length=0.9):
-        """
+                                  interval_length=0.9):
+        r"""
         Compute credible intervals on the relative difference distribution of
         :math:`Z = (control - variant) / variant`.
 
@@ -843,10 +908,16 @@ class GammaMVTest(BayesMVTest):
         interval_length : float (default=0.9)
             Compute ``interval_length``\% credible interval. This is a value in
             [0, 1].
+
+        Returns
+        -------
+        expected_loss_relative_ci : np.ndarray or tuple of np.ndarray
         """
-        check_mv_method(method=method, method_options=("asymptotic", "exact",
-            "MC"), control=control, variant=variant,
-            variants=self.models.keys(), interval_length=interval_length)
+        check_mv_method(method=method,
+                        method_options=("asymptotic", "exact", "MC"),
+                        control=control, variant=variant,
+                        variants=self.models.keys(),
+                        interval_length=interval_length)
 
         lower = (1 - interval_length) / 2
         upper = (1 + interval_length) / 2
@@ -880,16 +951,16 @@ class GammaMVTest(BayesMVTest):
             if method == "asymptotic":
                 return ppfl - 1, ppfu - 1
             else:
-                ppfl = optimize.newton(func=func_ppf, x0=ppfl,
-                    args=(a0, b0, a1, b1, lower), maxiter=1000)
+                ppfl = optimize.newton(func=func_ppf, x0=ppfl, args=(
+                    a0, b0, a1, b1, lower), maxiter=1000)
 
-                ppfu = optimize.newton(func=func_ppf, x0=ppfu,
-                    args=(a0, b0, a1, b1, upper), maxiter=1000)
+                ppfu = optimize.newton(func=func_ppf, x0=ppfu, args=(
+                    a0, b0, a1, b1, upper), maxiter=1000)
 
                 return ppfl - 1, ppfu - 1
 
     def expected_loss_vs_all(self, method="MLHS", variant="B", lift=0,
-        mlhs_samples=1000):
+                             mlhs_samples=1000):
         r"""
         Compute the expected loss against all variations. For example, given
         variants "A", "B", "C" and "D", and choosing variant="B", we compute
@@ -912,10 +983,14 @@ class GammaMVTest(BayesMVTest):
 
         mlhs_samples : int (default=1000)
             Number of samples for MLHS method.
+
+        Returns
+        -------
+        expected_loss_vs_all : float
         """
         check_mv_method(method=method, method_options=("MC", "MLHS"),
-            control=None, variant=variant, variants=self.models.keys(),
-            lift=lift)
+                        control=None, variant=variant,
+                        variants=self.models.keys(), lift=lift)
 
         # exclude variant
         variants = list(self.models.keys())
@@ -924,11 +999,11 @@ class GammaMVTest(BayesMVTest):
         if method == "MC":
             # generate samples from all models in parallel
             xvariant = self.models[variant].rvs(self.simulations,
-                self.random_state)
+                                                self.random_state)
 
             pool = Pool(processes=self.n_jobs)
             processes = [pool.apply_async(self._rvs, args=(v, ))
-                for v in variants]
+                         for v in variants]
             xall = [p.get() for p in processes]
             maxall = np.maximum.reduce(xall)
 
@@ -942,19 +1017,18 @@ class GammaMVTest(BayesMVTest):
             # ppf of distribution of max(x0, x1, ..., xn), where x_i follows
             # a gamma distribution
             variant_params = [(self.models[v].shape_posterior,
-                self.models[v].rate_posterior) for v in variants]
+                              self.models[v].rate_posterior) for v in variants]
 
-            # TODO: improve this
             maxb = self.models[variant].ppf(0.99999999)
 
             x = np.array([optimize.brentq(f=func_mv_ppf,
-                args=(variant_params, p), a=0, b=maxb, xtol=1e-4, rtol=1e-4
-                ) for p in v])
+                         args=(variant_params, p), a=0, b=maxb, xtol=1e-4,
+                         rtol=1e-4) for p in v])
 
             a = self.models[variant].shape_posterior
             b = self.models[variant].rate_posterior
             p = x * special.gammainc(a, b * x)
-            q = a /  b * special.gammainc(a + 1, b * x)
+            q = a / b * special.gammainc(a + 1, b * x)
             return np.nanmean(p - q)
 
     def _expected_value_max_mlhs(self, variants, mlhs_samples):
@@ -970,7 +1044,7 @@ class GammaMVTest(BayesMVTest):
             b = self.models[i].rate_posterior
             x = stats.gamma(a=a + 1, loc=0, scale=1.0 / b).ppf(v)
             c = a / b
-            s += c * np.prod([self.models[j].cdf(x) for j in variants if j != i
-                ], axis=0).mean()
+            s += c * np.prod([self.models[j].cdf(x) for j in variants
+                             if j != i], axis=0).mean()
 
         return s

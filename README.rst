@@ -56,7 +56,7 @@ CRO (conversion rate) or CTR (click-through rate) testing.
    modelA = BernoulliModel()
    modelB = BernoulliModel()
 
-   test = BernoulliABTest(modelA=modelA, modelB=modelB, simulations=1000000)
+   test = BernoulliABTest(modelA=modelA, modelB=modelB)
 
    data_A = st.bernoulli(p=0.10).rvs(size=1500, random_state=42)
    data_B = st.bernoulli(p=0.11).rvs(size=1600, random_state=42)

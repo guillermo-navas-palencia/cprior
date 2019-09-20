@@ -9,7 +9,7 @@
 CPrior
 ======
 
-**CPrior** has functionalities to perform Bayesian statistics and running A/B and multivariate testing. CPrior includes several conjugate prior distributions and has been developed focusing on performance, implementing many closed-forms in terms of special functions to obtain fast and exact results while avoiding Monte Carlo methods whenever possible.
+**CPrior** has functionalities to perform Bayesian statistics and running A/B and multivariate testing. CPrior includes several conjugate prior distributions and has been developed focusing on performance, implementing many closed-forms in terms of special functions to obtain fast and exact results, avoiding Monte Carlo methods whenever possible.
 
 **Website**: http://gnpalencia.org/cprior/
 

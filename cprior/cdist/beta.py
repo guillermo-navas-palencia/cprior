@@ -9,6 +9,7 @@ import mpmath as mp
 import numpy as np
 
 from multiprocessing import Pool
+from scipy import integrate
 from scipy import optimize
 from scipy import special
 from scipy import stats
@@ -38,6 +39,44 @@ def func_mv_ppf(x, variant_params, p):
     for (a, b) in variant_params:
         cdf *= special.betainc(a, b, x)
     return cdf - p
+
+
+def func_mv_prob(x, a, b, variant_params):
+    """Integrand probability integral."""
+    pdf = (a - 1) * np.log(x) + (b - 1) * np.log(1 - x) - special.betaln(a, b)
+    g = np.prod([special.betainc(a, b, x) for a, b in variant_params], axis=0)
+    return np.exp(pdf) * g
+
+
+def func_mv_el(x, a, b, variant_params):
+    """Integrand expected loss integral."""
+    n = len(variant_params)
+
+    aa, bb = map(np.array, zip(*variant_params))
+
+    pdf = np.exp((aa - 1) * np.log(x) + (bb - 1) * np.log(1 - x)
+                 - special.betaln(aa, bb))
+
+    s = np.dot(pdf, [np.prod([special.betainc(aa[j], bb[j], x)
+               for j in range(n) if j != i], axis=0) for i in range(n)])
+
+    p = x * special.betainc(a, b, x)
+    q = a / (a + b) * special.betainc(a + 1, b, x)
+    return s * (p - q)
+
+
+def func_mv_elr(x, variant_params):
+    """Integrand expected loss relative integral."""
+    n = len(variant_params)
+
+    aa, bb = map(np.array, zip(*variant_params))
+
+    pdf = np.exp((aa - 1) * np.log(x) + (bb - 1) * np.log(1 - x)
+                 - special.betaln(aa, bb))
+
+    s = np.dot(pdf, [np.prod([special.betainc(aa[j], bb[j], x)
+               for j in range(n) if j != i], axis=0) for i in range(n)])
+    return x * s
 
 
 class BetaModel(BayesModel):
@@ -691,7 +730,7 @@ class BetaMVTest(BayesMVTest):
 
             return (x1 > x0 + lift).mean()
 
-    def probability_vs_all(self, method="MLHS", variant="B", lift=0,
+    def probability_vs_all(self, method="quad", variant="B", lift=0,
                            mlhs_samples=1000):
         r"""
         Compute the error probability or *chance to beat all* variations. For
@@ -703,9 +742,10 @@ class BetaMVTest(BayesMVTest):
 
         Parameters
         ----------
-        method : str (default="MLHS")
-            The method of computation. Options are "MC" (Monte Carlo)
-            and "MLHS" (Monte Carlo + Median Latin Hypercube Sampling).
+        method : str (default="quad")
+            The method of computation. Options are "MC" (Monte Carlo),
+            "MLHS" (Monte Carlo + Median Latin Hypercube Sampling) and "quad"
+            (numerical quadrature).
 
         variant : str (default="B")
             The chosen variant.
@@ -720,7 +760,7 @@ class BetaMVTest(BayesMVTest):
         -------
         probability_vs_all : float
         """
-        check_mv_method(method=method, method_options=("MC", "MLHS"),
+        check_mv_method(method=method, method_options=("MC", "MLHS", "quad"),
                         control=None, variant=variant,
                         variants=self.models.keys(), lift=lift)
 
@@ -740,6 +780,16 @@ class BetaMVTest(BayesMVTest):
             maxall = np.maximum.reduce(xall)
 
             return (xvariant > maxall + lift).mean()
+        elif method == "quad":
+            # prepare parameters
+            variant_params = [(self.models[v].alpha_posterior,
+                              self.models[v].beta_posterior) for v in variants]
+
+            a = self.models[variant].alpha_posterior
+            b = self.models[variant].beta_posterior
+
+            return integrate.quad(func=func_mv_prob, a=0, b=1, args=(
+                a, b, variant_params))[0]
         else:
             # prepare parameters
             variant_params = [(self.models[v].alpha_posterior,
@@ -927,7 +977,7 @@ class BetaMVTest(BayesMVTest):
 
             return ((x0 - x1) / x1).mean()
 
-    def expected_loss_relative_vs_all(self, method="MLHS", control="A",
+    def expected_loss_relative_vs_all(self, method="quad", control="A",
                                       variant="B", mlhs_samples=1000):
         r"""
         Compute the expected relative loss against all variations. For example,
@@ -936,9 +986,10 @@ class BetaMVTest(BayesMVTest):
 
         Parameters
         ----------
-        method : str (default="MLHS")
-            The method of computation. Options are "MC" (Monte Carlo)
-            and "MLHS" (Monte Carlo + Median Latin Hypercube Sampling).
+        method : str (default="quad")
+            The method of computation. Options are "MC" (Monte Carlo),
+            "MLHS" (Monte Carlo + Median Latin Hypercube Sampling) and "quad"
+            (numerical quadrature).
 
         variant : str (default="B")
             The chosen variant.
@@ -950,7 +1001,7 @@ class BetaMVTest(BayesMVTest):
         -------
         expected_loss_relative_vs_all : float
         """
-        check_mv_method(method=method, method_options=("MC", "MLHS"),
+        check_mv_method(method=method, method_options=("MC", "MLHS", "quad"),
                         control=None, variant=variant,
                         variants=self.models.keys())
 
@@ -970,6 +1021,18 @@ class BetaMVTest(BayesMVTest):
             maxall = np.maximum.reduce(xall)
 
             return (maxall / xvariant).mean() - 1
+        elif method == "quad":
+            variant_params = [(self.models[v].alpha_posterior,
+                              self.models[v].beta_posterior) for v in variants]
+
+            e_max = integrate.quad(func=func_mv_elr, a=0, b=1, args=(
+                variant_params))[0]
+
+            a = self.models[variant].alpha_posterior
+            b = self.models[variant].beta_posterior
+            e_inv_x = (a + b - 1) / (a - 1)
+
+            return e_max * e_inv_x - 1
         else:
             e_max = self._expected_value_max_mlhs(variants, mlhs_samples)
 
@@ -1051,7 +1114,7 @@ class BetaMVTest(BayesMVTest):
 
                 return ppfl - 1, ppfu - 1
 
-    def expected_loss_vs_all(self, method="MLHS", variant="B", lift=0,
+    def expected_loss_vs_all(self, method="quad", variant="B", lift=0,
                              mlhs_samples=1000):
         r"""
         Compute the expected loss against all variations. For example, given
@@ -1063,9 +1126,10 @@ class BetaMVTest(BayesMVTest):
 
         Parameters
         ----------
-        method : str (default="MLHS")
-            The method of computation. Options are "MC" (Monte Carlo)
-            and "MLHS" (Monte Carlo + Median Latin Hypercube Sampling).
+        method : str (default="quad")
+            The method of computation. Options are "MC" (Monte Carlo),
+            "MLHS" (Monte Carlo + Median Latin Hypercube Sampling) and "quad"
+            (numerical quadrature).
 
         variant : str (default="B")
             The chosen variant.
@@ -1080,7 +1144,7 @@ class BetaMVTest(BayesMVTest):
         -------
         expected_loss_vs_all : float
         """
-        check_mv_method(method=method, method_options=("MC", "MLHS"),
+        check_mv_method(method=method, method_options=("MC", "MLHS", "quad"),
                         control=None, variant=variant,
                         variants=self.models.keys(), lift=lift)
 
@@ -1100,6 +1164,15 @@ class BetaMVTest(BayesMVTest):
             maxall = np.maximum.reduce(xall)
 
             return np.maximum(maxall - xvariant - lift, 0).mean()
+        elif method == "quad":
+            variant_params = [(self.models[v].alpha_posterior,
+                              self.models[v].beta_posterior) for v in variants]
+
+            a = self.models[variant].alpha_posterior
+            b = self.models[variant].beta_posterior
+
+            return integrate.quad(func=func_mv_el, a=0, b=1, args=(
+                a, b, variant_params))[0]
         else:
             r = np.arange(mlhs_samples)
             np.random.shuffle(r)

@@ -29,7 +29,7 @@ class NegativeBinomialModel(BetaModel):
 
         p | \mathbf{x} \sim \mathcal{B}\left(\alpha + rn,
         \beta + \sum_{i=1}^n x_i\right),
-    
+
     with prior parameters :math:`\alpha` and :math:`\beta`.
 
     Parameters
@@ -49,7 +49,7 @@ class NegativeBinomialModel(BetaModel):
     Attributes
     ----------
     n_samples_ : int
-        Number of samples.    
+        Number of samples.
     """
     def __init__(self, r, name="", alpha=1, beta=1):
         super().__init__(name, alpha, beta)
@@ -78,7 +78,7 @@ class NegativeBinomialModel(BetaModel):
     def pppdf(self, x):
         r"""
         Posterior predictive probability density function.
-        
+
         If :math:`X` follows a negative binomial distribution with parameters
         :math:`r` and :math:`p`, then the posterior predictive probability
         density function is given by
@@ -109,7 +109,7 @@ class NegativeBinomialModel(BetaModel):
         pdf = np.zeros(k.shape)
         idx = (k >= 0)
         k = k[idx]
-        
+
         loggxr = special.gammaln(self.r + k)
         loggr = special.gammaln(k + 1)
         loggx = special.gammaln(self.r)
@@ -131,7 +131,7 @@ class NegativeBinomialModel(BetaModel):
         is given by
 
         .. math::
-            
+
             \mathrm{E}[X] = r \frac{\beta}{\alpha - 1},
 
         where :math:`\alpha` and :math:`\beta` are the posterior values
@@ -167,7 +167,7 @@ class NegativeBinomialModel(BetaModel):
 
         Returns
         -------
-        var : float        
+        var : float
         """
         a = self._alpha_posterior
         b = self._beta_posterior
@@ -196,7 +196,7 @@ class NegativeBinomialABTest(BetaABTest):
         Number of Monte Carlo simulations.
 
     random_state : int or None (default=None)
-        The seed used by the random number generator.    
+        The seed used by the random number generator.
     """
     def __init__(self, modelA, modelB, simulations=1000000, random_state=None):
         super().__init__(modelA, modelB, simulations, random_state)
@@ -220,7 +220,7 @@ class NegativeBinomialMVTest(BetaMVTest):
         The seed used by the random number generator.
     """
     def __init__(self, models, simulations=1000000, random_state=None,
-        n_jobs=None):
+                 n_jobs=None):
         super().__init__(models, simulations, random_state, n_jobs)
 
         check_mv_models(NegativeBinomialModel, models)

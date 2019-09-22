@@ -7,8 +7,6 @@ Bayesian model with uniform likelihood.
 
 import numpy as np
 
-from scipy import stats
-
 from ..cdist import ParetoABTest
 from ..cdist import ParetoModel
 from ..cdist import ParetoMVTest
@@ -21,8 +19,8 @@ class UniformModel(ParetoModel):
     Bayesian model with uniform likelihood and a Pareto prior distribution.
 
     Given data samples :math:`\mathbf{x} = (x_1, \ldots, x_n)` from a uniform
-    distribution with zero lower boundary and upper boundary :math:`\theta`, the
-    posterior distribution is
+    distribution with zero lower boundary and upper boundary :math:`\theta`,
+    the posterior distribution is
 
     .. math::
 
@@ -71,8 +69,8 @@ class UniformModel(ParetoModel):
         r"""
         Posterior predictive probability density function.
 
-        If :math:`X` follows a uniform distribution with zero lower boundary and
-        upper boundary :math:`\theta`, the posterior predictive probability
+        If :math:`X` follows a uniform distribution with zero lower boundary
+        and upper boundary :math:`\theta`, the posterior predictive probability
         density function is given by
 
         .. math::
@@ -113,9 +111,9 @@ class UniformModel(ParetoModel):
         r"""
         Posterior predictive mean.
 
-        If :math:`X` follows a uniform distribution with zero lower boundary and
-        upper boundary :math:`\theta`, the posterior predictive expected value
-        is given by
+        If :math:`X` follows a uniform distribution with zero lower boundary
+        and upper boundary :math:`\theta`, the posterior predictive expected
+        value is given by
 
         .. math::
 
@@ -140,8 +138,8 @@ class UniformModel(ParetoModel):
         r"""
         Posterior predictive variance.
 
-        If :math:`X` follows a uniform distribution with zero lower boundary and
-        upper boundary :math:`\theta`, the posterior predictive variance
+        If :math:`X` follows a uniform distribution with zero lower boundary
+        and upper boundary :math:`\theta`, the posterior predictive variance
         is given by
 
         .. math::
@@ -182,7 +180,7 @@ class UniformABTest(ParetoABTest):
         Number of Monte Carlo simulations.
 
     random_state : int or None (default=None)
-        The seed used by the random number generator.    
+        The seed used by the random number generator.
     """
     def __init__(self, modelA, modelB, simulations=1000000, random_state=None):
         super().__init__(modelA, modelB, simulations, random_state)
@@ -206,7 +204,7 @@ class UniformMVTest(ParetoMVTest):
         The seed used by the random number generator.
     """
     def __init__(self, models, simulations=1000000, random_state=None,
-        n_jobs=None):
+                 n_jobs=None):
         super().__init__(models, simulations, random_state, n_jobs)
 
         check_mv_models(UniformModel, models)

@@ -54,7 +54,7 @@ class ExponentialModel(GammaModel):
     def update(self, data):
         """
         Update posterior parameters with new data.
-        
+
         Parameters
         ----------
         data : array-like, shape = (n_samples)
@@ -201,7 +201,7 @@ class ExponentialMVTest(GammaMVTest):
         The seed used by the random number generator.
     """
     def __init__(self, models, simulations=1000000, random_state=None,
-        n_jobs=None):
+                 n_jobs=None):
         super().__init__(models, simulations, random_state, n_jobs)
 
         check_mv_models(ExponentialModel, models)

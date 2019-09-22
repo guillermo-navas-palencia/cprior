@@ -8,6 +8,7 @@ Gamma conjugate prior distribution model.
 import numpy as np
 
 from multiprocessing import Pool
+from scipy import integrate
 from scipy import optimize
 from scipy import special
 from scipy import stats
@@ -30,6 +31,45 @@ def func_mv_ppf(x, variant_params, p):
     for (a, b) in variant_params:
         cdf *= special.gammainc(a, b * x)
     return cdf - p
+
+
+def func_mv_prob(x, a, b, variant_params):
+    """Integrand probability integral."""
+    pdf = a * np.log(b) + (a - 1) * np.log(x) - b * x - special.gammaln(a)
+    g = np.prod([special.gammainc(a, b * x) for a, b in variant_params],
+                axis=0)
+    return np.exp(pdf) * g
+
+
+def func_mv_el(x, a, b, variant_params):
+    """Integrand expected loss integral."""
+    n = len(variant_params)
+
+    aa, bb = map(np.array, zip(*variant_params))
+
+    pdf = np.exp(aa * np.log(bb) + (aa - 1) * np.log(x) - bb * x
+                 - special.gammaln(aa))
+
+    s = np.dot(pdf, [np.prod([special.gammainc(aa[j], bb[j] * x)
+               for j in range(n) if j != i], axis=0) for i in range(n)])
+
+    p = x * special.gammainc(a, b * x)
+    q = a / b * special.gammainc(a + 1, b * x)
+    return s * (p - q)
+
+
+def func_mv_elr(x, variant_params):
+    """Integrand expected loss relative integral."""
+    n = len(variant_params)
+
+    aa, bb = map(np.array, zip(*variant_params))
+
+    pdf = np.exp(aa * np.log(bb) + (aa - 1) * np.log(x) - bb * x
+                 - special.gammaln(aa))
+
+    s = np.dot(pdf, [np.prod([special.gammainc(aa[j], bb[j] * x)
+               for j in range(n) if j != i], axis=0) for i in range(n)])
+    return x * s
 
 
 class GammaModel(BayesModel):
@@ -621,7 +661,7 @@ class GammaMVTest(BayesMVTest):
 
             return (x1 > x0 + lift).mean()
 
-    def probability_vs_all(self, method="MLHS", variant="B", lift=0,
+    def probability_vs_all(self, method="quad", variant="B", lift=0,
                            mlhs_samples=1000):
         r"""
         Compute the error probability or *chance to beat all* variations. For
@@ -633,9 +673,10 @@ class GammaMVTest(BayesMVTest):
 
         Parameters
         ----------
-        method : str (default="MLHS")
-            The method of computation. Options are "MC" (Monte Carlo)
-            and "MLHS" (Monte Carlo + Median Latin Hypercube Sampling).
+        method : str (default="quad")
+            The method of computation. Options are "MC" (Monte Carlo),
+            "MLHS" (Monte Carlo + Median Latin Hypercube Sampling) and "quad"
+            (numerical quadrature).
 
         variant : str (default="B")
             The chosen variant.
@@ -650,7 +691,7 @@ class GammaMVTest(BayesMVTest):
         -------
         probability_vs_all : float
         """
-        check_mv_method(method=method, method_options=("MC", "MLHS"),
+        check_mv_method(method=method, method_options=("MC", "MLHS", "quad"),
                         control=None, variant=variant,
                         variants=self.models.keys(), lift=lift)
 
@@ -670,6 +711,17 @@ class GammaMVTest(BayesMVTest):
             maxall = np.maximum.reduce(xall)
 
             return (xvariant > maxall + lift).mean()
+        elif method == "quad":
+            # prepare parameters
+            variant_params = [(self.models[v].shape_posterior,
+                              self.models[v].rate_posterior) for v in variants]
+
+            a = self.models[variant].shape_posterior
+            b = self.models[variant].rate_posterior
+
+            n = self.models[variant].ppf(0.99999999)
+            return integrate.quad(func=func_mv_prob, a=0, b=n, args=(
+                a, b, variant_params))[0]
         else:
             # prepare parameters
             variant_params = [(self.models[v].shape_posterior,
@@ -845,8 +897,9 @@ class GammaMVTest(BayesMVTest):
         Parameters
         ----------
         method : str (default="MLHS")
-            The method of computation. Options are "MC" (Monte Carlo)
-            and "MLHS" (Monte Carlo + Median Latin Hypercube Sampling).
+            The method of computation. Options are "MC" (Monte Carlo),
+            "MLHS" (Monte Carlo + Median Latin Hypercube Sampling) and "quad"
+            (numerical quadrature).
 
         variant : str (default="B")
             The chosen variant.
@@ -858,15 +911,15 @@ class GammaMVTest(BayesMVTest):
         -------
         expected_loss_relative_vs_all : float
         """
-        check_mv_method(method=method, method_options=("MC", "MLHS"),
+        check_mv_method(method=method, method_options=("MC", "MLHS", "quad"),
                         control=None, variant=variant,
                         variants=self.models.keys())
 
-        # exclude variant
         variants = list(self.models.keys())
-        variants.remove(variant)
 
         if method == "MC":
+            # exclude variant
+            variants.remove(variant)
             # generate samples from all models in parallel
             xvariant = self.models[variant].rvs(self.simulations,
                                                 self.random_state)
@@ -879,7 +932,24 @@ class GammaMVTest(BayesMVTest):
 
             return (maxall / xvariant).mean() - 1
         else:
-            e_max = self._expected_value_max_mlhs(variants, mlhs_samples)
+            if method == "quad":
+                n = np.max([self.models[v].ppf(0.99999999) for v in variants])
+
+                # exclude variant
+                variants.remove(variant)
+
+                # prepare parameters
+                variant_params = [(self.models[v].shape_posterior,
+                                  self.models[v].rate_posterior)
+                                  for v in variants]
+
+                e_max = integrate.quad(func=func_mv_elr, a=0, b=n, args=(
+                    variant_params))[0]
+            else:
+                # exclude variant
+                variants.remove(variant)
+
+                e_max = self._expected_value_max_mlhs(variants, mlhs_samples)
 
             a = self.models[variant].shape_posterior
             b = self.models[variant].rate_posterior
@@ -959,7 +1029,7 @@ class GammaMVTest(BayesMVTest):
 
                 return ppfl - 1, ppfu - 1
 
-    def expected_loss_vs_all(self, method="MLHS", variant="B", lift=0,
+    def expected_loss_vs_all(self, method="quad", variant="B", lift=0,
                              mlhs_samples=1000):
         r"""
         Compute the expected loss against all variations. For example, given
@@ -971,9 +1041,10 @@ class GammaMVTest(BayesMVTest):
 
         Parameters
         ----------
-        method : str (default="MLHS")
-            The method of computation. Options are "MC" (Monte Carlo)
-            and "MLHS" (Monte Carlo + Median Latin Hypercube Sampling).
+        method : str (default="quad")
+            The method of computation. Options are "MC" (Monte Carlo),
+            "MLHS" (Monte Carlo + Median Latin Hypercube Sampling) and "quad"
+            (numerical quadrature).
 
         variant : str (default="B")
             The chosen variant.
@@ -988,15 +1059,16 @@ class GammaMVTest(BayesMVTest):
         -------
         expected_loss_vs_all : float
         """
-        check_mv_method(method=method, method_options=("MC", "MLHS"),
+        check_mv_method(method=method, method_options=("MC", "MLHS", "quad"),
                         control=None, variant=variant,
                         variants=self.models.keys(), lift=lift)
 
-        # exclude variant
         variants = list(self.models.keys())
-        variants.remove(variant)
 
         if method == "MC":
+            # exclude variant
+            variants.remove(variant)
+
             # generate samples from all models in parallel
             xvariant = self.models[variant].rvs(self.simulations,
                                                 self.random_state)
@@ -1009,27 +1081,38 @@ class GammaMVTest(BayesMVTest):
 
             return np.maximum(maxall - xvariant - lift, 0).mean()
         else:
-            r = np.arange(mlhs_samples)
-            np.random.shuffle(r)
-            v = (r - 0.5) / mlhs_samples
-            v = v[v >= 0]
+            n = np.max([self.models[v].ppf(0.99999999) for v in variants])
 
-            # ppf of distribution of max(x0, x1, ..., xn), where x_i follows
-            # a gamma distribution
+            # exclude variant
+            variants.remove(variant)
+
+            # prepare parameters
             variant_params = [(self.models[v].shape_posterior,
                               self.models[v].rate_posterior) for v in variants]
 
-            maxb = self.models[variant].ppf(0.99999999)
+            if method == "quad":
+                a = self.models[variant].shape_posterior
+                b = self.models[variant].rate_posterior
 
-            x = np.array([optimize.brentq(f=func_mv_ppf,
-                         args=(variant_params, p), a=0, b=maxb, xtol=1e-4,
-                         rtol=1e-4) for p in v])
+                return integrate.quad(func=func_mv_el, a=0, b=n, args=(
+                    a, b, variant_params))[0]
+            else:
+                r = np.arange(mlhs_samples)
+                np.random.shuffle(r)
+                v = (r - 0.5) / mlhs_samples
+                v = v[v >= 0]
 
-            a = self.models[variant].shape_posterior
-            b = self.models[variant].rate_posterior
-            p = x * special.gammainc(a, b * x)
-            q = a / b * special.gammainc(a + 1, b * x)
-            return np.nanmean(p - q)
+                # ppf of distribution of max(x0, x1, ..., xn), where x_i
+                # follows a gamma distribution
+                x = np.array([optimize.brentq(f=func_mv_ppf,
+                             args=(variant_params, p), a=0, b=n, xtol=1e-4,
+                             rtol=1e-4) for p in v])
+
+                a = self.models[variant].shape_posterior
+                b = self.models[variant].rate_posterior
+                p = x * special.gammainc(a, b * x)
+                q = a / b * special.gammainc(a + 1, b * x)
+                return np.nanmean(p - q)
 
     def _expected_value_max_mlhs(self, variants, mlhs_samples):
         """Compute expected value of the maximum of gamma random variables."""

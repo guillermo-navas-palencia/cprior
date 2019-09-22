@@ -26,7 +26,7 @@ class BernoulliModel(BetaModel):
 
         p | \mathbf{x} \sim \mathcal{B}\left(\alpha + \sum_{i=1}^n x_i,
         \beta + n - \sum_{i=1}^n x_i\right),
-    
+
     with prior parameters :math:`\alpha` and :math:`\beta`.
 
     Parameters
@@ -47,7 +47,7 @@ class BernoulliModel(BetaModel):
 
     n_samples_ : int
         Number of samples.
-    """    
+    """
     def __init__(self, name="", alpha=1, beta=1):
         super().__init__(name, alpha, beta)
 
@@ -57,7 +57,7 @@ class BernoulliModel(BetaModel):
     def update(self, data):
         """
         Update posterior parameters with new data samples.
-        
+
         Parameters
         ----------
         data : array-like, shape = (n_samples)
@@ -119,7 +119,7 @@ class BernoulliModel(BetaModel):
         predictive expected value is given by
 
         .. math::
-            
+
             \mathrm{E}[X] = \frac{\alpha}{\alpha + \beta},
 
         where :math:`\alpha` and :math:`\beta` are the posterior values
@@ -143,7 +143,7 @@ class BernoulliModel(BetaModel):
         predictive variance is given by
 
         .. math::
-            
+
             \mathrm{Var}[X] = \frac{\alpha \beta}{(\alpha + \beta)^2},
 
         where :math:`\alpha` and :math:`\beta` are the posterior values
@@ -199,7 +199,7 @@ class BernoulliMVTest(BetaMVTest):
         The seed used by the random number generator.
     """
     def __init__(self, models, simulations=1000000, random_state=None,
-        n_jobs=None):
+                 n_jobs=None):
         super().__init__(models, simulations, random_state, n_jobs)
 
         check_mv_models(BernoulliModel, models)

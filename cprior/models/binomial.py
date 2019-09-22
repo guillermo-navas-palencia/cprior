@@ -28,7 +28,7 @@ class BinomialModel(BetaModel):
 
         p | \mathbf{x} \sim \mathcal{B}\left(\alpha + \sum_{i=1}^n x_i,
         \beta + mn - \sum_{i=1}^n x_i\right),
-    
+
     with prior parameters :math:`\alpha` and :math:`\beta`.
 
     Parameters
@@ -99,7 +99,7 @@ class BinomialModel(BetaModel):
         Returns
         -------
         pdf : float
-            Probability density function evaluated at x.        
+            Probability density function evaluated at x.
         """
         a = self._alpha_posterior
         b = self._beta_posterior
@@ -108,7 +108,7 @@ class BinomialModel(BetaModel):
         pdf = np.zeros(k.shape)
         idx = (k >= 0) & (k <= self.m)
         k = k[idx]
-        
+
         loggm = special.gammaln(self.m + 1)
         loggx = special.gammaln(k + 1)
         loggmx = special.gammaln(self.m - k + 1)
@@ -129,7 +129,7 @@ class BinomialModel(BetaModel):
         and :math:`p`, then the posterior predictive expected value is given by
 
         .. math::
-            
+
             \mathrm{E}[X] = m \frac{\alpha}{\alpha + \beta},
 
         where :math:`\alpha` and :math:`\beta` are the posterior values
@@ -209,7 +209,7 @@ class BinomialMVTest(BetaMVTest):
         The seed used by the random number generator.
     """
     def __init__(self, models, simulations=1000000, random_state=None,
-        n_jobs=None):
+                 n_jobs=None):
         super().__init__(models, simulations, random_state, n_jobs)
 
         check_mv_models(BinomialModel, models)

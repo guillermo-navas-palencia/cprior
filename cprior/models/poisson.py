@@ -55,7 +55,7 @@ class PoissonModel(GammaModel):
     def update(self, data):
         """
         Update posterior parameters with new data.
-        
+
         Parameters
         ----------
         data : array-like, shape = (n_samples)
@@ -170,12 +170,13 @@ class PoissonABTest(GammaABTest):
         Number of Monte Carlo simulations.
 
     random_state : int or None (default=None)
-        The seed used by the random number generator. 
+        The seed used by the random number generator.
     """
     def __init__(self, modelA, modelB, simulations=1000000, random_state=None):
         super().__init__(modelA, modelB, simulations, random_state)
 
         check_models(PoissonModel, modelA, modelB)
+
 
 class PoissonMVTest(GammaMVTest):
     """
@@ -193,7 +194,7 @@ class PoissonMVTest(GammaMVTest):
         The seed used by the random number generator.
     """
     def __init__(self, models, simulations=1000000, random_state=None,
-        n_jobs=None):
+                 n_jobs=None):
         super().__init__(models, simulations, random_state, n_jobs)
 
         check_mv_models(PoissonModel, models)

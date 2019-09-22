@@ -7,6 +7,8 @@ Pareto conjugate prior distribution model.
 
 import numpy as np
 
+from scipy import integrate
+from scipy import optimize
 from scipy import stats
 
 from .base import BayesABTest
@@ -36,6 +38,50 @@ def expected_loss(a0, b0, a1, b1):
         return t - q + s
     else:
         return a0 * b0 / (a0 + a1 - 1) * (b1 / b0) ** a1 / (a1 - 1)
+
+
+def func_mv_ppf(x, variant_params, p):
+    """Function CDF of max of pareto random variables for root-finding."""
+    cdf = 1.0
+    for (a, b) in variant_params:
+        cdf *= 1 - (b / x) ** a
+    return cdf - p
+
+
+def func_mv_prob(x, a, b, variant_params):
+    """Integrand probability integral."""
+    pdf = np.exp(np.log(a) + a * np.log(b) - (a + 1) * np.log(x))
+    g = np.prod([1 - (b / x) ** a for a, b in variant_params], axis=0)
+    return pdf * g
+
+
+def func_mv_el(x, a, b, variant_params):
+    """Integrand expected loss integral."""
+    n = len(variant_params)
+
+    aa, bb = map(np.array, zip(*variant_params))
+
+    pdf = np.exp(np.log(aa) + aa * np.log(bb) - (aa + 1) * np.log(x))
+
+    s = np.dot(pdf, [np.prod([1 - (bb[j] / x) ** aa[j]
+               for j in range(n) if j != i], axis=0) for i in range(n)])
+
+    p = x * (1 - (b / x) ** a)
+    q = a * b / (a - 1) * (1 - (b / x) ** (a - 1))
+    return s * (p - q)
+
+
+def func_mv_elr(x, variant_params):
+    """Integrand expected loss relative integral."""
+    n = len(variant_params)
+
+    aa, bb = map(np.array, zip(*variant_params))
+
+    pdf = np.exp(np.log(aa) + aa * np.log(bb) - (aa + 1) * np.log(x))
+
+    s = np.dot(pdf, [np.prod([1 - (bb[j] / x) ** aa[j]
+               for j in range(n) if j != i], axis=0) for i in range(n)])
+    return x * s
 
 
 class ParetoModel(BayesModel):
@@ -531,7 +577,7 @@ class ParetoMVTest(BayesMVTest):
 
         return (x1 > x0 + lift).mean()
 
-    def probability_vs_all(self, method="MLHS", variant="B", lift=0,
+    def probability_vs_all(self, method="quad", variant="B", lift=0,
                            mlhs_samples=1000):
         r"""
         Compute the error probability or *chance to beat all* variations. For
@@ -544,8 +590,9 @@ class ParetoMVTest(BayesMVTest):
         Parameters
         ----------
         method : str (default="MLHS")
-            The method of computation. Options are "MC" (Monte Carlo)
-            and "MLHS" (Monte Carlo + Median Latin Hypercube Sampling).
+            The method of computation. Options are "MC" (Monte Carlo),
+            "MLHS" (Monte Carlo + Median Latin Hypercube Sampling) and "quad"
+            (numerical quadrature).
 
         variant : str (default="B")
             The chosen variant.
@@ -560,7 +607,7 @@ class ParetoMVTest(BayesMVTest):
         -------
         probability_vs_all : float
         """
-        check_mv_method(method=method, method_options=("MC", "MLHS"),
+        check_mv_method(method=method, method_options=("MC", "MLHS", "quad"),
                         control=None, variant=variant,
                         variants=self.models.keys(), lift=lift)
 
@@ -578,6 +625,19 @@ class ParetoMVTest(BayesMVTest):
             maxall = np.maximum.reduce(xall)
 
             return (xvariant > maxall + lift).mean()
+        elif method == "quad":
+            # prepare parameters
+            variant_params = [(self.models[v].shape_posterior,
+                              self.models[v].scale_posterior)
+                              for v in variants]
+
+            a = self.models[variant].shape_posterior
+            b = self.models[variant].scale_posterior
+
+            m = np.max([self.models[v].scale_posterior for v in variants])
+            n = self.models[variant].ppf(0.99999999)
+            return integrate.quad(func=func_mv_prob, a=max(b, m), b=n, args=(
+                a, b, variant_params))[0]
         else:
             r = np.arange(mlhs_samples)
             np.random.shuffle(r)
@@ -723,7 +783,7 @@ class ParetoMVTest(BayesMVTest):
 
             return ((x0 - x1) / x1).mean()
 
-    def expected_loss_relative_vs_all(self, method="MLHS", control="A",
+    def expected_loss_relative_vs_all(self, method="quad", control="A",
                                       variant="B", mlhs_samples=1000):
         r"""
         Compute the expected relative loss against all variations. For example,
@@ -733,8 +793,9 @@ class ParetoMVTest(BayesMVTest):
         Parameters
         ----------
         method : str (default="MLHS")
-            The method of computation. Options are "MC" (Monte Carlo)
-            and "MLHS" (Monte Carlo + Median Latin Hypercube Sampling).
+            The method of computation. Options are "MC" (Monte Carlo),
+            "MLHS" (Monte Carlo + Median Latin Hypercube Sampling) and "quad"
+            (numerical quadrature).
 
         variant : str (default="B")
             The chosen variant.
@@ -746,7 +807,7 @@ class ParetoMVTest(BayesMVTest):
         -------
         expected_loss_relative_vs_all : float
         """
-        check_mv_method(method=method, method_options=("MC", "MLHS"),
+        check_mv_method(method=method, method_options=("MC", "MLHS", "quad"),
                         control=None, variant=variant,
                         variants=self.models.keys())
 
@@ -765,7 +826,19 @@ class ParetoMVTest(BayesMVTest):
 
             return (maxall / xvariant).mean() - 1
         else:
-            e_max = self._expected_value_max_mlhs(variants, mlhs_samples)
+            if method == "quad":
+                # prepare parameters
+                variant_params = [(self.models[v].shape_posterior,
+                                  self.models[v].scale_posterior)
+                                  for v in variants]
+
+                n = np.max([self.models[v].ppf(0.99999999) for v in variants])
+                m = np.max([self.models[v].scale_posterior for v in variants])
+
+                e_max = integrate.quad(func=func_mv_elr, a=m, b=n, args=(
+                    variant_params))[0]
+            else:
+                e_max = self._expected_value_max_mlhs(variants, mlhs_samples)
 
             a = self.models[variant].shape_posterior
             b = self.models[variant].scale_posterior
@@ -816,7 +889,8 @@ class ParetoMVTest(BayesMVTest):
 
         return np.percentile((x0 - x1) / x1, [lower, upper])
 
-    def expected_loss_vs_all(self, method="MC", variant="B", lift=0):
+    def expected_loss_vs_all(self, method="quad", variant="B", lift=0,
+                             mlhs_samples=1000):
         r"""
         Compute the expected loss against all variations. For example, given
         variants "A", "B", "C" and "D", and choosing variant="B", we compute
@@ -827,8 +901,10 @@ class ParetoMVTest(BayesMVTest):
 
         Parameters
         ----------
-        method : str (default="MC")
-            The method of computation.
+        method : str (default="quad")
+            The method of computation. Options are "MC" (Monte Carlo),
+            "MLHS" (Monte Carlo + Median Latin Hypercube Sampling) and "quad"
+            (numerical quadrature).
 
         variant : str (default="B")
             The chosen variant.
@@ -836,27 +912,65 @@ class ParetoMVTest(BayesMVTest):
         lift : float (default=0.0)
            The amount of uplift.
 
+        mlhs_samples : int (default=1000)
+            Number of samples for MLHS method.
+
         Returns
         -------
         expected_loss_vs_all : float
         """
-        check_mv_method(method=method, method_options=("MC"), control=None,
-                        variant=variant, variants=self.models.keys(),
-                        lift=lift)
+        check_mv_method(method=method, method_options=("MC", "MLHS", "quad"),
+                        control=None, variant=variant,
+                        variants=self.models.keys(), lift=lift)
 
-        # exclude variant
         variants = list(self.models.keys())
-        variants.remove(variant)
 
-        # generate samples from all models in parallel
-        xvariant = self.models[variant].rvs(self.simulations,
-                                            self.random_state)
+        if method == "MC":
+            # exclude variant
+            variants.remove(variant)
 
-        xall = [self.models[v].rvs(self.simulations, self.random_state) for
-                v in variants]
-        maxall = np.maximum.reduce(xall)
+            # generate samples from all models in parallel
+            xvariant = self.models[variant].rvs(self.simulations,
+                                                self.random_state)
 
-        return np.maximum(maxall - xvariant - lift, 0).mean()
+            xall = [self.models[v].rvs(self.simulations, self.random_state) for
+                    v in variants]
+            maxall = np.maximum.reduce(xall)
+
+            return np.maximum(maxall - xvariant - lift, 0).mean()
+        else:
+            m = np.max([self.models[v].scale_posterior for v in variants])
+            n = np.max([self.models[v].ppf(0.99999999) for v in variants])
+
+            # exclude variant
+            variants.remove(variant)
+
+            # prepare parameters
+            variant_params = [(self.models[v].shape_posterior,
+                              self.models[v].scale_posterior)
+                              for v in variants]
+
+            a = self.models[variant].shape_posterior
+            b = self.models[variant].scale_posterior
+
+            if method == "quad":
+                return integrate.quad(func=func_mv_el, a=m, b=n, args=(
+                    a, b, variant_params))[0]
+            else:
+                r = np.arange(mlhs_samples)
+                np.random.shuffle(r)
+                v = (r - 0.5) / mlhs_samples
+                v = v[v >= 0]
+
+                # ppf of distribution of max(x0, x1, ..., xn), where x_i
+                # follows a gamma distribution
+                x = np.array([optimize.brentq(f=func_mv_ppf,
+                             args=(variant_params, p), a=m, b=n, xtol=1e-4,
+                             rtol=1e-4) for p in v])
+
+                p = x * (1 - (b / x) ** a)
+                q = a * b / (a - 1) * (1 - (b / x) ** (a - 1))
+                return np.nanmean(p - q)
 
     def _expected_value_max_mlhs(self, variants, mlhs_samples):
         """Compute expected value of the maximum of gamma random variables."""

@@ -1021,20 +1021,16 @@ class BetaMVTest(BayesMVTest):
             maxall = np.maximum.reduce(xall)
 
             return (maxall / xvariant).mean() - 1
-        elif method == "quad":
-            variant_params = [(self.models[v].alpha_posterior,
-                              self.models[v].beta_posterior) for v in variants]
-
-            e_max = integrate.quad(func=func_mv_elr, a=0, b=1, args=(
-                variant_params))[0]
-
-            a = self.models[variant].alpha_posterior
-            b = self.models[variant].beta_posterior
-            e_inv_x = (a + b - 1) / (a - 1)
-
-            return e_max * e_inv_x - 1
         else:
-            e_max = self._expected_value_max_mlhs(variants, mlhs_samples)
+            if method == "quad":
+                variant_params = [(self.models[v].alpha_posterior,
+                                  self.models[v].beta_posterior)
+                                  for v in variants]
+
+                e_max = integrate.quad(func=func_mv_elr, a=0, b=1, args=(
+                    variant_params))[0]
+            else:
+                e_max = self._expected_value_max_mlhs(variants, mlhs_samples)
 
             a = self.models[variant].alpha_posterior
             b = self.models[variant].beta_posterior

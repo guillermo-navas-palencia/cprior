@@ -11,6 +11,7 @@ References:
 import numpy as np
 
 from multiprocessing import Pool
+from scipy import integrate
 from scipy import optimize
 from scipy import special
 from scipy import stats
@@ -21,6 +22,15 @@ from .base import BayesMVTest
 from .gamma import func_ppf
 from .utils import check_ab_method
 from .utils import check_mv_method
+
+
+def func_ab_prob(x, muA, sA, vA, muB, sB, vB):
+    tA = (x - muA) / sA
+    n = -0.5 * (1 + vA) * np.log(1 + tA ** 2 / vA)
+    d = 0.5 * np.log(vA) + np.log(sA) + special.betaln(vA * 0.5, 0.5)
+    g = special.stdtr(vB, (x - muB) / sB)
+
+    return np.exp(n - d) * g
 
 
 def func_mv_student_ppf(x, variant_params, p):
@@ -246,7 +256,7 @@ class NormalInverseGamma(object):
 
         Returns
         -------
-        rvs : numpy.ndarray or scalar
+        rvs : numpy.ndarray
             Random variates of given size (size, 2).
         """
         sig2_rv = stats.invgamma(a=self.shape, scale=self.scale).rvs(size=size,
@@ -363,19 +373,37 @@ class NormalInverseGammaModel(BayesModel):
         return self._scale_posterior
 
     def mean(self):
-        """Mean of the posterior distribution."""
+        """
+        Mean of the posterior distribution.
+
+        Returns
+        -------
+        mean : tuple of floats
+        """
         return NormalInverseGamma(loc=self._loc_posterior,
             variance_scale=self._variance_scale_posterior,
             shape=self._shape_posterior, scale=self._scale_posterior).mean()
 
     def var(self):
-        """Variance of the posterior distribution."""
+        """
+        Variance of the posterior distribution.
+
+        Returns
+        -------
+        var : tuple of floats
+        """
         return NormalInverseGamma(loc=self._loc_posterior,
             variance_scale=self._variance_scale_posterior,
             shape=self._shape_posterior, scale=self._scale_posterior).var()
 
     def std(self):
-        """Standard deviation of the posterior distribution."""
+        """
+        Standard deviation of the posterior distribution.
+
+        Returns
+        -------
+        std : tuple of floats
+        """
         return NormalInverseGamma(loc=self._loc_posterior,
             variance_scale=self._variance_scale_posterior,
             shape=self._shape_posterior, scale=self._scale_posterior).std()
@@ -438,8 +466,8 @@ class NormalInverseGammaModel(BayesModel):
 
         Returns
         -------
-        rvs : numpy.ndarray or scalar
-            Random variates of given size.
+        rvs : numpy.ndarray
+            Random variates of given size (size, 2).
         """
         return NormalInverseGamma(loc=self._loc_posterior,
             variance_scale=self._variance_scale_posterior,
@@ -490,10 +518,16 @@ class NormalInverseGammaABTest(BayesABTest):
         lift : float (default=0.0)
            The amount of uplift.
 
+        Returns
+        -------
+        probability : float or tuple of floats
+
         Notes
         -----
         Method "exact" uses the normal approximation of the Student's
-        t-distribution for the error probability of the mean.
+        t-distribution for the error probability of the mean when the number
+        of degrees of freedom is large. For small values, numerical
+        intergration is used.
         """
         check_ab_method(method=method, method_options=("exact", "MC"),
             variant=variant, lift=lift)
@@ -513,26 +547,54 @@ class NormalInverseGammaABTest(BayesABTest):
             sigB = self.modelB.std()[0]
 
             if variant == "A":
-                # mean using normal approximation
-                prob_mean = special.ndtr((muA - muB) / np.hypot(sigA, sigB))
+                # mean
+                if min(aA, aB) > 50:
+                    # mean using normal approximation
+                    sigA = self.modelA.std()[0]
+                    sigB = self.modelB.std()[0]
+
+                    prob_mean = special.ndtr((muA - muB) /
+                                             np.hypot(sigA, sigB))
+                else:
+                    # numerical integration
+                    sA = np.sqrt(bA / aA / laA)
+                    sB = np.sqrt(bB / aB / laB)
+
+                    prob_mean = integrate.quad(func=func_ab_prob, a=-np.inf,
+                        b=np.inf, args=(muA, sA, 2*aA, muB, sB, 2*aB))[0]
 
                 # variance
                 p = bA / (bA + bB)
                 prob_var = special.betainc(aA, aB, p)
                 return prob_mean, prob_var
+
             elif variant == "B":
-                # mean using normal approximation
-                prob_mean = special.ndtr((muB - muA) / np.hypot(sigA, sigB))
+                if min(aA, aB) > 50:
+                    # mean using normal approximation
+                    sigA = self.modelA.std()[0]
+                    sigB = self.modelB.std()[0]
+
+                    prob_mean = special.ndtr((muB - muA) /
+                                             np.hypot(sigA, sigB))
+                else:
+                    # numerical integration
+                    sA = np.sqrt(bA / aA / laA)
+                    sB = np.sqrt(bB / aB / laB)
+
+                    prob_mean = integrate.quad(func=func_ab_prob, a=-np.inf,
+                        b=np.inf, args=(muB, sB, 2*aB, muA, sA, 2*aA))[0]
 
                 # variance
                 p = bB / (bA + bB)
                 prob_var = special.betainc(aB, aA, p)
                 return prob_mean, prob_var
             else:
-                prob_mean_A = special.ndtr((muA - muB) / np.hypot(sigA, sigB))
-                prob_var_A = special.betainc(aA, aB, bA / (bA + bB))
-                prob_mean_B = special.ndtr((muB - muA) / np.hypot(sigA, sigB))
-                prob_var_B = special.betainc(aB, aA, bB / (bA + bB))
+                prob_mean_A, prob_var_A = self.probability(method=method,
+                    variant="A", lift=lift)
+
+                prob_mean_B, prob_var_B = self.probability(method=method,
+                    variant="B", lift=lift)
+
                 return (prob_mean_A, prob_var_A), (prob_mean_B, prob_var_B)
         else:
             data_A = self.modelA.rvs(self.simulations, self.random_state)
@@ -982,6 +1044,17 @@ class NormalInverseGammaMVTest(BayesMVTest):
 
         lift : float (default=0.0)
            The amount of uplift.
+
+        Returns
+        -------
+        probability : float
+
+        Notes
+        -----
+        Method "exact" uses the normal approximation of the Student's
+        t-distribution for the error probability of the mean when the number
+        of degrees of freedom is large. For small values, numerical
+        intergration is used.
         """
         check_mv_method(method=method, method_options=("exact", "MC"),
             control=control, variant=variant, variants=self.models.keys(),
@@ -992,18 +1065,27 @@ class NormalInverseGammaMVTest(BayesMVTest):
 
         if method == "exact":
             mu0 = model_control.loc_posterior
+            la0 = model_control.variance_scale_posterior
             a0 = model_control.shape_posterior
             b0 = model_control.scale_posterior
 
             mu1 = model_variant.loc_posterior
+            la1 = model_variant.variance_scale_posterior
             a1 = model_variant.shape_posterior
             b1 = model_variant.scale_posterior
 
-            sig0 = model_control.std()[0]
-            sig1 = model_variant.std()[0]
+            if min(a0, a1) > 50:
+                # mean using normal approximation
+                sig0 = model_control.std()[0]
+                sig1 = model_variant.std()[0]
 
-            # mean using normal approximation
-            prob_mean = special.ndtr((mu1 - mu0) / np.hypot(sig0, sig1))
+                prob_mean = special.ndtr((mu1 - mu0) / np.hypot(sig0, sig1))
+            else:
+                s0 = np.sqrt(b0 / a0 / la0)
+                s1 = np.sqrt(b1 / a1 / la1)
+
+                prob_mean = integrate.quad(func=func_ab_prob, a=-np.inf,
+                    b=np.inf, args=(mu1, s1, 2 * a1, mu0, s0, 2 * a0))[0]
 
             # variance
             p = b1 / (b0 + b1)
@@ -1548,7 +1630,6 @@ class NormalInverseGammaMVTest(BayesMVTest):
             a = self.models[i].shape_posterior
             b = self.models[i].scale_posterior
             x = stats.t(df=2*a, loc=mu, scale=np.sqrt(b / a / la)).ppf(v)
-            print(x)
             prod_cdf = []
             for j in variants:
                 if j != i:
@@ -1560,7 +1641,10 @@ class NormalInverseGammaMVTest(BayesMVTest):
                     xt = (x - mu) / s
                     prod_cdf.append(stats.t(df=2*a, loc=mu, scale=s).cdf(x))
 
+            print(np.prod(prod_cdf))
+
             s += (x * np.prod(prod_cdf)).mean()
+            print((x * np.prod(prod_cdf)).mean())
 
         return s
 

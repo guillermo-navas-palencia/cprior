@@ -53,24 +53,24 @@ def test_normal_inverse_gamma_ab_probability():
     abtest = NormalInverseGammaABTest(modelA, modelB, 1000000)
 
     assert abtest.probability(method="exact",
-        variant="A") == approx((0.1930303459, 0.0304179682), rel=1e-8)
+        variant="A") == approx((0.1899299893, 0.0304179682), rel=1e-8)
 
     assert abtest.probability(method="MC",
-        variant="A") == approx((0.1930303459, 0.0304179682), rel=1e-1)
+        variant="A") == approx((0.1899299893, 0.0304179682), rel=1e-1)
 
     assert abtest.probability(method="exact",
-        variant="B") == approx((0.8069696540, 0.9695820317), rel=1e-8)
+        variant="B") == approx((0.8100700106, 0.9695820317), rel=1e-8)
 
     assert abtest.probability(method="MC",
-        variant="B") == approx((0.8069696540, 0.9695820317), rel=1e-1)
+        variant="B") == approx((0.8100700106, 0.9695820317), rel=1e-1)
 
     test = abtest.probability(method="exact", variant="all")
-    assert test[0] == approx((0.1930303459, 0.0304179682), rel=1e-8)
-    assert test[1] == approx((0.8069696540, 0.9695820317), rel=1e-8)
+    assert test[0] == approx((0.1899299893, 0.0304179682), rel=1e-8)
+    assert test[1] == approx((0.8100700106, 0.9695820317), rel=1e-8)
 
     test = abtest.probability(method="MC", variant="all")
-    assert test[0] == approx((0.1930303459, 0.0304179682), rel=1e-1)
-    assert test[1] == approx((0.8069696540, 0.9695820317), rel=1e-1)
+    assert test[0] == approx((0.1899299893, 0.0304179682), rel=1e-1)
+    assert test[1] == approx((0.8100700106, 0.9695820317), rel=1e-1)
 
 
 def test_normal_inverse_gamma_ab_expected_loss():

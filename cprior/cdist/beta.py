@@ -1160,35 +1160,31 @@ class BetaMVTest(BayesMVTest):
             maxall = np.maximum.reduce(xall)
 
             return np.maximum(maxall - xvariant - lift, 0).mean()
-        elif method == "quad":
-            variant_params = [(self.models[v].alpha_posterior,
-                              self.models[v].beta_posterior) for v in variants]
-
-            a = self.models[variant].alpha_posterior
-            b = self.models[variant].beta_posterior
-
-            return integrate.quad(func=func_mv_el, a=0, b=1, args=(
-                a, b, variant_params))[0]
         else:
-            r = np.arange(mlhs_samples)
-            np.random.shuffle(r)
-            v = (r - 0.5) / mlhs_samples
-            v = v[v >= 0]
-
-            # ppf of distribution of max(x0, x1, ..., xn), where x_i follows
-            # a beta distribution
             variant_params = [(self.models[v].alpha_posterior,
                               self.models[v].beta_posterior) for v in variants]
 
-            x = np.array([optimize.brentq(f=func_mv_ppf,
-                         args=(variant_params, p), a=0, b=1, xtol=1e-4,
-                         rtol=1e-4) for p in v])
-
             a = self.models[variant].alpha_posterior
             b = self.models[variant].beta_posterior
-            p = x * special.betainc(a, b, x)
-            q = a / (a + b) * special.betainc(a + 1, b, x)
-            return np.nanmean(p - q)
+
+            if method == "quad":
+                return integrate.quad(func=func_mv_el, a=0, b=1, args=(
+                    a, b, variant_params))[0]
+            else:
+                r = np.arange(mlhs_samples)
+                np.random.shuffle(r)
+                v = (r - 0.5) / mlhs_samples
+                v = v[v >= 0]
+
+                # ppf of distribution of max(x0, x1, ..., xn), where x_i
+                # follows a beta distribution
+                x = np.array([optimize.brentq(f=func_mv_ppf,
+                             args=(variant_params, p), a=0, b=1, xtol=1e-4,
+                             rtol=1e-4) for p in v])
+
+                p = x * special.betainc(a, b, x)
+                q = a / (a + b) * special.betainc(a + 1, b, x)
+                return np.nanmean(p - q)
 
     def _expected_value_max_mlhs(self, variants, mlhs_samples):
         """Compute expected value of the maximum of beta random variables."""

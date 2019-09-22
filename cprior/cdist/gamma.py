@@ -1090,10 +1090,10 @@ class GammaMVTest(BayesMVTest):
             variant_params = [(self.models[v].shape_posterior,
                               self.models[v].rate_posterior) for v in variants]
 
-            if method == "quad":
-                a = self.models[variant].shape_posterior
-                b = self.models[variant].rate_posterior
+            a = self.models[variant].shape_posterior
+            b = self.models[variant].rate_posterior
 
+            if method == "quad":
                 return integrate.quad(func=func_mv_el, a=0, b=n, args=(
                     a, b, variant_params))[0]
             else:
@@ -1108,8 +1108,6 @@ class GammaMVTest(BayesMVTest):
                              args=(variant_params, p), a=0, b=n, xtol=1e-4,
                              rtol=1e-4) for p in v])
 
-                a = self.models[variant].shape_posterior
-                b = self.models[variant].rate_posterior
                 p = x * special.gammainc(a, b * x)
                 q = a / b * special.gammainc(a + 1, b * x)
                 return np.nanmean(p - q)

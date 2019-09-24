@@ -81,24 +81,24 @@ def test_normal_inverse_gamma_ab_expected_loss():
     abtest = NormalInverseGammaABTest(modelA, modelB, 1000000)
 
     assert abtest.expected_loss(method="exact",
-        variant="A") == approx((0.5615455003, 0.4364267115), rel=1e-8)
+        variant="A") == approx((0.5612998985, 0.4364267115), rel=1e-8)
 
     assert abtest.expected_loss(method="MC",
-        variant="A") == approx((0.5615455003, 0.4364267115), rel=1e-1)    
+        variant="A") == approx((0.5612998985, 0.4364267115), rel=1e-1)    
 
     assert abtest.expected_loss(method="exact",
-        variant="B") == approx((0.0615455003, 0.0028602780), rel=1e-8)
+        variant="B") == approx((0.0612998985, 0.0028602780), rel=1e-8)
 
     assert abtest.expected_loss(method="MC",
-        variant="B") == approx((0.0615455003, 0.0028602780), rel=1e-1)
+        variant="B") == approx((0.0612998985, 0.0028602780), rel=1e-1)
 
     test = abtest.expected_loss(method="exact", variant="all")
-    assert test[0] == approx((0.5615455003, 0.4364267115), rel=1e-8)
-    assert test[1] == approx((0.0615455003, 0.0028602780), rel=1e-8)
+    assert test[0] == approx((0.5612998985, 0.4364267115), rel=1e-8)
+    assert test[1] == approx((0.0612998985, 0.0028602780), rel=1e-8)
 
     test = abtest.expected_loss(method="MC", variant="all")
-    assert test[0] == approx((0.5615455003, 0.4364267115), rel=1e-1)
-    assert test[1] == approx((0.0615455003, 0.0028602780), rel=1e-1)
+    assert test[0] == approx((0.5612998985, 0.4364267115), rel=1e-1)
+    assert test[1] == approx((0.0612998985, 0.0028602780), rel=1e-1)
 
 
 def test_normal_inverse_gamma_ab_expected_loss_ci():

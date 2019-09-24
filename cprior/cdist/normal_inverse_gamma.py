@@ -33,6 +33,20 @@ def func_ab_prob(x, muA, sA, vA, muB, sB, vB):
     return np.exp(n - d) * g
 
 
+def func_ab_el(x, muA, sA, vA, muB, sB, vB):
+    tA = (x - muA) / sA
+    tB = (x - muB) / sB
+
+    n = -0.5 * (1 + vA) * np.log(1 + tA ** 2 / vA)
+    d = 0.5 * np.log(vA) + np.log(sA) + special.betaln(vA * 0.5, 0.5)
+
+    c = 0.5 * (1 - vB) * np.log(1 + tB ** 2 / vB) + 0.5 * np.log(vB)
+    c -= special.betaln(vB * 0.5, 0.5)
+    c = sB * np.exp(c) / (1 - vB)
+
+    return ((x - muB) * special.stdtr(vB, tB) - c) * np.exp(n - d)
+
+
 def func_mv_student_ppf(x, variant_params, p):
     """Function CDF of max of student t random variables for root-finding."""
     cdf = 1.0
@@ -656,14 +670,23 @@ class NormalInverseGammaABTest(BayesABTest):
             sigA = self.modelA.std()[0]
             sigB = self.modelB.std()[0]
 
-            u = muB - muA
-            s = np.hypot(sigA, sigB)
+            if min(aA, aB) > 50:
+                u = muB - muA
+                s = np.hypot(sigA, sigB)
 
-            t0 = s * np.exp(-0.5 * (u / s) ** 2) / np.sqrt(2 * np.pi)
+                t0 = s * np.exp(-0.5 * (u / s) ** 2) / np.sqrt(2 * np.pi)
 
             if variant == "A":
-                # mean using normal approximation
-                el_mean = t0 + u * special.ndtr(u / s)
+                if min(aA, aB) > 50:
+                    # mean using normal approximation
+                    el_mean = t0 + u * special.ndtr(u / s)
+                else:
+                    # numerical integration
+                    sA = np.sqrt(bA / aA / laA)
+                    sB = np.sqrt(bB / aB / laB)
+
+                    el_mean = integrate.quad(func=func_ab_el, a=-np.inf,
+                        b=np.inf, args=(muB, sB, 2*aB, muA, sA, 2*aA))[0]
 
                 # variance
                 ta = bA / (aA - 1) * special.betainc(aB, aA - 1, bB / (bA + bB))
@@ -672,8 +695,16 @@ class NormalInverseGammaABTest(BayesABTest):
                 el_var = tb - ta
                 return el_mean, el_var
             elif variant == "B":
-                # mean using normal approximation
-                el_mean = t0 - u * special.ndtr(-u / s)
+                if min(aA, aB) > 50:
+                    # mean using normal approximation
+                    el_mean = t0 - u * special.ndtr(-u / s)
+                else:
+                    # numerical integration
+                    sA = np.sqrt(bA / aA / laA)
+                    sB = np.sqrt(bB / aB / laB)
+
+                    el_mean = integrate.quad(func=func_ab_el, a=-np.inf,
+                        b=np.inf, args=(muA, sA, 2*aA, muB, sB, 2*aB))[0]
 
                 # variance
                 ta = bA / (aA - 1) * special.betainc(aA - 1, aB, bA / (bA + bB))
@@ -682,19 +713,13 @@ class NormalInverseGammaABTest(BayesABTest):
                 el_var = ta - tb
                 return el_mean, el_var
             else:
-                el_mean_ba = t0 + u * special.ndtr(u / s)
+                el_mean_A, el_var_A = self.expected_loss(method=method,
+                    variant="A", lift=lift)
 
-                ta = bA / (aA - 1) * special.betainc(aB, aA - 1, bB / (bA + bB))
-                tb = bB / (aB - 1) * special.betainc(aB - 1, aA, bB / (bA + bB))
-                el_var_ba = tb - ta
+                el_mean_B, el_var_B = self.expected_loss(method=method,
+                    variant="B", lift=lift)
 
-                el_mean_ab = t0 - u * special.ndtr(-u / s)
-
-                ta = bA / (aA - 1) * special.betainc(aA - 1, aB, bA / (bA + bB))
-                tb = bB / (aB - 1) * special.betainc(aA, aB - 1, bA / (bA + bB))
-                el_var_ab = ta - tb
-
-                return (el_mean_ba, el_var_ba), (el_mean_ab, el_var_ab)
+                return (el_mean_A, el_var_A), (el_mean_B, el_var_B)
         else:
             data_A = self.modelA.rvs(self.simulations, self.random_state)
             data_B = self.modelB.rvs(self.simulations, self.random_state)
@@ -1209,21 +1234,31 @@ class NormalInverseGammaMVTest(BayesMVTest):
 
         if method == "exact":
             mu0 = model_control.loc_posterior
+            la0 = model_control.variance_scale_posterior
             a0 = model_control.shape_posterior
             b0 = model_control.scale_posterior
 
             mu1 = model_variant.loc_posterior
+            la1 = model_variant.variance_scale_posterior
             a1 = model_variant.shape_posterior
             b1 = model_variant.scale_posterior
 
-            sig0 = model_control.std()[0]
-            sig1 = model_variant.std()[0]
+            if min(a0, a1) > 50:
+                # mean using normal approximation
+                sig0 = model_control.std()[0]
+                sig1 = model_variant.std()[0]
 
-            # mean using normal approximation
-            u = mu1 - mu0
-            s = np.hypot(sig0, sig1)
-            t = s * np.exp(-0.5 * (u / s) ** 2) / np.sqrt(2 * np.pi)
-            el_mean = t - u * special.ndtr(-u / s)
+                u = mu1 - mu0
+                s = np.hypot(sig0, sig1)
+                t = s * np.exp(-0.5 * (u / s) ** 2) / np.sqrt(2 * np.pi)
+                el_mean = t - u * special.ndtr(-u / s)
+            else:
+                # numerical integration
+                s0 = np.sqrt(b0 / a0 / la0)
+                s1 = np.sqrt(b1 / a1 / la1)
+
+                el_mean = integrate.quad(func=func_ab_el, a=-np.inf,
+                    b=np.inf, args=(mu0, s0, 2*a0, mu1, s1, 2*a1))[0]
 
             # variance
             t0 = b0 / (a0 - 1) * special.betainc(a0 - 1, a1, b0 / (b0 + b1))

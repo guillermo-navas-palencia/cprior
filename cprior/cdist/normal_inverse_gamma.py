@@ -1,8 +1,5 @@
 """
 Normal-inverse-gamma prior distribution model.
-
-References:
-    [1] https://github.com/scipy/scipy/pull/6739/files/8ba21ec3dae7c05033797a6a730de38fb95ff388#diff-3f67e7fdb1ce6a44c0b49df2da9889c5
 """
 
 # Guillermo Navas-Palencia <g.navas.palencia@gmail.com>
@@ -273,11 +270,12 @@ class NormalInverseGamma(object):
         rvs : numpy.ndarray
             Random variates of given size (size, 2).
         """
-        sig2_rv = stats.invgamma(a=self.shape, scale=self.scale).rvs(size=size,
-            random_state=random_state)
+        sig2_rv = stats.invgamma(a=self.shape, scale=self.scale).rvs(
+            size=size, random_state=random_state)
 
-        x_rv = stats.norm(loc=self.loc, scale=np.sqrt(sig2_rv /
-            self.variance_scale)).rvs(size=size, random_state=random_state)
+        x_rv = stats.norm(loc=self.loc,
+                          scale=np.sqrt(sig2_rv / self.variance_scale)).rvs(
+                          size=size, random_state=random_state)
 
         return np.c_[x_rv, sig2_rv]
 
@@ -289,7 +287,7 @@ class NormalInverseGamma(object):
 
         if x_shape != sig2_shape:
             raise ValueError("Input variables with inconsistent dimensions. "
-                "{} != {}".format(x_shape, sig2_shape))
+                             "{} != {}".format(x_shape, sig2_shape))
 
         if np.any(sig2 <= 0):
             raise ValueError("sig2 must be > 0.")
@@ -319,7 +317,7 @@ class NormalInverseGammaModel(BayesModel):
         Prior parameter scale.
     """
     def __init__(self, name="", loc=0.001, variance_scale=0.001, shape=0.001,
-        scale=0.001):
+                 scale=0.001):
         super().__init__(name)
 
         self.loc = loc
@@ -394,7 +392,8 @@ class NormalInverseGammaModel(BayesModel):
         -------
         mean : tuple of floats
         """
-        return NormalInverseGamma(loc=self._loc_posterior,
+        return NormalInverseGamma(
+            loc=self._loc_posterior,
             variance_scale=self._variance_scale_posterior,
             shape=self._shape_posterior, scale=self._scale_posterior).mean()
 
@@ -406,7 +405,8 @@ class NormalInverseGammaModel(BayesModel):
         -------
         var : tuple of floats
         """
-        return NormalInverseGamma(loc=self._loc_posterior,
+        return NormalInverseGamma(
+            loc=self._loc_posterior,
             variance_scale=self._variance_scale_posterior,
             shape=self._shape_posterior, scale=self._scale_posterior).var()
 
@@ -418,7 +418,8 @@ class NormalInverseGammaModel(BayesModel):
         -------
         std : tuple of floats
         """
-        return NormalInverseGamma(loc=self._loc_posterior,
+        return NormalInverseGamma(
+            loc=self._loc_posterior,
             variance_scale=self._variance_scale_posterior,
             shape=self._shape_posterior, scale=self._scale_posterior).std()
 
@@ -439,7 +440,8 @@ class NormalInverseGammaModel(BayesModel):
         pdf : numpy.ndarray
            Probability density function evaluated at (x, sig2).
         """
-        return NormalInverseGamma(loc=self._loc_posterior,
+        return NormalInverseGamma(
+            loc=self._loc_posterior,
             variance_scale=self._variance_scale_posterior,
             shape=self._shape_posterior, scale=self._scale_posterior
             ).pdf(x, sig2)
@@ -461,10 +463,11 @@ class NormalInverseGammaModel(BayesModel):
         cdf : numpy.ndarray
             Cumulative distribution function evaluated at (x, sig2).
         """
-        return NormalInverseGamma(loc=self._loc_posterior,
+        return NormalInverseGamma(
+            loc=self._loc_posterior,
             variance_scale=self._variance_scale_posterior,
-            shape=self._shape_posterior, scale=self._scale_posterior
-            ).cdf(x, sig2)
+            shape=self._shape_posterior,
+            scale=self._scale_posterior).cdf(x, sig2)
 
     def rvs(self, size=1, random_state=None):
         """
@@ -483,7 +486,8 @@ class NormalInverseGammaModel(BayesModel):
         rvs : numpy.ndarray
             Random variates of given size (size, 2).
         """
-        return NormalInverseGamma(loc=self._loc_posterior,
+        return NormalInverseGamma(
+            loc=self._loc_posterior,
             variance_scale=self._variance_scale_posterior,
             shape=self._shape_posterior, scale=self._scale_posterior).rvs(
             size=size, random_state=random_state)
@@ -505,7 +509,7 @@ class NormalInverseGammaABTest(BayesABTest):
         Number of Monte Carlo simulations.
 
     random_state : int or None (default=None)
-        The seed used by the random number generator.    
+        The seed used by the random number generator.
     """
     def __init__(self, modelA, modelB, simulations=1000000, random_state=None):
         super().__init__(modelA, modelB, simulations, random_state)
@@ -544,7 +548,7 @@ class NormalInverseGammaABTest(BayesABTest):
         intergration is used.
         """
         check_ab_method(method=method, method_options=("exact", "MC"),
-            variant=variant, lift=lift)
+                        variant=variant, lift=lift)
 
         if method == "exact":
             muA = self.modelA.loc_posterior
@@ -574,8 +578,9 @@ class NormalInverseGammaABTest(BayesABTest):
                     sA = np.sqrt(bA / aA / laA)
                     sB = np.sqrt(bB / aB / laB)
 
-                    prob_mean = integrate.quad(func=func_ab_prob, a=-np.inf,
-                        b=np.inf, args=(muA, sA, 2*aA, muB, sB, 2*aB))[0]
+                    prob_mean = integrate.quad(
+                        func=func_ab_prob, a=-np.inf, b=np.inf, args=(
+                            muA, sA, 2*aA, muB, sB, 2*aB))[0]
 
                 # variance
                 p = bA / (bA + bB)
@@ -595,19 +600,20 @@ class NormalInverseGammaABTest(BayesABTest):
                     sA = np.sqrt(bA / aA / laA)
                     sB = np.sqrt(bB / aB / laB)
 
-                    prob_mean = integrate.quad(func=func_ab_prob, a=-np.inf,
-                        b=np.inf, args=(muB, sB, 2*aB, muA, sA, 2*aA))[0]
+                    prob_mean = integrate.quad(
+                        func=func_ab_prob, a=-np.inf, b=np.inf, args=(
+                            muB, sB, 2*aB, muA, sA, 2*aA))[0]
 
                 # variance
                 p = bB / (bA + bB)
                 prob_var = special.betainc(aB, aA, p)
                 return prob_mean, prob_var
             else:
-                prob_mean_A, prob_var_A = self.probability(method=method,
-                    variant="A", lift=lift)
+                prob_mean_A, prob_var_A = self.probability(
+                    method=method, variant="A", lift=lift)
 
-                prob_mean_B, prob_var_B = self.probability(method=method,
-                    variant="B", lift=lift)
+                prob_mean_B, prob_var_B = self.probability(
+                    method=method, variant="B", lift=lift)
 
                 return (prob_mean_A, prob_var_A), (prob_mean_B, prob_var_B)
         else:
@@ -622,8 +628,10 @@ class NormalInverseGammaABTest(BayesABTest):
             elif variant == "B":
                 return (xB > xA + lift).mean(), (sig2B > sig2A + lift).mean()
             else:
-                return ((xA > xB + lift).mean(),(sig2A > sig2B + lift).mean()
-                    ), ((xB > xA + lift).mean(), (sig2B > sig2A + lift).mean())
+                return ((xA > xB + lift).mean(),
+                        (sig2A > sig2B + lift).mean()), (
+                        (xB > xA + lift).mean(),
+                        (sig2B > sig2A + lift).mean())
 
     def expected_loss(self, method="exact", variant="A", lift=0):
         r"""
@@ -654,7 +662,7 @@ class NormalInverseGammaABTest(BayesABTest):
         t-distribution for the expected loss of the mean.
         """
         check_ab_method(method=method, method_options=("exact", "MC"),
-            variant=variant, lift=lift)
+                        variant=variant, lift=lift)
 
         if method == "exact":
             muA = self.modelA.loc_posterior
@@ -685,13 +693,16 @@ class NormalInverseGammaABTest(BayesABTest):
                     sA = np.sqrt(bA / aA / laA)
                     sB = np.sqrt(bB / aB / laB)
 
-                    el_mean = integrate.quad(func=func_ab_el, a=-np.inf,
-                        b=np.inf, args=(muB, sB, 2*aB, muA, sA, 2*aA))[0]
+                    el_mean = integrate.quad(
+                        func=func_ab_el, a=-np.inf, b=np.inf, args=(
+                            muB, sB, 2*aB, muA, sA, 2*aA))[0]
 
                 # variance
                 if min(aA, aB) > 1:
-                    ta = bA / (aA - 1) * special.betainc(aB, aA - 1, bB / (bA + bB))
-                    tb = bB / (aB - 1) * special.betainc(aB - 1, aA, bB / (bA + bB))
+                    ta = bA / (aA - 1) * special.betainc(
+                        aB, aA - 1, bB / (bA + bB))
+                    tb = bB / (aB - 1) * special.betainc(
+                        aB - 1, aA, bB / (bA + bB))
                     el_var = tb - ta
                 else:
                     el_var = np.nan
@@ -705,23 +716,26 @@ class NormalInverseGammaABTest(BayesABTest):
                     sA = np.sqrt(bA / aA / laA)
                     sB = np.sqrt(bB / aB / laB)
 
-                    el_mean = integrate.quad(func=func_ab_el, a=-np.inf,
-                        b=np.inf, args=(muA, sA, 2*aA, muB, sB, 2*aB))[0]
+                    el_mean = integrate.quad(
+                        func=func_ab_el, a=-np.inf, b=np.inf, args=(
+                            muA, sA, 2*aA, muB, sB, 2*aB))[0]
 
                 # variance
                 if min(aA, aB) > 1:
-                    ta = bA / (aA - 1) * special.betainc(aA - 1, aB, bA / (bA + bB))
-                    tb = bB / (aB - 1) * special.betainc(aA, aB - 1, bA / (bA + bB))
+                    ta = bA / (aA - 1) * special.betainc(
+                        aA - 1, aB, bA / (bA + bB))
+                    tb = bB / (aB - 1) * special.betainc(
+                        aA, aB - 1, bA / (bA + bB))
                     el_var = ta - tb
                 else:
                     el_var = np.nan
                 return el_mean, el_var
             else:
-                el_mean_A, el_var_A = self.expected_loss(method=method,
-                    variant="A", lift=lift)
+                el_mean_A, el_var_A = self.expected_loss(
+                    method=method, variant="A", lift=lift)
 
-                el_mean_B, el_var_B = self.expected_loss(method=method,
-                    variant="B", lift=lift)
+                el_mean_B, el_var_B = self.expected_loss(
+                    method=method, variant="B", lift=lift)
 
                 return (el_mean_A, el_var_A), (el_mean_B, el_var_B)
         else:
@@ -733,15 +747,15 @@ class NormalInverseGammaABTest(BayesABTest):
 
             if variant == "A":
                 return (np.maximum(xB - xA - lift, 0).mean(),
-                    np.maximum(sig2B - sig2A - lift, 0).mean())
+                        np.maximum(sig2B - sig2A - lift, 0).mean())
             elif variant == "B":
                 return (np.maximum(xA - xB - lift, 0).mean(),
-                    np.maximum(sig2A - sig2B - lift, 0).mean())
+                        np.maximum(sig2A - sig2B - lift, 0).mean())
             else:
                 return (np.maximum(xB - xA - lift, 0).mean(),
-                    np.maximum(sig2B - sig2A - lift, 0).mean()
-                    ), (np.maximum(xA - xB - lift, 0).mean(),
-                    np.maximum(sig2A - sig2B - lift, 0).mean())
+                        np.maximum(sig2B - sig2A - lift, 0).mean()), (
+                        np.maximum(xA - xB - lift, 0).mean(),
+                        np.maximum(sig2A - sig2B - lift, 0).mean())
 
     def expected_loss_relative(self, method="exact", variant="A"):
         r"""
@@ -762,20 +776,18 @@ class NormalInverseGammaABTest(BayesABTest):
 
         Notes
         -----
-        Method "exact" uses the normal approximation of the Student's
-        t-distribution for the expected loss of the mean.
+        Method "exact" uses an approximation of :math:`E[1/X]` when :math:``X``
+        follows a Student's t-distribution.
         """
         check_ab_method(method=method, method_options=("exact", "MC"),
-            variant=variant)
+                        variant=variant)
 
         if method == "exact":
             muA = self.modelA.loc_posterior
-            laA = self.modelA.variance_scale_posterior
             aA = self.modelA.shape_posterior
             bA = self.modelA.scale_posterior
 
             muB = self.modelB.loc_posterior
-            laB = self.modelB.variance_scale_posterior
             aB = self.modelB.shape_posterior
             bB = self.modelB.scale_posterior
 
@@ -813,16 +825,19 @@ class NormalInverseGammaABTest(BayesABTest):
             xB, sig2B = data_B[:, 0], data_B[:, 1]
 
             if variant == "A":
-                return ((xB - xA) / xA).mean(), ((sig2B - sig2A) / sig2A).mean()
+                return (((xB - xA) / xA).mean(),
+                        ((sig2B - sig2A) / sig2A).mean())
             elif variant == "B":
-                return ((xA - xB) / xB).mean(), ((sig2A - sig2B) / sig2B).mean()
+                return (((xA - xB) / xB).mean(),
+                        ((sig2A - sig2B) / sig2B).mean())
             else:
                 return (((xB - xA) / xA).mean(),
-                    ((sig2B - sig2A) / sig2A).mean()), (((xA - xB) / xB).mean(),
-                    ((sig2A - sig2B) / sig2B).mean())
+                        ((sig2B - sig2A) / sig2A).mean()), (
+                        ((xA - xB) / xB).mean(),
+                        ((sig2A - sig2B) / sig2B).mean())
 
     def expected_loss_ci(self, method="MC", variant="A", interval_length=0.9):
-        """
+        r"""
         Compute credible intervals on the difference distribution of
         :math:`Z = B-A` and/or :math:`Z = A-B`.
 
@@ -843,7 +858,7 @@ class NormalInverseGammaABTest(BayesABTest):
             [0, 1].
         """
         check_ab_method(method=method, method_options=("MC", "asymptotic"),
-            variant=variant, interval_length=interval_length)
+                        variant=variant, interval_length=interval_length)
 
         # check interval length
         lower = (1 - interval_length) / 2
@@ -861,23 +876,21 @@ class NormalInverseGammaABTest(BayesABTest):
 
             if variant == "A":
                 return (np.percentile((xB - xA), [lower, upper]),
-                    np.percentile((sig2B - sig2A), [lower, upper]))
+                        np.percentile((sig2B - sig2A), [lower, upper]))
             elif variant == "B":
                 return (np.percentile((xA - xB), [lower, upper]),
-                    np.percentile((sig2A - sig2B), [lower, upper]))
+                        np.percentile((sig2A - sig2B), [lower, upper]))
             else:
                 return (np.percentile((xB - xA), [lower, upper]),
-                    np.percentile((sig2B - sig2A), [lower, upper])
-                    ), (np.percentile((xA - xB), [lower, upper]),
-                    np.percentile((sig2A - sig2B), [lower, upper]))
+                        np.percentile((sig2B - sig2A), [lower, upper])), (
+                        np.percentile((xA - xB), [lower, upper]),
+                        np.percentile((sig2A - sig2B), [lower, upper]))
         else:
             muA = self.modelA.loc_posterior
-            laA = self.modelA.variance_scale_posterior
             aA = self.modelA.shape_posterior
             bA = self.modelA.scale_posterior
 
             muB = self.modelB.loc_posterior
-            laB = self.modelB.variance_scale_posterior
             aB = self.modelB.shape_posterior
             bB = self.modelB.scale_posterior
 
@@ -892,19 +905,19 @@ class NormalInverseGammaABTest(BayesABTest):
 
             if variant == "A":
                 return (stats.norm(mu_mean, sigma_mean).ppf([lower, upper]),
-                    stats.norm(mu_var, sigma_var).ppf([lower, upper]))
+                        stats.norm(mu_var, sigma_var).ppf([lower, upper]))
             elif variant == "B":
                 return (stats.norm(-mu_mean, sigma_mean).ppf([lower, upper]),
-                    stats.norm(-mu_var, sigma_var).ppf([lower, upper]))
+                        stats.norm(-mu_var, sigma_var).ppf([lower, upper]))
             else:
                 return (stats.norm(mu_mean, sigma_mean).ppf([lower, upper]),
-                    stats.norm(mu_var, sigma_var).ppf([lower, upper])
-                    ),(stats.norm(-mu_mean, sigma_mean).ppf([lower, upper]),
-                    stats.norm(-mu_var, sigma_var).ppf([lower, upper]))
+                        stats.norm(mu_var, sigma_var).ppf([lower, upper])), (
+                        stats.norm(-mu_mean, sigma_mean).ppf([lower, upper]),
+                        stats.norm(-mu_var, sigma_var).ppf([lower, upper]))
 
     def expected_loss_relative_ci(self, method="MC", variant="A",
-        interval_length=0.9):
-        """
+                                  interval_length=0.9):
+        r"""
         Compute credible intervals on the relative difference distribution of
         :math:`Z = (B-A)/A` and/or :math:`Z = (A-B)/B`.
 
@@ -931,8 +944,8 @@ class NormalInverseGammaABTest(BayesABTest):
         t-distribution for the expected loss of the mean.
         """
         check_ab_method(method=method,
-            method_options=("asymptotic", "exact", "MC"), variant=variant,
-            interval_length=interval_length)
+                        method_options=("asymptotic", "exact", "MC"),
+                        variant=variant, interval_length=interval_length)
 
         lower = (1 - interval_length) / 2
         upper = (1 + interval_length) / 2
@@ -949,24 +962,23 @@ class NormalInverseGammaABTest(BayesABTest):
 
             if variant == "A":
                 return (np.percentile((xB - xA) / xA, [lower, upper]),
-                    np.percentile((sig2B - sig2A) / sig2A, [lower, upper]))
+                        np.percentile((sig2B - sig2A) / sig2A, [lower, upper]))
             elif variant == "B":
                 return (np.percentile((xA - xB) / xB, [lower, upper]),
-                    np.percentile((sig2A - sig2B) / sig2B, [lower, upper]))
+                        np.percentile((sig2A - sig2B) / sig2B, [lower, upper]))
             else:
-                return (np.percentile((xB - xA) / xA, [lower, upper]),
-                    np.percentile((sig2B - sig2A) / sig2A, [lower, upper])
-                    ), (np.percentile((xA - xB) / xB, [lower, upper]),
+                return (
+                    np.percentile((xB - xA) / xA, [lower, upper]),
+                    np.percentile((sig2B - sig2A) / sig2A, [lower, upper])), (
+                    np.percentile((xA - xB) / xB, [lower, upper]),
                     np.percentile((sig2A - sig2B) / sig2B, [lower, upper]))
         else:
             # compute asymptotic
             muA = self.modelA.loc_posterior
-            laA = self.modelA.variance_scale_posterior
             aA = self.modelA.shape_posterior
             bA = self.modelA.scale_posterior
 
             muB = self.modelB.loc_posterior
-            laB = self.modelB.variance_scale_posterior
             aB = self.modelB.shape_posterior
             bB = self.modelB.scale_posterior
 
@@ -991,14 +1003,16 @@ class NormalInverseGammaABTest(BayesABTest):
                 ppfl_var, ppfu_var = dist.ppf([lower, upper])
 
                 if method == "exact":
-                    ppfl_var = optimize.newton(func=func_ppf, x0=ppfl_var,
-                        args=(aA, bA, aB, bB, lower), maxiter=100)
+                    ppfl_var = optimize.newton(
+                        func=func_ppf, x0=ppfl_var, args=(
+                            aA, bA, aB, bB, lower), maxiter=100)
 
-                    ppfu_var = optimize.newton(func=func_ppf, x0=ppfu_var,
-                        args=(aA, bA, aB, bB, upper), maxiter=100)
+                    ppfu_var = optimize.newton(
+                        func=func_ppf, x0=ppfu_var, args=(
+                            aA, bA, aB, bB, upper), maxiter=100)
 
                 return ([ppfl_mean - 1, ppfu_mean - 1],
-                    [ppfl_var - 1, ppfu_var - 1])
+                        [ppfl_var - 1, ppfu_var - 1])
 
             elif variant == "B":
                 # mean using asymptotic normal approximation
@@ -1018,19 +1032,24 @@ class NormalInverseGammaABTest(BayesABTest):
                 ppfl_var, ppfu_var = dist.ppf([lower, upper])
 
                 if method == "exact":
-                    ppfl_var = optimize.newton(func=func_ppf, x0=ppfl_var,
-                        args=(aB, bB, aA, bA, lower), maxiter=100)
+                    ppfl_var = optimize.newton(
+                        func=func_ppf, x0=ppfl_var, args=(
+                            aB, bB, aA, bA, lower), maxiter=100)
 
-                    ppfu_var = optimize.newton(func=func_ppf, x0=ppfu_var,
-                        args=(aB, bB, aA, bA, upper), maxiter=100)
+                    ppfu_var = optimize.newton(
+                        func=func_ppf, x0=ppfu_var, args=(
+                            aB, bB, aA, bA, upper), maxiter=100)
 
                 return ([ppfl_mean - 1, ppfu_mean - 1],
-                    [ppfl_var - 1, ppfu_var - 1])
+                        [ppfl_var - 1, ppfu_var - 1])
             else:
-               return (self.expected_loss_relative_ci(method=method,
-                    variant="A", interval_length=interval_length)
-                    ),(self.expected_loss_relative_ci(method=method,
-                    variant="B", interval_length=interval_length))
+                return (
+                    self.expected_loss_relative_ci(
+                        method=method,
+                        variant="A", interval_length=interval_length)), (
+                    self.expected_loss_relative_ci(
+                        method=method,
+                        variant="B", interval_length=interval_length))
 
 
 class NormalInverseGammaMVTest(BayesMVTest):
@@ -1247,7 +1266,7 @@ class NormalInverseGammaMVTest(BayesMVTest):
             a1 = model_variant.shape_posterior
             b1 = model_variant.scale_posterior
 
-            if min(a0, a1) > 50:
+            if min(a0, a1) > 50 and max(a0, a1) <= 1:
                 # mean using normal approximation
                 sig0 = model_control.std()[0]
                 sig1 = model_variant.std()[0]
@@ -1265,9 +1284,12 @@ class NormalInverseGammaMVTest(BayesMVTest):
                     b=np.inf, args=(mu0, s0, 2*a0, mu1, s1, 2*a1))[0]
 
             # variance
-            t0 = b0 / (a0 - 1) * special.betainc(a0 - 1, a1, b0 / (b0 + b1))
-            t1 = b1 / (a1 - 1) * special.betainc(a0, a1 - 1, b0 / (b0 + b1))
-            el_var = t0 - t1
+            if min(a0, a1) > 1:
+                t0 = b0 / (a0 - 1) * special.betainc(a0 - 1, a1, b0 / (b0 + b1))
+                t1 = b1 / (a1 - 1) * special.betainc(a0, a1 - 1, b0 / (b0 + b1))
+                el_var = t0 - t1
+            else:
+                el_var = np.nan
             return el_mean, el_var
         else:
             data_0 = model_control.rvs(self.simulations, self.random_state)
@@ -1277,7 +1299,7 @@ class NormalInverseGammaMVTest(BayesMVTest):
             x1, sig21 = data_1[:, 0], data_1[:, 1]
 
             return (np.maximum(x0 - x1 - lift, 0).mean(),
-                np.maximum(sig20 - sig21 - lift, 0).mean())
+                    np.maximum(sig20 - sig21 - lift, 0).mean())
 
     def expected_loss_ci(self, method="MC", control="A", variant="B",
         interval_length=0.9):

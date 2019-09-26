@@ -670,14 +670,14 @@ class NormalInverseGammaABTest(BayesABTest):
             sigA = self.modelA.std()[0]
             sigB = self.modelB.std()[0]
 
-            if min(aA, aB) > 50:
+            if min(aA, aB) > 50 or max(aA, aB) <= 1:
                 u = muB - muA
                 s = np.hypot(sigA, sigB)
 
                 t0 = s * np.exp(-0.5 * (u / s) ** 2) / np.sqrt(2 * np.pi)
 
             if variant == "A":
-                if min(aA, aB) > 50:
+                if min(aA, aB) > 50 or max(aA, aB) <= 1:
                     # mean using normal approximation
                     el_mean = t0 + u * special.ndtr(u / s)
                 else:
@@ -689,13 +689,15 @@ class NormalInverseGammaABTest(BayesABTest):
                         b=np.inf, args=(muB, sB, 2*aB, muA, sA, 2*aA))[0]
 
                 # variance
-                ta = bA / (aA - 1) * special.betainc(aB, aA - 1, bB / (bA + bB))
-                tb = bB / (aB - 1) * special.betainc(aB - 1, aA, bB / (bA + bB))
-
-                el_var = tb - ta
+                if min(aA, aB) > 1:
+                    ta = bA / (aA - 1) * special.betainc(aB, aA - 1, bB / (bA + bB))
+                    tb = bB / (aB - 1) * special.betainc(aB - 1, aA, bB / (bA + bB))
+                    el_var = tb - ta
+                else:
+                    el_var = np.nan
                 return el_mean, el_var
             elif variant == "B":
-                if min(aA, aB) > 50:
+                if min(aA, aB) > 50 or max(aA, aB) <= 1:
                     # mean using normal approximation
                     el_mean = t0 - u * special.ndtr(-u / s)
                 else:
@@ -707,10 +709,12 @@ class NormalInverseGammaABTest(BayesABTest):
                         b=np.inf, args=(muA, sA, 2*aA, muB, sB, 2*aB))[0]
 
                 # variance
-                ta = bA / (aA - 1) * special.betainc(aA - 1, aB, bA / (bA + bB))
-                tb = bB / (aB - 1) * special.betainc(aA, aB - 1, bA / (bA + bB))
-
-                el_var = ta - tb
+                if min(aA, aB) > 1:
+                    ta = bA / (aA - 1) * special.betainc(aA - 1, aB, bA / (bA + bB))
+                    tb = bB / (aB - 1) * special.betainc(aA, aB - 1, bA / (bA + bB))
+                    el_var = ta - tb
+                else:
+                    el_var = np.nan
                 return el_mean, el_var
             else:
                 el_mean_A, el_var_A = self.expected_loss(method=method,

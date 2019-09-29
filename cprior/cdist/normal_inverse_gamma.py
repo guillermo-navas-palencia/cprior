@@ -44,6 +44,25 @@ def func_ab_el(x, muA, sA, vA, muB, sB, vB):
     return ((x - muB) * special.stdtr(vB, tB) - c) * np.exp(n - d)
 
 
+def func_mv_prob_mean(x, mu, s, v, variant_params):
+    """Integratnd probability integral."""
+    t = (x - mu) / s
+    n = -0.5 * (1 + v) * np.log(1 + t ** 2 / v)
+    d = 0.5 * np.log(v) + np.log(s) + special.betaln(v * 0.5, 0.5)
+    pdf = n - d
+    g = np.prod([special.stdtr(2 * a, (x - mu) / np.sqrt(b / a / la))
+                 for (mu, la, a, b) in variant_params], axis=0)
+    return np.exp(pdf) * g
+
+
+def func_mv_prob_var(x, a, b, variant_params):
+    """Integratnd probability integral."""
+    pdf = a * np.log(b) - (a + 1) * np.log(x) - b / x - special.gammaln(a)
+    g = np.prod([special.gammaincc(a, b / x)
+                 for (_, _, a, b) in variant_params], axis=0)
+    return np.exp(pdf) * g
+
+
 def func_mv_student_ppf(x, variant_params, p):
     """Function CDF of max of student t random variables for root-finding."""
     cdf = 1.0
@@ -538,7 +557,7 @@ class NormalInverseGammaABTest(BayesABTest):
 
         Returns
         -------
-        probability : float or tuple of floats
+        probability : tuple of floats
 
         Notes
         -----
@@ -655,6 +674,10 @@ class NormalInverseGammaABTest(BayesABTest):
 
         lift : float (default=0.0)
             The amount of uplift.
+
+        Returns
+        -------
+        expected_loss : tuple of floats
 
         Notes
         -----
@@ -774,6 +797,10 @@ class NormalInverseGammaABTest(BayesABTest):
         variant : str (default="A")
             The chosen variant. Options are "A", "B", "all".
 
+        Returns
+        -------
+        expected_loss_relative : tuple of floats
+
         Notes
         -----
         Method "exact" uses an approximation of :math:`E[1/X]` when :math:``X``
@@ -856,6 +883,10 @@ class NormalInverseGammaABTest(BayesABTest):
         interval_length : float (default=0.9)
             Compute ``interval_length``\% credible interval. This is a value in
             [0, 1].
+
+        Returns
+        -------
+        expected_loss_ci : tuple of floats
         """
         check_ab_method(method=method, method_options=("MC", "asymptotic"),
                         variant=variant, interval_length=interval_length)
@@ -937,6 +968,10 @@ class NormalInverseGammaABTest(BayesABTest):
         interval_length : float (default=0.9)
             Compute ``interval_length``\% credible interval. This is a value in
             [0, 1].
+
+        Returns
+        -------
+        expected_loss_relative_ci : tuple of floats
 
         Notes
         -----
@@ -1095,7 +1130,7 @@ class NormalInverseGammaMVTest(BayesMVTest):
 
         Returns
         -------
-        probability : float
+        probability : tuple of floats
 
         Notes
         -----
@@ -1161,8 +1196,9 @@ class NormalInverseGammaMVTest(BayesMVTest):
         Parameters
         ----------
         method : str (default="MLHS")
-            The method of computation. Options are "MC" (Monte Carlo)
-            and "MLHS" (Monte Carlo + Median Latin Hypercube Sampling).
+            The method of computation. Options are "MC" (Monte Carlo),
+            "MLHS" (Monte Carlo + Median Latin Hypercube Sampling) and "quad"
+            (numerical quadrature).
 
         variant : str (default="B")
             The chosen variant.
@@ -1172,8 +1208,12 @@ class NormalInverseGammaMVTest(BayesMVTest):
 
         mlhs_samples : int (default=1000)
             Number of samples for MLHS method.
+
+        Returns
+        -------
+        probability : tuple of floats
         """
-        check_mv_method(method=method, method_options=("MC", "MLHS"),
+        check_mv_method(method=method, method_options=("MC", "MLHS", "quad"),
             control=None, variant=variant, variants=self.models.keys(),
             lift=lift)
 
@@ -1194,6 +1234,30 @@ class NormalInverseGammaMVTest(BayesMVTest):
             maxall = np.maximum.reduce(xall)
 
             return (xvariant > maxall + lift).mean(axis=0)
+        elif method == "quad":
+            # prepare parameters
+            variant_params = [(self.models[v].loc_posterior,
+                self.models[v].variance_scale_posterior,
+                self.models[v].shape_posterior,
+                self.models[v].scale_posterior) for v in variants]
+
+            mu = self.models[variant].loc_posterior
+            la = self.models[variant].variance_scale_posterior
+            a = self.models[variant].shape_posterior
+            b = self.models[variant].scale_posterior
+
+            # mean
+            s = np.sqrt(b / a / la)
+
+            prob_mean = integrate.quad(func=func_mv_prob_mean, a=-np.inf,
+                b=np.inf, args=(mu, s, 2 * a, variant_params))[0]
+
+            # variance
+            n = stats.invgamma(a=a, scale=b).ppf(0.99999999)
+            prob_var = integrate.quad(func=func_mv_prob_var, a=0, b=n, args=(
+                a, b, variant_params))[0]
+
+            return prob_mean, prob_var
         else:
             # prepare parameters
             variant_params = [(self.models[v].loc_posterior,

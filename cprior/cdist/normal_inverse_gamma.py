@@ -23,51 +23,30 @@ from .utils import check_mv_method
 
 def func_ab_prob(x, muA, sA, vA, muB, sB, vB):
     tA = (x - muA) / sA
-    n = -0.5 * (1 + vA) * np.log(1 + tA ** 2 / vA)
-    d = 0.5 * np.log(vA) + np.log(sA) + special.betaln(vA * 0.5, 0.5)
-    g = special.stdtr(vB, (x - muB) / sB)
-
-    return np.exp(n - d) * g
+    pdf = np.exp(-0.5 * (1 + vA) * np.log(1 + tA ** 2 / vA) - 0.5 * np.log(vA)
+                 - np.log(sA) - special.betaln(vA * 0.5, 0.5))
+    cdf = special.stdtr(vB, (x - muB) / sB)
+    return pdf * cdf
 
 
 def func_ab_el(x, muA, sA, vA, muB, sB, vB):
     tA = (x - muA) / sA
     tB = (x - muB) / sB
 
-    n = -0.5 * (1 + vA) * np.log(1 + tA ** 2 / vA)
-    d = 0.5 * np.log(vA) + np.log(sA) + special.betaln(vA * 0.5, 0.5)
+    pdf = np.exp(-0.5 * (1 + vA) * np.log(1 + tA ** 2 / vA) - 0.5 * np.log(vA)
+                 - np.log(sA) - special.betaln(vA*0.5, 0.5))
 
-    c = 0.5 * (1 - vB) * np.log(1 + tB ** 2 / vB) + 0.5 * np.log(vB)
-    c -= special.betaln(vB * 0.5, 0.5)
-    c = sB * np.exp(c) / (1 - vB)
-
-    return ((x - muB) * special.stdtr(vB, tB) - c) * np.exp(n - d)
-
-
-def func_mv_prob_mean(x, mu, s, v, variant_params):
-    """Integratnd probability integral."""
-    t = (x - mu) / s
-    n = -0.5 * (1 + v) * np.log(1 + t ** 2 / v)
-    d = 0.5 * np.log(v) + np.log(s) + special.betaln(v * 0.5, 0.5)
-    pdf = n - d
-    g = np.prod([special.stdtr(2 * a, (x - mu) / np.sqrt(b / a / la))
-                 for (mu, la, a, b) in variant_params], axis=0)
-    return np.exp(pdf) * g
-
-
-def func_mv_prob_var(x, a, b, variant_params):
-    """Integratnd probability integral."""
-    pdf = a * np.log(b) - (a + 1) * np.log(x) - b / x - special.gammaln(a)
-    g = np.prod([special.gammaincc(a, b / x)
-                 for (_, _, a, b) in variant_params], axis=0)
-    return np.exp(pdf) * g
+    c = sB * np.exp(0.5 * (1 - vB) * np.log(1 + tB ** 2 / vB)
+                    + 0.5 * np.log(vB)
+                    - special.betaln(vB * 0.5, 0.5)) / (1 - vB)
+    return ((x - muB) * special.stdtr(vB, tB) - c) * pdf
 
 
 def func_mv_student_ppf(x, variant_params, p):
     """Function CDF of max of student t random variables for root-finding."""
     cdf = 1.0
     for (mu, la, a, b) in variant_params:
-        cdf *= special.stdtr(2*a, (x - mu) / np.sqrt(b / a / la))
+        cdf *= special.stdtr(2 * a, (x - mu) / np.sqrt(b / a / la))
     return cdf - p
 
 
@@ -80,6 +59,102 @@ def func_mv_inverse_gamma_ppf(x, variant_params, p):
     for (_, _, a, b) in variant_params:
         cdf *= special.gammaincc(a, b / x)
     return cdf - p
+
+
+def func_mv_prob_mean(x, mu, s, v, variant_params):
+    """Integratnd probability integral."""
+    t = (x - mu) / s
+    pdf = np.exp(-0.5 * (1 + v) * np.log(1 + t ** 2 / v)
+                 - 0.5 * np.log(v) - np.log(s) - special.betaln(v * 0.5, 0.5))
+
+    cdf = np.prod([special.stdtr(2 * a, (x - mu) / np.sqrt(b / a / la))
+                   for (mu, la, a, b) in variant_params], axis=0)
+    return pdf * cdf
+
+
+def func_mv_prob_var(x, a, b, variant_params):
+    """Integratnd probability integral."""
+    pdf = np.exp(a * np.log(b) - (a + 1) * np.log(x) - b / x
+                 - special.gammaln(a))
+    cdf = np.prod([special.gammaincc(a, b / x)
+                   for (_, _, a, b) in variant_params], axis=0)
+    return pdf * cdf
+
+
+def func_mv_el_mean(x, mu, s, v, variant_params):
+    """Integrand expected loss integral."""
+    n = len(variant_params)
+
+    uu, ll, aa, bb = map(np.array, zip(*variant_params))
+
+    vv = 2 * aa
+    ss = np.sqrt(bb / aa / ll)
+    tt = (x - uu) / ss
+
+    pdf = np.exp(-0.5 * (1 + vv) * np.log(1 + tt ** 2 / vv) - 0.5 * np.log(vv)
+                 - np.log(ss) - special.betaln(vv * 0.5, 0.5))
+
+    pdf = np.dot(pdf, [np.prod([special.stdtr(vv[j], tt[j])
+                       for j in range(n) if j != i], axis=0)
+                       for i in range(n)])
+
+    t = (x - mu) / s
+    c = s * np.exp(0.5 * (1 - v) * np.log(1 + t ** 2 / v) + 0.5 * np.log(v)
+                   - special.betaln(v * 0.5, 0.5)) / (1 - v)
+
+    return ((x - mu) * special.stdtr(v, t) - c) * pdf
+
+
+def func_mv_el_var(x, a, b, variant_params):
+    """Integrand expected loss integral."""
+    n = len(variant_params)
+
+    _, _, aa, bb = map(np.array, zip(*variant_params))
+
+    pdf = np.exp(aa * np.log(bb) - (aa + 1) * np.log(x) - bb / x
+                 - special.gammaln(aa))
+
+    pdf = np.dot(pdf, [np.prod([special.gammaincc(aa[j], bb[j] / x)
+                       for j in range(n) if j != i], axis=0)
+                       for i in range(n)])
+
+    p = x * special.gammaincc(a, b / x)
+    q = b / (a - 1) * special.gammaincc(a - 1, b / x)
+    return (p - q) * pdf
+
+
+def func_mv_elr_mean(x, variant_params):
+    """Integrand expected loss relative integral."""
+    n = len(variant_params)
+
+    uu, ll, aa, bb = map(np.array, zip(*variant_params))
+
+    vv = 2 * aa
+    ss = np.sqrt(bb / aa / ll)
+    tt = (x - uu) / ss
+
+    pdf = np.exp(-0.5 * (1 + vv) * np.log(1 + tt ** 2 / vv) - 0.5 * np.log(vv)
+                 - np.log(ss) - special.betaln(vv * 0.5, 0.5))
+
+    pdf = np.dot(pdf, [np.prod([special.stdtr(vv[j], tt[j])
+                       for j in range(n) if j != i], axis=0)
+                       for i in range(n)])
+    return x * pdf
+
+
+def func_mv_elr_var(x, variant_params):
+    """Integrand expected loss relative integral."""
+    n = len(variant_params)
+
+    _, _, aa, bb = map(np.array, zip(*variant_params))
+
+    pdf = np.exp(aa * np.log(bb) - (aa + 1) * np.log(x) - bb / x
+                 - special.gammaln(aa))
+
+    pdf = np.dot(pdf, [np.prod([special.gammaincc(aa[j], bb[j] / x)
+                       for j in range(n) if j != i], axis=0)
+                       for i in range(n)])
+    return x * pdf
 
 
 class NormalInverseGamma(object):
@@ -1103,7 +1178,7 @@ class NormalInverseGammaMVTest(BayesMVTest):
         The seed used by the random number generator.
     """
     def __init__(self, models, simulations=1000000, random_state=None,
-        n_jobs=None):
+                 n_jobs=None):
         super().__init__(models, simulations, random_state, n_jobs)
 
     def probability(self, method="exact", control="A", variant="B", lift=0):
@@ -1140,8 +1215,8 @@ class NormalInverseGammaMVTest(BayesMVTest):
         intergration is used.
         """
         check_mv_method(method=method, method_options=("exact", "MC"),
-            control=control, variant=variant, variants=self.models.keys(),
-            lift=lift)
+                        control=control, variant=variant,
+                        variants=self.models.keys(), lift=lift)
 
         model_control = self.models[control]
         model_variant = self.models[variant]
@@ -1167,8 +1242,9 @@ class NormalInverseGammaMVTest(BayesMVTest):
                 s0 = np.sqrt(b0 / a0 / la0)
                 s1 = np.sqrt(b1 / a1 / la1)
 
-                prob_mean = integrate.quad(func=func_ab_prob, a=-np.inf,
-                    b=np.inf, args=(mu1, s1, 2 * a1, mu0, s0, 2 * a0))[0]
+                prob_mean = integrate.quad(
+                    func=func_ab_prob, a=-np.inf, b=np.inf, args=(
+                        mu1, s1, 2 * a1, mu0, s0, 2 * a0))[0]
 
             # variance
             p = b1 / (b0 + b1)
@@ -1183,22 +1259,22 @@ class NormalInverseGammaMVTest(BayesMVTest):
 
             return (x1 > x0 + lift).mean(), (sig21 > sig20 + lift).mean()
 
-    def probability_vs_all(self, method="MLHS", variant="B", lift=0,
-        mlhs_samples=1000):
+    def probability_vs_all(self, method="quad", variant="B", lift=0,
+                           mlhs_samples=1000):
         r"""
         Compute the error probability or *chance to beat all* variations. For
-        example, given variants "A", "B", "C" and "D", and choosing variant="B",
-        we compute :math:`P[B > \max(A, C, D) + lift]`.
+        example, given variants "A", "B", "C" and "D", and choosing
+        variant="B", we compute :math:`P[B > \max(A, C, D) + lift]`.
 
         If ``lift`` is positive value, the computation method must be Monte
         Carlo sampling.
 
         Parameters
         ----------
-        method : str (default="MLHS")
+        method : str (default="quad")
             The method of computation. Options are "MC" (Monte Carlo),
             "MLHS" (Monte Carlo + Median Latin Hypercube Sampling) and "quad"
-            (numerical quadrature).
+            (numerical integration).
 
         variant : str (default="B")
             The chosen variant.
@@ -1211,11 +1287,11 @@ class NormalInverseGammaMVTest(BayesMVTest):
 
         Returns
         -------
-        probability : tuple of floats
+        probability_vs_all : tuple of floats
         """
         check_mv_method(method=method, method_options=("MC", "MLHS", "quad"),
-            control=None, variant=variant, variants=self.models.keys(),
-            lift=lift)
+                        control=None, variant=variant,
+                        variants=self.models.keys(), lift=lift)
 
         # exclude variant
         variants = list(self.models.keys())
@@ -1224,70 +1300,68 @@ class NormalInverseGammaMVTest(BayesMVTest):
         if method == "MC":
             # generate samples from all models in parallel
             xvariant = self.models[variant].rvs(self.simulations,
-                self.random_state)
+                                                self.random_state)
 
             pool = Pool(processes=self.n_jobs)
             processes = [pool.apply_async(self._rvs, args=(v, ))
-                for v in variants]
+                         for v in variants]
 
             xall = [p.get() for p in processes]
             maxall = np.maximum.reduce(xall)
 
             return (xvariant > maxall + lift).mean(axis=0)
-        elif method == "quad":
-            # prepare parameters
-            variant_params = [(self.models[v].loc_posterior,
-                self.models[v].variance_scale_posterior,
-                self.models[v].shape_posterior,
-                self.models[v].scale_posterior) for v in variants]
-
-            mu = self.models[variant].loc_posterior
-            la = self.models[variant].variance_scale_posterior
-            a = self.models[variant].shape_posterior
-            b = self.models[variant].scale_posterior
-
-            # mean
-            s = np.sqrt(b / a / la)
-
-            prob_mean = integrate.quad(func=func_mv_prob_mean, a=-np.inf,
-                b=np.inf, args=(mu, s, 2 * a, variant_params))[0]
-
-            # variance
-            n = stats.invgamma(a=a, scale=b).ppf(0.99999999)
-            prob_var = integrate.quad(func=func_mv_prob_var, a=0, b=n, args=(
-                a, b, variant_params))[0]
-
-            return prob_mean, prob_var
         else:
             # prepare parameters
             variant_params = [(self.models[v].loc_posterior,
-                self.models[v].variance_scale_posterior,
-                self.models[v].shape_posterior,
-                self.models[v].scale_posterior) for v in variants]
-
-            r = np.arange(mlhs_samples)
-            np.random.shuffle(r)
-            v = (r - 0.5) / mlhs_samples
-            v = v[v >= 0]
+                              self.models[v].variance_scale_posterior,
+                              self.models[v].shape_posterior,
+                              self.models[v].scale_posterior)
+                              for v in variants]
 
             mu = self.models[variant].loc_posterior
             la = self.models[variant].variance_scale_posterior
             a = self.models[variant].shape_posterior
             b = self.models[variant].scale_posterior
 
-            # mean
-            x = stats.t(df=2 * a, loc=mu, scale=np.sqrt(b / a / la)).ppf(v)
+            v = 2 * a
+            s = np.sqrt(b / a / la)
 
-            prob_mean = np.nanmean(np.prod([stats.t(df=2*a, loc=mu,
-                scale=np.sqrt(b / a / la)).cdf(x)
-                for mu, la, a, b in variant_params], axis=0))
+            if method == "quad":
+                # mean
+                min_t, max_t = stats.t(df=v, loc=mu, scale=s).ppf(
+                    [0.00000001, 0.99999999])
 
-            # variance
-            x = stats.invgamma(a=a, scale=b).ppf(v)
-            prob_var = np.nanmean(np.prod([stats.invgamma(a=a, scale=b).cdf(x)
-                for _, _, a, b in variant_params], axis=0))
+                prob_mean = integrate.quad(
+                    func=func_mv_prob_mean, a=min_t, b=max_t, args=(
+                        mu, s, v, variant_params))[0]
 
-            return prob_mean, prob_var
+                # variance
+                n = stats.invgamma(a=a, scale=b).ppf(0.99999999)
+                prob_var = integrate.quad(
+                    func=func_mv_prob_var, a=0, b=n, args=(
+                        a, b, variant_params))[0]
+
+                return prob_mean, prob_var
+            else:
+                r = np.arange(mlhs_samples)
+                np.random.shuffle(r)
+                r = (r - 0.5) / mlhs_samples
+                r = r[r >= 0]
+
+                # mean
+                x = stats.t(df=2 * a, loc=mu, scale=np.sqrt(b / a / la)).ppf(r)
+
+                prob_mean = np.nanmean(
+                    np.prod([special.stdtr(2*a, (x - mu) / np.sqrt(b / a / la))
+                            for mu, la, a, b in variant_params], axis=0))
+
+                # variance
+                x = stats.invgamma(a=a, scale=b).ppf(r)
+                prob_var = np.nanmean(np.prod([special.gammaincc(a, b / x)
+                                      for _, _, a, b in variant_params],
+                                      axis=0))
+
+                return prob_mean, prob_var
 
     def expected_loss(self, method="exact", control="A", variant="B", lift=0):
         r"""
@@ -1311,10 +1385,14 @@ class NormalInverseGammaMVTest(BayesMVTest):
 
         lift : float (default=0.0)
            The amount of uplift.
+
+        Returns
+        -------
+        expected_loss : tuple of floats
         """
         check_mv_method(method=method, method_options=("exact", "MC"),
-            control=control, variant=variant, variants=self.models.keys(),
-            lift=lift)
+                        control=control, variant=variant,
+                        variants=self.models.keys(), lift=lift)
 
         model_control = self.models[control]
         model_variant = self.models[variant]
@@ -1344,13 +1422,16 @@ class NormalInverseGammaMVTest(BayesMVTest):
                 s0 = np.sqrt(b0 / a0 / la0)
                 s1 = np.sqrt(b1 / a1 / la1)
 
-                el_mean = integrate.quad(func=func_ab_el, a=-np.inf,
-                    b=np.inf, args=(mu0, s0, 2*a0, mu1, s1, 2*a1))[0]
+                el_mean = integrate.quad(
+                    func=func_ab_el, a=-np.inf, b=np.inf, args=(
+                        mu0, s0, 2*a0, mu1, s1, 2*a1))[0]
 
             # variance
             if min(a0, a1) > 1:
-                t0 = b0 / (a0 - 1) * special.betainc(a0 - 1, a1, b0 / (b0 + b1))
-                t1 = b1 / (a1 - 1) * special.betainc(a0, a1 - 1, b0 / (b0 + b1))
+                t0 = b0 / (a0 - 1) * special.betainc(
+                    a0 - 1, a1, b0 / (b0 + b1))
+                t1 = b1 / (a1 - 1) * special.betainc(
+                    a0, a1 - 1, b0 / (b0 + b1))
                 el_var = t0 - t1
             else:
                 el_var = np.nan
@@ -1366,8 +1447,8 @@ class NormalInverseGammaMVTest(BayesMVTest):
                     np.maximum(sig20 - sig21 - lift, 0).mean())
 
     def expected_loss_ci(self, method="MC", control="A", variant="B",
-        interval_length=0.9):
-        """
+                         interval_length=0.9):
+        r"""
         Compute credible intervals on the difference distribution of
         :math:`Z = control-variant`.
 
@@ -1385,10 +1466,15 @@ class NormalInverseGammaMVTest(BayesMVTest):
         interval_length : float (default=0.9)
             Compute ``interval_length``\% credible interval. This is a value in
             [0, 1].
+
+        Returns
+        -------
+        expected_loss_ci : tuple of floats
         """
         check_mv_method(method=method, method_options=("MC", "asymptotic"),
-            control=control, variant=variant, variants=self.models.keys(),
-            interval_length=interval_length)
+                        control=control, variant=variant,
+                        variants=self.models.keys(),
+                        interval_length=interval_length)
 
         # check interval length
         lower = (1 - interval_length) / 2
@@ -1408,7 +1494,7 @@ class NormalInverseGammaMVTest(BayesMVTest):
             upper *= 100.0
 
             return (np.percentile((x0 - x1), [lower, upper]),
-                np.percentile((sig20 - sig21), [lower, upper]))
+                    np.percentile((sig20 - sig21), [lower, upper]))
         else:
             mu0 = model_control.loc_posterior
             a0 = model_control.shape_posterior
@@ -1428,7 +1514,7 @@ class NormalInverseGammaMVTest(BayesMVTest):
             sigma_var = np.hypot(sig_var_0, sig_var_1)
 
             return (stats.norm(-mu_mean, sigma_mean).ppf([lower, upper]),
-                stats.norm(-mu_var, sigma_var).ppf([lower, upper]))
+                    stats.norm(-mu_var, sigma_var).ppf([lower, upper]))
 
     def expected_loss_relative(self, method="exact", control="A", variant="B"):
         r"""
@@ -1446,9 +1532,14 @@ class NormalInverseGammaMVTest(BayesMVTest):
 
         variant : str (default="B")
             The tested variant.
+
+        Returns
+        -------
+        expected_loss_relative : tuple of floats
         """
         check_mv_method(method=method, method_options=("exact", "MC"),
-            control=control, variant=variant, variants=self.models.keys())
+                        control=control, variant=variant,
+                        variants=self.models.keys())
 
         model_control = self.models[control]
         model_variant = self.models[variant]
@@ -1480,8 +1571,8 @@ class NormalInverseGammaMVTest(BayesMVTest):
 
             return ((x0 - x1) / x1).mean(), ((sig20 - sig21) / sig21).mean()
 
-    def expected_loss_relative_vs_all(self, method="MLHS", control="A",
-        variant="B", mlhs_samples=1000):
+    def expected_loss_relative_vs_all(self, method="quad", control="A",
+                                      variant="B", mlhs_samples=1000):
         r"""
         Compute the expected relative loss against all variations. For example,
         given variants "A", "B", "C" and "D", and choosing variant="B",
@@ -1489,18 +1580,24 @@ class NormalInverseGammaMVTest(BayesMVTest):
 
         Parameters
         ----------
-        method : str (default="MLHS")
-            The method of computation. Options are "MC" (Monte Carlo)
-            and "MLHS" (Monte Carlo + Median Latin Hypercube Sampling).
+        method : str (default="quad")
+            The method of computation. Options are "MC" (Monte Carlo),
+            "MLHS" (Monte Carlo + Median Latin Hypercube Sampling) and "quad"
+            (numerical integration).
 
         variant : str (default="B")
             The chosen variant.
 
         mlhs_samples : int (default=1000)
             Number of samples for MLHS method.
+
+        Returns
+        -------
+        expected_loss_relative_vs_all : tuple of floats
         """
-        check_mv_method(method=method, method_options=("MC", "MLHS"),
-            control=None, variant=variant, variants=self.models.keys())
+        check_mv_method(method=method, method_options=("MC", "MLHS", "quad"),
+                        control=None, variant=variant,
+                        variants=self.models.keys())
 
         # exclude variant
         variants = list(self.models.keys())
@@ -1509,35 +1606,99 @@ class NormalInverseGammaMVTest(BayesMVTest):
         if method == "MC":
             # generate samples from all models in parallel
             xvariant = self.models[variant].rvs(self.simulations,
-                self.random_state)
+                                                self.random_state)
 
             pool = Pool(processes=self.n_jobs)
             processes = [pool.apply_async(self._rvs, args=(v, ))
-                for v in variants]
+                         for v in variants]
             xall = [p.get() for p in processes]
             maxall = np.maximum.reduce(xall)
 
             return (maxall / xvariant).mean(axis=0) - 1
         else:
-            e_max = self._expected_value_max_mlhs_student_t(variants,
-                mlhs_samples)
-            e_inv_x = self._expected_value_reciprocal_mlhs_student_t(variant,
-                mlhs_samples)
-            elr_mean = e_max * e_inv_x - 1
+            # prepare parameters
+            variant_params = [(self.models[v].loc_posterior,
+                              self.models[v].variance_scale_posterior,
+                              self.models[v].shape_posterior,
+                              self.models[v].scale_posterior)
+                              for v in variants]
 
-            e_max = self._expected_value_max_mlhs_invgamma(variants,
-                mlhs_samples)
+            mu = self.models[variant].loc_posterior
+            la = self.models[variant].variance_scale_posterior
             a = self.models[variant].shape_posterior
             b = self.models[variant].scale_posterior
-            e_inv_x = a / b
 
-            elr_variance = e_max * e_inv_x - 1
+            if method == "quad":
+                max_ig = np.max([stats.invgamma(
+                    a=self.models[v].shape_posterior,
+                    scale=self.models[v].scale_posterior).ppf(0.99999999)
+                    for v in variants])
 
-            return elr_mean, elr_variance
+                t_ppfs = [stats.t(
+                    df=2*self.models[v].shape_posterior,
+                    loc=self.models[v].loc_posterior,
+                    scale=np.sqrt(
+                        self.models[v].scale_posterior /
+                        self.models[v].shape_posterior /
+                        self.models[v].variance_scale_posterior)).ppf(
+                    [0.00000001, 0.99999999]) for v in variants]
+
+                min_t = np.min([q[0] for q in t_ppfs])
+                max_t = np.max([q[1] for q in t_ppfs])
+
+                # mean
+                e_max = integrate.quad(func=func_mv_elr_mean, a=min_t,
+                                       b=max_t, args=(variant_params))[0]
+
+                e_inv_x = (1 + self.models[variant].var()[0] / mu ** 2) / mu
+
+                elr_mean = e_max * e_inv_x - 1
+
+                # variance
+                e_max = integrate.quad(func=func_mv_elr_var, a=0, b=max_ig,
+                                       args=(variant_params))[0]
+                e_inv_x = a / b
+
+                elr_variance = e_max * e_inv_x - 1
+
+                return elr_mean, elr_variance
+            else:
+                r = np.arange(mlhs_samples)
+                np.random.shuffle(r)
+                r = (r - 0.5) / mlhs_samples
+                r = r[r >= 0][..., np.newaxis]
+
+                n = len(variant_params)
+                variant_params.append((mu, la, a, b))
+                uu, ll, aa, bb = map(np.array, zip(*variant_params))
+                vv = 2 * aa
+                ss = np.sqrt(bb / aa / ll)
+
+                # mean
+                xx = stats.t(df=vv, loc=uu, scale=ss).ppf(r)
+                xr = (1. / xx[:, -1]).mean()
+
+                elr_mean = np.sum(
+                    xx[:, :-1].T * [np.prod([
+                        special.stdtr(vv[j], (xx[:, i] - uu[j]) / ss[j])
+                        for j in range(n) if j != i],
+                        axis=0) for i in range(n)], axis=0).mean() * xr - 1
+
+                # variance
+                xx = stats.invgamma(a=aa, scale=bb).ppf(r)
+                xr = (1. / xx[:, -1]).mean()
+
+                elr_var = np.sum(
+                    xx[:, :-1].T * [np.prod([
+                        special.gammaincc(aa[j], bb[j] / xx[:, i])
+                        for j in range(n) if j != i],
+                        axis=0) for i in range(n)], axis=0).mean() * xr - 1
+
+                return elr_mean, elr_var
 
     def expected_loss_relative_ci(self, method="MC", control="A", variant="B",
-        interval_length=0.9):
-        """
+                                  interval_length=0.9):
+        r"""
         Compute credible intervals on the relative difference distribution of
         :math:`Z = (control - variant) / variant`.
 
@@ -1556,10 +1717,16 @@ class NormalInverseGammaMVTest(BayesMVTest):
         interval_length : float (default=0.9)
             Compute ``interval_length``\% credible interval. This is a value in
             [0, 1].
+
+        Returns
+        -------
+        expected_loss_relative_ci : tuple of floats
         """
-        check_mv_method(method=method, method_options=("asymptotic", "exact",
-            "MC"), control=control, variant=variant,
-            variants=self.models.keys(), interval_length=interval_length)
+        check_mv_method(method=method,
+                        method_options=("asymptotic", "exact", "MC"),
+                        control=control, variant=variant,
+                        variants=self.models.keys(),
+                        interval_length=interval_length)
 
         lower = (1 - interval_length) / 2
         upper = (1 + interval_length) / 2
@@ -1608,17 +1775,17 @@ class NormalInverseGammaMVTest(BayesMVTest):
             ppfl_var, ppfu_var = dist.ppf([lower, upper])
 
             if method == "exact":
-                ppfl_var = optimize.newton(func=func_ppf, x0=ppfl_var,
-                    args=(a1, b1, a0, b0, lower), maxiter=100)
+                ppfl_var = optimize.newton(func=func_ppf, x0=ppfl_var, args=(
+                    a1, b1, a0, b0, lower), maxiter=100)
 
-                ppfu_var = optimize.newton(func=func_ppf, x0=ppfu_var,
-                    args=(a1, b1, a0, b0, upper), maxiter=100)
+                ppfu_var = optimize.newton(func=func_ppf, x0=ppfu_var, args=(
+                    a1, b1, a0, b0, upper), maxiter=100)
 
             return ([ppfl_mean - 1, ppfu_mean - 1],
-                [ppfl_var - 1, ppfu_var - 1])
+                    [ppfl_var - 1, ppfu_var - 1])
 
-    def expected_loss_vs_all(self, method="MLHS", variant="B", lift=0,
-        mlhs_samples=1000):
+    def expected_loss_vs_all(self, method="quad", variant="B", lift=0,
+                             mlhs_samples=1000):
         r"""
         Compute the expected loss against all variations. For example, given
         variants "A", "B", "C" and "D", and choosing variant="B", we compute
@@ -1629,9 +1796,10 @@ class NormalInverseGammaMVTest(BayesMVTest):
 
         Parameters
         ----------
-        method : str (default="MLHS")
-            The method of computation. Options are "MC" (Monte Carlo)
-            and "MLHS" (Monte Carlo + Median Latin Hypercube Sampling).
+        method : str (default="quad")
+            The method of computation. Options are "MC" (Monte Carlo),
+            "MLHS" (Monte Carlo + Median Latin Hypercube Sampling) and "quad"
+            (numerical integration).
 
         variant : str (default="B")
             The chosen variant.
@@ -1641,148 +1809,106 @@ class NormalInverseGammaMVTest(BayesMVTest):
 
         mlhs_samples : int (default=1000)
             Number of samples for MLHS method.
-        """
-        check_mv_method(method=method, method_options=("MC", "MLHS"),
-            control=None, variant=variant, variants=self.models.keys(),
-            lift=lift)
 
-        # exclude variant
+        Returns
+        -------
+        expected_loss_vs_all : tuple of floats
+        """
+        check_mv_method(method=method, method_options=("MC", "MLHS", "quad"),
+                        control=None, variant=variant,
+                        variants=self.models.keys(), lift=lift)
+
         variants = list(self.models.keys())
-        variants.remove(variant)
 
         if method == "MC":
+            # exclude variant
+            variants.remove(variant)
+
             # generate samples from all models in parallel
             xvariant = self.models[variant].rvs(self.simulations,
-                self.random_state)
+                                                self.random_state)
 
             pool = Pool(processes=self.n_jobs)
             processes = [pool.apply_async(self._rvs, args=(v, ))
-                for v in variants]
+                         for v in variants]
             xall = [p.get() for p in processes]
             maxall = np.maximum.reduce(xall)
 
             return np.maximum(maxall - xvariant - lift, 0).mean(axis=0)
         else:
+            max_ig = np.max([stats.invgamma(
+                a=self.models[v].shape_posterior,
+                scale=self.models[v].scale_posterior).ppf(0.99999999)
+                for v in variants])
+
+            t_ppfs = [stats.t(
+                df=2*self.models[v].shape_posterior,
+                loc=self.models[v].loc_posterior,
+                scale=np.sqrt(
+                    self.models[v].scale_posterior /
+                    self.models[v].shape_posterior /
+                    self.models[v].variance_scale_posterior)).ppf(
+                [0.00000001, 0.99999999]) for v in variants]
+
+            min_t = np.min([q[0] for q in t_ppfs])
+            max_t = np.max([q[1] for q in t_ppfs])
+
+            # exclude variant
+            variants.remove(variant)
+
             # prepare parameters
             variant_params = [(self.models[v].loc_posterior,
-                self.models[v].variance_scale_posterior,
-                self.models[v].shape_posterior,
-                self.models[v].scale_posterior) for v in variants]
-
-            r = np.arange(mlhs_samples)
-            np.random.shuffle(r)
-            v = (r - 0.5) / mlhs_samples
-            v = v[v >= 0]
+                              self.models[v].variance_scale_posterior,
+                              self.models[v].shape_posterior,
+                              self.models[v].scale_posterior)
+                              for v in variants]
 
             mu = self.models[variant].loc_posterior
             la = self.models[variant].variance_scale_posterior
             a = self.models[variant].shape_posterior
             b = self.models[variant].scale_posterior
 
-            n = 2 * a
+            v = 2 * a
             s = np.sqrt(b / a / la)
 
-            # mean
-            dist = stats.t(df=n, loc=mu, scale=s)
+            if method == "quad":
+                # mean
+                el_mean = integrate.quad(
+                    func=func_mv_el_mean, a=min_t, b=max_t, args=(
+                        mu, s, v, variant_params))[0]
 
-            # TODO: improve root-finding bounds selection
-            # choose mina from the variant with smallest mean
-            # choose maxb from the variant with largest mean
-            mina = dist.ppf(1e-15)
-            maxb = dist.ppf(1-1e-15)
+                # variance
+                el_var = integrate.quad(
+                    func=func_mv_el_var, a=0, b=max_ig, args=(
+                        a, b, variant_params))[0]
 
-            print(mina, maxb)
+                return el_mean, el_var
+            else:
+                r = np.arange(mlhs_samples)
+                np.random.shuffle(r)
+                r = (r - 0.5) / mlhs_samples
+                r = r[r >= 0]
 
-            x = np.array([optimize.brentq(f=func_mv_student_ppf,
-                args=(variant_params, p), a=mina, b=maxb, xtol=1e-4, rtol=1e-4
-                ) for p in v])
+                # mean
+                x = np.array([optimize.brentq(
+                    f=func_mv_student_ppf, args=(variant_params, p), a=min_t,
+                    b=max_t, xtol=1e-4, rtol=1e-4) for p in r])
 
-            # compute second integral
-            xt = (x - mu) / s
-            t = s * n ** 0.5 * (1 + xt * xt / n) ** ((1 - n) * 0.5) / (1 - n)
-            t /= special.beta(n / 2, 1 / 2)
+                # compute second integral
+                t = (x - mu) / s
+                c = s * np.exp(0.5 * (1 - v) * np.log(1 + t ** 2 / v)
+                               + 0.5 * np.log(v)
+                               - special.betaln(v * 0.5, 0.5)) / (1 - v)
 
-            el_mean = np.nanmean((x - mu) * special.stdtr(n, xt) - t)
+                el_mean = np.nanmean((x - mu) * special.stdtr(v, t) - c)
 
-            # variance
-            maxb = stats.invgamma(a=a, scale=b).ppf(0.99999999)
+                # variance
+                x = np.array([optimize.brentq(
+                    f=func_mv_inverse_gamma_ppf, args=(variant_params, p), a=0,
+                    b=max_ig, xtol=1e-4, rtol=1e-4) for p in r])
 
-            x = np.array([optimize.brentq(f=func_mv_inverse_gamma_ppf,
-                args=(variant_params, p), a=0, b=maxb, xtol=1e-4, rtol=1e-4
-                ) for p in v])
+                p = x * special.gammaincc(a, b / x)
+                q = b / (a - 1) * special.gammaincc(a - 1, b / x)
+                el_var = np.nanmean(p - q)
 
-            p = x * special.gammaincc(a, b / x)
-            q = b / (a - 1) * special.gammaincc(a - 1, b / x)
-            el_var = np.nanmean(p - q)
-
-            return el_mean, el_var
-
-    def _expected_value_max_mlhs_invgamma(self, variants, mlhs_samples):
-        """
-        Compute expected value of the maximum of inverse gamma random variables.
-        """
-        r = np.arange(mlhs_samples)
-        np.random.shuffle(r)
-        v = (r - 0.5) / mlhs_samples
-        v = v[v >= 0]
-
-        s = 0
-        for i in variants:
-            a = self.models[i].shape_posterior
-            b = self.models[i].scale_posterior
-            x = stats.invgamma(a=a-1, loc=0, scale=b).ppf(v)
-            c = b / (a - 1)
-            s += c * np.prod([special.gammaincc(self.models[j].shape_posterior,
-                self.models[j].scale_posterior / x) for j in variants if j != i
-                ], axis=0).mean()
-
-        return s
-
-    def _expected_value_max_mlhs_student_t(self, variants, mlhs_samples):
-        """
-        Compute expected value of the maximum of generalized student t random
-        variables.
-        """
-        r = np.arange(mlhs_samples)
-        np.random.shuffle(r)
-        v = (r - 0.5) / mlhs_samples
-        v = v[v >= 0]
-
-        s = 0
-        for i in variants:
-            mu = self.models[i].loc_posterior
-            la = self.models[i].variance_scale_posterior
-            a = self.models[i].shape_posterior
-            b = self.models[i].scale_posterior
-            x = stats.t(df=2*a, loc=mu, scale=np.sqrt(b / a / la)).ppf(v)
-            prod_cdf = []
-            for j in variants:
-                if j != i:
-                    mu = self.models[j].loc_posterior
-                    la = self.models[j].variance_scale_posterior
-                    a = self.models[j].shape_posterior
-                    b = self.models[j].scale_posterior
-                    s = np.sqrt(b / a / la)
-                    xt = (x - mu) / s
-                    prod_cdf.append(stats.t(df=2*a, loc=mu, scale=s).cdf(x))
-
-            print(np.prod(prod_cdf))
-
-            s += (x * np.prod(prod_cdf)).mean()
-            print((x * np.prod(prod_cdf)).mean())
-
-        return s
-
-    def _expected_value_reciprocal_mlhs_student_t(self, variant, mlhs_samples):
-        r = np.arange(mlhs_samples)
-        np.random.shuffle(r)
-        v = (r - 0.5) / mlhs_samples
-        v = v[v >= 0]
-
-        mu = self.models[variant].loc_posterior
-        la = self.models[variant].variance_scale_posterior
-        a = self.models[variant].shape_posterior
-        b = self.models[variant].scale_posterior
-        x = stats.t(df=2*a, loc=mu, scale=np.sqrt(b / a / la)).ppf(v)
-
-        return (1.0 / x).mean()
+                return el_mean, el_var

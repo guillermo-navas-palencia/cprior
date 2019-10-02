@@ -745,7 +745,7 @@ class BetaMVTest(BayesMVTest):
         method : str (default="quad")
             The method of computation. Options are "MC" (Monte Carlo),
             "MLHS" (Monte Carlo + Median Latin Hypercube Sampling) and "quad"
-            (numerical quadrature).
+            (numerical integration).
 
         variant : str (default="B")
             The chosen variant.
@@ -989,7 +989,7 @@ class BetaMVTest(BayesMVTest):
         method : str (default="quad")
             The method of computation. Options are "MC" (Monte Carlo),
             "MLHS" (Monte Carlo + Median Latin Hypercube Sampling) and "quad"
-            (numerical quadrature).
+            (numerical integration).
 
         variant : str (default="B")
             The chosen variant.
@@ -1125,7 +1125,7 @@ class BetaMVTest(BayesMVTest):
         method : str (default="quad")
             The method of computation. Options are "MC" (Monte Carlo),
             "MLHS" (Monte Carlo + Median Latin Hypercube Sampling) and "quad"
-            (numerical quadrature).
+            (numerical integration).
 
         variant : str (default="B")
             The chosen variant.

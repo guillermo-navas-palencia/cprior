@@ -1,10 +1,13 @@
-|Travis|_ |Codecov|_
+|Travis|_ |Codecov|_ |Coveralls|_
 
 .. |Travis| image:: https://travis-ci.com/guillermo-navas-palencia/cprior.svg?branch=master
 .. _Travis: https://travis-ci.com/guillermo-navas-palencia/cprior
     
 .. |Codecov| image:: https://codecov.io/gh/guillermo-navas-palencia/cprior/branch/master/graph/badge.svg
 .. _Codecov: https://codecov.io/gh/guillermo-navas-palencia/cprior
+
+.. |Coveralls| image:: https://coveralls.io/repos/github/guillermo-navas-palencia/cprior/badge.svg?branch=master
+.. _Coveralls: https://coveralls.io/github/guillermo-navas-palencia/cprior?branch=master
 
 CPrior
 ======

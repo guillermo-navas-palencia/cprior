@@ -757,7 +757,9 @@ class NormalInverseGammaABTest(BayesABTest):
         Notes
         -----
         Method "exact" uses the normal approximation of the Student's
-        t-distribution for the expected loss of the mean.
+        t-distribution for the expected loss of the mean when the number
+        of degrees of freedom is large. For small values, numerical
+        intergration is used.
         """
         check_ab_method(method=method, method_options=("exact", "MC"),
                         variant=variant, lift=lift)
@@ -878,8 +880,8 @@ class NormalInverseGammaABTest(BayesABTest):
 
         Notes
         -----
-        Method "exact" uses an approximation of :math:`E[1/X]` when :math:``X``
-        follows a Student's t-distribution.
+        Method "exact" uses an approximation of :math:`E[1/X]` where
+        :math:``X`` follows a Student's t-distribution.
         """
         check_ab_method(method=method, method_options=("exact", "MC"),
                         variant=variant)
@@ -1389,6 +1391,13 @@ class NormalInverseGammaMVTest(BayesMVTest):
         Returns
         -------
         expected_loss : tuple of floats
+
+        Notes
+        -----
+        Method "exact" uses the normal approximation of the Student's
+        t-distribution for the expected loss of the mean when the number
+        of degrees of freedom is large. For small values, numerical
+        intergration is used.
         """
         check_mv_method(method=method, method_options=("exact", "MC"),
                         control=control, variant=variant,
@@ -1536,6 +1545,11 @@ class NormalInverseGammaMVTest(BayesMVTest):
         Returns
         -------
         expected_loss_relative : tuple of floats
+
+        Notes
+        -----
+        Method "exact" uses an approximation of :math:`E[1/X]` where
+        :math:``X`` follows a Student's t-distribution.
         """
         check_mv_method(method=method, method_options=("exact", "MC"),
                         control=control, variant=variant,

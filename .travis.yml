@@ -8,6 +8,7 @@ python:
 # command to install dependencies
 install:
   - pip install codecov
+  - pip install coveralls
   - pip install -r requirements.txt
   - pip install -e .
 # command to run tests
@@ -16,3 +17,4 @@ script:
 
 after_success:
   - codecov
+  - coveralls

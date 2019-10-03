@@ -1113,19 +1113,23 @@ class GammaMVTest(BayesMVTest):
                 return np.nanmean(p - q)
 
     def _expected_value_max_mlhs(self, variants, mlhs_samples):
-        """Compute expected value of the maximum of gamma random variables."""
+        """Compute expected value of the maximum of beta random variables."""
         r = np.arange(mlhs_samples)
         np.random.shuffle(r)
         v = (r - 0.5) / mlhs_samples
-        v = v[v >= 0]
+        v = v[v >= 0][..., np.newaxis]
 
-        s = 0
-        for i in variants:
-            a = self.models[i].shape_posterior
-            b = self.models[i].rate_posterior
-            x = stats.gamma(a=a + 1, loc=0, scale=1.0 / b).ppf(v)
-            c = a / b
-            s += c * np.prod([self.models[j].cdf(x) for j in variants
-                             if j != i], axis=0).mean()
+        variant_params = [(self.models[v].shape_posterior,
+                          self.models[v].rate_posterior)
+                          for v in variants]
 
-        return s
+        n = len(variant_params)
+        aa, bb = map(np.array, zip(*variant_params))
+        cc = aa / bb
+
+        xx = stats.gamma(a=aa + 1, loc=0, scale=1.0 / bb).ppf(v)
+
+        return np.sum([cc[i] * np.prod([
+                      special.gammainc(aa[j], bb[j] * xx[:, i])
+                      for j in range(n) if j != i], axis=0)
+                      for i in range(n)], axis=0).mean()

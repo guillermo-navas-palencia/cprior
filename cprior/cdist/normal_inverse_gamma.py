@@ -881,7 +881,7 @@ class NormalInverseGammaABTest(BayesABTest):
         Notes
         -----
         Method "exact" uses an approximation of :math:`E[1/X]` where
-        :math:``X`` follows a Student's t-distribution.
+        :math:`X` follows a Student's t-distribution.
         """
         check_ab_method(method=method, method_options=("exact", "MC"),
                         variant=variant)
@@ -1549,7 +1549,7 @@ class NormalInverseGammaMVTest(BayesMVTest):
         Notes
         -----
         Method "exact" uses an approximation of :math:`E[1/X]` where
-        :math:``X`` follows a Student's t-distribution.
+        :math:`X` follows a Student's t-distribution.
         """
         check_mv_method(method=method, method_options=("exact", "MC"),
                         control=control, variant=variant,

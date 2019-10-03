@@ -7,4 +7,5 @@ Formulas for conjugate prior distributions
    formulas_conjugate_general
    formulas_conjugate_beta
    formulas_conjugate_gamma
+   formulas_conjugate_normal_inverse_gamma
    formulas_conjugate_pareto

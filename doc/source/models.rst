@@ -25,6 +25,15 @@ List of supported sampling distributions using a conjugate gammma distribution f
    models_exponential
    models_poisson
 
+Normal-inverse-gamma prior distribution
+---------------------------------------
+
+List of supported sampling distributions using a conjugate normal-inverse-gamma distribution for their parameters.
+
+.. toctree::
+   :maxdepth: 2
+
+   models_normal
 
 Pareto conjugate prior distribution
 -----------------------------------

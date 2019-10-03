@@ -39,12 +39,12 @@ def test_beta_equal_params_float():
 
 def test_beta_model_alpha_positive():
     with raises(ValueError):
-        model = BetaModel(alpha=-1)
+        BetaModel(alpha=-1)
 
 
 def test_beta_model_beta_positive():
     with raises(ValueError):
-        model = BetaModel(beta=0)
+        BetaModel(beta=0)
 
 
 def test_beta_model_stats():
@@ -135,32 +135,33 @@ def test_beta_ab_probability():
     modelB = BetaModel(alpha=70, beta=90)
     abtest = BetaABTest(modelA, modelB, 1000000, 42)
 
-    assert abtest.probability(method="exact",
-        variant="A") == approx(0.2737282537, rel=1e-8)
+    assert abtest.probability(
+        method="exact", variant="A") == approx(0.2737282537, rel=1e-8)
 
-    assert abtest.probability(method="MLHS",
-        variant="A") == approx(0.2737282537, rel=1e-2)
+    assert abtest.probability(
+        method="MLHS", variant="A") == approx(0.2737282537, rel=1e-2)
 
-    assert abtest.probability(method="MC",
-        variant="A") == approx(0.2737282537, rel=1e-2)
+    assert abtest.probability(
+        method="MC", variant="A") == approx(0.2737282537, rel=1e-2)
 
-    assert abtest.probability(method="exact",
-        variant="B") == approx(0.7262717462, rel=1e-8)
+    assert abtest.probability(
+        method="exact", variant="B") == approx(0.7262717462, rel=1e-8)
 
-    assert abtest.probability(method="MLHS",
-        variant="B") == approx(0.7262717462, rel=1e-2)
+    assert abtest.probability(
+        method="MLHS", variant="B") == approx(0.7262717462, rel=1e-2)
 
-    assert abtest.probability(method="MC",
-        variant="B") == approx(0.7262717462, rel=1e-2)
+    assert abtest.probability(
+        method="MC", variant="B") == approx(0.7262717462, rel=1e-2)
 
-    assert abtest.probability(method="exact",
-        variant="all") == approx([0.2737282537, 0.7262717462], rel=1e-8)
+    assert abtest.probability(
+        method="exact", variant="all") == approx(
+        [0.2737282537, 0.7262717462], rel=1e-8)
 
-    assert abtest.probability(method="MLHS",
-        variant="all") == approx([0.2737282537, 0.7262717462], rel=1e-2)
+    assert abtest.probability(method="MLHS", variant="all") == approx(
+        [0.2737282537, 0.7262717462], rel=1e-2)
 
-    assert abtest.probability(method="MC",
-        variant="all") == approx([0.2737282537, 0.7262717462], rel=1e-2)
+    assert abtest.probability(method="MC", variant="all") == approx(
+        [0.2737282537, 0.7262717462], rel=1e-2)
 
 
 def test_beta_ab_expected_loss():
@@ -168,32 +169,32 @@ def test_beta_ab_expected_loss():
     modelB = BetaModel(alpha=70, beta=90)
     abtest = BetaABTest(modelA, modelB, 1000000, 42)
 
-    assert abtest.expected_loss(method="exact",
-        variant="A") == approx(0.0481119843, rel=1e-8)
+    assert abtest.expected_loss(
+        method="exact", variant="A") == approx(0.0481119843, rel=1e-8)
 
-    assert abtest.expected_loss(method="MLHS",
-        variant="A") == approx(0.0481119843, rel=1e-2)
+    assert abtest.expected_loss(
+        method="MLHS", variant="A") == approx(0.0481119843, rel=1e-2)
 
-    assert abtest.expected_loss(method="MC",
-        variant="A") == approx(0.0481119843, rel=1e-2)
+    assert abtest.expected_loss(
+        method="MC", variant="A") == approx(0.0481119843, rel=1e-2)
 
-    assert abtest.expected_loss(method="exact",
-        variant="B") == approx(0.0106119843, rel=1e-8)
+    assert abtest.expected_loss(
+        method="exact", variant="B") == approx(0.0106119843, rel=1e-8)
 
-    assert abtest.expected_loss(method="MLHS",
-        variant="B") == approx(0.0106119843, rel=1e-2)
+    assert abtest.expected_loss(
+        method="MLHS", variant="B") == approx(0.0106119843, rel=1e-2)
 
-    assert abtest.expected_loss(method="MC",
-        variant="B") == approx(0.0106119843, rel=1e-2)
+    assert abtest.expected_loss(
+        method="MC", variant="B") == approx(0.0106119843, rel=1e-2)
 
-    assert abtest.expected_loss(method="exact",
-        variant="all") == approx([0.0481119843, 0.0106119843], rel=1e-8)
+    assert abtest.expected_loss(method="exact", variant="all") == approx(
+        [0.0481119843, 0.0106119843], rel=1e-8)
 
-    assert abtest.expected_loss(method="MLHS",
-        variant="all") == approx([0.0481119843, 0.0106119843], rel=1e-2)
+    assert abtest.expected_loss(method="MLHS", variant="all") == approx(
+        [0.0481119843, 0.0106119843], rel=1e-2)
 
-    assert abtest.expected_loss(method="MC",
-        variant="all") == approx([0.0481119843, 0.0106119843], rel=1e-2)
+    assert abtest.expected_loss(method="MC", variant="all") == approx(
+        [0.0481119843, 0.0106119843], rel=1e-2)
 
 
 def test_beta_ab_expected_loss_ci():
@@ -201,25 +202,25 @@ def test_beta_ab_expected_loss_ci():
     modelB = BetaModel(alpha=7000, beta=9000)
     abtest = BetaABTest(modelA, modelB, 1000000, 42)
 
-    assert abtest.expected_loss_ci(method="MC",
-        variant="A") == approx([0.02644029, 0.04853865], rel=1e-2)
+    assert abtest.expected_loss_ci(method="MC", variant="A") == approx(
+        [0.02644029, 0.04853865], rel=1e-2)
 
-    assert abtest.expected_loss_ci(method="asymptotic",
-        variant="A") == approx([0.02644029, 0.04853865], rel=1e-1)
+    assert abtest.expected_loss_ci(method="asymptotic", variant="A") == approx(
+        [0.02644029, 0.04853865], rel=1e-1)
 
-    assert abtest.expected_loss_ci(method="MC",
-        variant="B") == approx([-0.04853865, -0.02644029], rel=1e-2)
+    assert abtest.expected_loss_ci(method="MC", variant="B") == approx(
+        [-0.04853865, -0.02644029], rel=1e-2)
 
-    assert abtest.expected_loss_ci(method="asymptotic",
-        variant="B") == approx([-0.04853865, -0.02644029], rel=1e-1)
+    assert abtest.expected_loss_ci(method="asymptotic", variant="B") == approx(
+        [-0.04853865, -0.02644029], rel=1e-1)
 
     ci = abtest.expected_loss_ci(method="MC", variant="all")
-    assert ci[0]  == approx([0.02644029, 0.04853865], rel=1e-2)
-    assert ci[1]  == approx([-0.04853865, -0.02644029], rel=1e-2)
+    assert ci[0] == approx([0.02644029, 0.04853865], rel=1e-2)
+    assert ci[1] == approx([-0.04853865, -0.02644029], rel=1e-2)
 
     ci = abtest.expected_loss_ci(method="asymptotic", variant="all")
-    assert ci[0]  == approx([0.02644029, 0.04853865], rel=1e-1)
-    assert ci[1]  == approx([-0.04853865, -0.02644029], rel=1e-1)
+    assert ci[0] == approx([0.02644029, 0.04853865], rel=1e-1)
+    assert ci[1] == approx([-0.04853865, -0.02644029], rel=1e-1)
 
 
 def test_beta_ab_expected_loss_relative():
@@ -227,23 +228,24 @@ def test_beta_ab_expected_loss_relative():
     modelB = BetaModel(alpha=70, beta=90)
     abtest = BetaABTest(modelA, modelB, 1000000, 42)
 
-    assert abtest.expected_loss_relative(method="exact",
-        variant="A") == approx(0.1105769230, rel=1e-8)
+    assert abtest.expected_loss_relative(
+        method="exact", variant="A") == approx(0.1105769230, rel=1e-8)
 
-    assert abtest.expected_loss_relative(method="MC",
-        variant="A") == approx(0.1105769230, rel=1e-2)
+    assert abtest.expected_loss_relative(
+        method="MC", variant="A") == approx(0.1105769230, rel=1e-2)
 
-    assert abtest.expected_loss_relative(method="exact",
-        variant="B") == approx(-0.0782608695, rel=1e-8)
+    assert abtest.expected_loss_relative(
+        method="exact", variant="B") == approx(-0.0782608695, rel=1e-8)
 
-    assert abtest.expected_loss_relative(method="MC",
-        variant="B") == approx(-0.0782608695, rel=1e-2)
+    assert abtest.expected_loss_relative(
+        method="MC", variant="B") == approx(-0.0782608695, rel=1e-2)
 
-    assert abtest.expected_loss_relative(method="exact",
-        variant="all") == approx([0.1105769230, -0.0782608695], rel=1e-8)
+    assert abtest.expected_loss_relative(
+        method="exact", variant="all") == approx(
+        [0.1105769230, -0.0782608695], rel=1e-8)
 
-    assert abtest.expected_loss_relative(method="MC",
-        variant="all") == approx([0.1105769230, -0.0782608695], rel=1e-2)
+    assert abtest.expected_loss_relative(method="MC", variant="all") == approx(
+        [0.1105769230, -0.0782608695], rel=1e-2)
 
 
 def test_beta_ab_expected_loss_relative_ci():
@@ -251,25 +253,29 @@ def test_beta_ab_expected_loss_relative_ci():
     modelB = BetaModel(alpha=70, beta=90)
     abtest = BetaABTest(modelA, modelB, 1000000, 42)
 
-    assert abtest.expected_loss_relative_ci(method="exact",
-        variant="A") == approx((-0.1424559672, 0.4175275191), rel=1e-8)
+    assert abtest.expected_loss_relative_ci(
+        method="exact", variant="A") == approx(
+        (-0.1424559672, 0.4175275191), rel=1e-8)
 
-    assert abtest.expected_loss_relative_ci(method="MC",
-        variant="A") == approx((-0.1424559672, 0.4175275191), rel=1e-2)
+    assert abtest.expected_loss_relative_ci(
+        method="MC", variant="A") == approx(
+        (-0.1424559672, 0.4175275191), rel=1e-2)
 
-    assert abtest.expected_loss_relative_ci(method="exact",
-        variant="B") == approx((-0.2945463234, 0.1661208775), rel=1e-8)
+    assert abtest.expected_loss_relative_ci(
+        method="exact", variant="B") == approx(
+        (-0.2945463234, 0.1661208775), rel=1e-8)
 
-    assert abtest.expected_loss_relative_ci(method="MC",
-        variant="B") == approx((-0.2945463234, 0.1661208775), rel=1e-2)
+    assert abtest.expected_loss_relative_ci(
+        method="MC", variant="B") == approx(
+        (-0.2945463234, 0.1661208775), rel=1e-2)
 
     ci = abtest.expected_loss_relative_ci(method="exact", variant="all")
-    assert ci[0]  == approx([-0.1424559672, 0.4175275191], rel=1e-8)
-    assert ci[1]  == approx([-0.2945463234, 0.1661208775], rel=1e-8)
+    assert ci[0] == approx([-0.1424559672, 0.4175275191], rel=1e-8)
+    assert ci[1] == approx([-0.2945463234, 0.1661208775], rel=1e-8)
 
     ci = abtest.expected_loss_relative_ci(method="MC", variant="all")
-    assert ci[0]  == approx([-0.1424559672, 0.4175275191], rel=1e-2)
-    assert ci[1]  == approx([-0.2945463234, 0.1661208775], rel=1e-2)
+    assert ci[0] == approx([-0.1424559672, 0.4175275191], rel=1e-2)
+    assert ci[1] == approx([-0.2945463234, 0.1661208775], rel=1e-2)
 
 
 def test_beta_ab_expected_loss_relative_ci_large_params():
@@ -277,21 +283,24 @@ def test_beta_ab_expected_loss_relative_ci_large_params():
     modelB = BetaModel(alpha=7000, beta=9000)
     abtest = BetaABTest(modelA, modelB, 1000000, 42)
 
-    assert abtest.expected_loss_relative_ci(method="MC",
-        variant="A") == approx([0.06506319, 0.1233082], rel=1e-2)
+    assert abtest.expected_loss_relative_ci(
+        method="MC", variant="A") == approx([0.06506319, 0.1233082], rel=1e-2)
 
-    assert abtest.expected_loss_relative_ci(method="asymptotic",
-        variant="A") == approx([0.06506319, 0.1233082], rel=1e-1)
+    assert abtest.expected_loss_relative_ci(
+        method="asymptotic", variant="A") == approx(
+        [0.06506319, 0.1233082], rel=1e-1)
 
-    assert abtest.expected_loss_relative_ci(method="MC",
-        variant="B") == approx([-0.10977237, -0.06108857], rel=1e-2)
+    assert abtest.expected_loss_relative_ci(
+        method="MC", variant="B") == approx(
+        [-0.10977237, -0.06108857], rel=1e-2)
 
-    assert abtest.expected_loss_relative_ci(method="asymptotic",
-        variant="B") == approx([-0.10977237, -0.06108857], rel=1e-1)
+    assert abtest.expected_loss_relative_ci(
+        method="asymptotic", variant="B") == approx(
+        [-0.10977237, -0.06108857], rel=1e-1)
 
     ci = abtest.expected_loss_relative_ci(method="asymptotic", variant="all")
-    assert ci[0]  == approx([0.06506319, 0.1233082], rel=1e-1)
-    assert ci[1]  == approx([-0.10977237, -0.06108857], rel=1e-1)
+    assert ci[0] == approx([0.06506319, 0.1233082], rel=1e-1)
+    assert ci[1] == approx([-0.10977237, -0.06108857], rel=1e-1)
 
 
 def test_beta_mv_check_method():
@@ -412,11 +421,14 @@ def test_beta_mv_probability_vs_all():
 
     mvtest = BetaMVTest(models, 1000000, 42)
 
-    assert mvtest.probability_vs_all(method="MLHS",
-        variant="B") == approx(0.6003181, rel=1e-2)
+    assert mvtest.probability_vs_all(
+        method="quad", variant="B") == approx(0.5996839676, rel=1e-8)
 
-    assert mvtest.probability_vs_all(method="MC",
-        variant="B") == approx(0.6003181, rel=1e-2)
+    assert mvtest.probability_vs_all(
+        method="MLHS", variant="B") == approx(0.5996839676, rel=1e-2)
+
+    assert mvtest.probability_vs_all(
+        method="MC", variant="B") == approx(0.5996839676, rel=1e-1)
 
 
 def test_beta_mv_expected_loss():
@@ -465,11 +477,14 @@ def test_beta_mv_expected_loss_vs_all():
 
     mvtest = BetaMVTest(models, 1000000, 42)
 
-    assert mvtest.expected_loss_vs_all(method="MLHS",
-        variant="B") == approx(0.0030189172, rel=1e-2)
+    assert mvtest.expected_loss_vs_all(
+        method="quad", variant="B") == approx(0.003024131054, rel=1e-8)
 
-    assert mvtest.expected_loss_vs_all(method="MC",
-        variant="B") == approx(0.0030189172, rel=1e-1)
+    assert mvtest.expected_loss_vs_all(
+        method="MLHS", variant="B") == approx(0.003024131054, rel=1e-2)
+
+    assert mvtest.expected_loss_vs_all(
+        method="MC", variant="B") == approx(0.003024131054, rel=1e-1)
 
 
 def test_beta_mv_expected_loss_ci():
@@ -479,14 +494,13 @@ def test_beta_mv_expected_loss_ci():
     mvtest = BetaMVTest({"A": modelA, "B": modelB}, 1000000, 42)
 
     ab_result = abtest.expected_loss_ci(method="MC", variant="A")
-    mv_result = mvtest.expected_loss_ci(method="MC", control="B",
-        variant="A")
+    mv_result = mvtest.expected_loss_ci(method="MC", control="B", variant="A")
 
     assert ab_result == approx(mv_result, rel=1e-2)
 
     ab_result = abtest.expected_loss_ci(method="asymptotic", variant="A")
-    mv_result = mvtest.expected_loss_ci(method="asymptotic", control="B",
-        variant="A")
+    mv_result = mvtest.expected_loss_ci(
+        method="asymptotic", control="B", variant="A")
 
     assert ab_result == approx(mv_result, rel=1e-2)
 
@@ -508,14 +522,14 @@ def test_beta_mv_expected_loss_relative():
     mvtest = BetaMVTest({"A": modelA, "B": modelB}, 1000000, 42)
 
     ab_result = abtest.expected_loss_relative(method="exact", variant="A")
-    mv_result = mvtest.expected_loss_relative(method="exact", control="B",
-        variant="A")
+    mv_result = mvtest.expected_loss_relative(
+        method="exact", control="B", variant="A")
 
     assert ab_result == approx(mv_result, rel=1e-2)
 
     ab_result = abtest.expected_loss_relative(method="MC", variant="A")
-    mv_result = mvtest.expected_loss_relative(method="MC", control="B",
-        variant="A")
+    mv_result = mvtest.expected_loss_relative(
+        method="MC", control="B", variant="A")
 
     assert ab_result == approx(mv_result, rel=1e-2)
 
@@ -539,11 +553,14 @@ def test_beta_mv_expected_loss_relative_vs_all():
 
     mvtest = BetaMVTest(models, 1000000, 42)
 
-    assert mvtest.expected_loss_relative_vs_all(method="MLHS",
-        variant="B") == approx(-0.024717521, rel=1e-2)
+    assert mvtest.expected_loss_relative_vs_all(
+        method="quad", variant="B") == approx(-0.02388624786, rel=1e-8)
 
-    assert mvtest.expected_loss_relative_vs_all(method="MC",
-        variant="B") == approx(-0.024717521, rel=1e-1)
+    assert mvtest.expected_loss_relative_vs_all(
+        method="MLHS", variant="B") == approx(-0.02388624786, rel=1e-1)
+
+    assert mvtest.expected_loss_relative_vs_all(
+        method="MC", variant="B") == approx(-0.02388624786, rel=1e-1)
 
 
 def test_beta_mv_expected_loss_relative_ci():
@@ -553,21 +570,21 @@ def test_beta_mv_expected_loss_relative_ci():
     mvtest = BetaMVTest({"A": modelA, "B": modelB}, 1000000, 42)
 
     ab_result = abtest.expected_loss_relative_ci(method="exact", variant="A")
-    mv_result = mvtest.expected_loss_relative_ci(method="exact", control="B",
-        variant="A")
+    mv_result = mvtest.expected_loss_relative_ci(
+        method="exact", control="B", variant="A")
 
     assert ab_result == approx(mv_result, rel=1e-2)
 
     ab_result = abtest.expected_loss_relative_ci(method="MC", variant="A")
-    mv_result = mvtest.expected_loss_relative_ci(method="MC", control="B",
-        variant="A")
+    mv_result = mvtest.expected_loss_relative_ci(
+        method="MC", control="B", variant="A")
 
     assert ab_result == approx(mv_result, rel=1e-2)
 
-    ab_result = abtest.expected_loss_relative_ci(method="asymptotic",
-        variant="A")
-    mv_result = mvtest.expected_loss_relative_ci(method="asymptotic",
-        control="B", variant="A")
+    ab_result = abtest.expected_loss_relative_ci(
+        method="asymptotic", variant="A")
+    mv_result = mvtest.expected_loss_relative_ci(
+        method="asymptotic", control="B", variant="A")
 
     assert ab_result == approx(mv_result, rel=1e-2)
 
@@ -581,9 +598,9 @@ def test_beta_mv_expected_loss_relative_ci():
 
     assert ab_result == approx(mv_result, rel=1e-2)
 
-    ab_result = abtest.expected_loss_relative_ci(method="asymptotic",
-        variant="B")
-    mv_result = mvtest.expected_loss_relative_ci(method="asymptotic",
-        variant="B")
+    ab_result = abtest.expected_loss_relative_ci(
+        method="asymptotic", variant="B")
+    mv_result = mvtest.expected_loss_relative_ci(
+        method="asymptotic", variant="B")
 
     assert ab_result == approx(mv_result, rel=1e-2)

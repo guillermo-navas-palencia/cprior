@@ -1030,7 +1030,7 @@ class BetaMVTest(BayesMVTest):
                 e_max = integrate.quad(func=func_mv_elr, a=0, b=1, args=(
                     variant_params))[0]
             else:
-                e_max = self._expected_value_max_mlhs_2(variants, mlhs_samples)
+                e_max = self._expected_value_max_mlhs(variants, mlhs_samples)
 
             a = self.models[variant].alpha_posterior
             b = self.models[variant].beta_posterior

@@ -977,15 +977,19 @@ class ParetoMVTest(BayesMVTest):
         r = np.arange(mlhs_samples)
         np.random.shuffle(r)
         v = (r - 0.5) / mlhs_samples
-        v = v[v >= 0]
+        v = v[v >= 0][..., np.newaxis]
 
-        s = 0
-        for i in variants:
-            a = self.models[i].shape_posterior
-            b = self.models[i].scale_posterior
-            x = stats.pareto(b=a - 1, scale=b).ppf(v)
-            c = a * b / (a - 1)
-            s += c * np.prod([self.models[j].cdf(x) for j in variants
-                             if j != i], axis=0).mean()
+        variant_params = [(self.models[v].shape_posterior,
+                          self.models[v].scale_posterior)
+                          for v in variants]
 
-        return s
+        n = len(variant_params)
+        aa, bb = map(np.array, zip(*variant_params))
+        cc = aa * bb / (aa - 1)
+
+        xx = stats.pareto(b=aa - 1, scale=bb).ppf(v)
+
+        return np.sum([cc[i] * np.prod([
+                      stats.pareto(b=aa[j], scale=bb[j]).cdf(xx[:, i])
+                      for j in range(n) if j != i], axis=0)
+                      for i in range(n)], axis=0).mean()

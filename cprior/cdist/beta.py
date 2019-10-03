@@ -1030,7 +1030,7 @@ class BetaMVTest(BayesMVTest):
                 e_max = integrate.quad(func=func_mv_elr, a=0, b=1, args=(
                     variant_params))[0]
             else:
-                e_max = self._expected_value_max_mlhs(variants, mlhs_samples)
+                e_max = self._expected_value_max_mlhs_2(variants, mlhs_samples)
 
             a = self.models[variant].alpha_posterior
             b = self.models[variant].beta_posterior
@@ -1191,15 +1191,18 @@ class BetaMVTest(BayesMVTest):
         r = np.arange(mlhs_samples)
         np.random.shuffle(r)
         v = (r - 0.5) / mlhs_samples
-        v = v[v >= 0]
+        v = v[v >= 0][..., np.newaxis]
 
-        s = 0
-        for i in variants:
-            a = self.models[i].alpha_posterior
-            b = self.models[i].beta_posterior
-            x = stats.beta(a + 1, b).ppf(v)
-            c = a / (a + b)
-            s += c * np.prod([self.models[j].cdf(x) for j in variants
-                             if j != i], axis=0).mean()
+        variant_params = [(self.models[v].alpha_posterior,
+                          self.models[v].beta_posterior)
+                          for v in variants]
 
-        return s
+        n = len(variant_params)
+        aa, bb = map(np.array, zip(*variant_params))
+        cc = aa / (aa + bb)
+
+        xx = stats.beta(aa + 1, bb).ppf(v)
+
+        return np.sum([cc[i] * np.prod([special.betainc(aa[j], bb[j], xx[:, i])
+                      for j in range(n) if j != i], axis=0)
+                      for i in range(n)], axis=0).mean()

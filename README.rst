@@ -6,8 +6,8 @@
 .. |Codecov| image:: https://codecov.io/gh/guillermo-navas-palencia/cprior/branch/master/graph/badge.svg
 .. _Codecov: https://codecov.io/gh/guillermo-navas-palencia/cprior
 
-.. |Coveralls| image:: https://coveralls.io/repos/github/guillermo-navas-palencia/cprior/badge.svg?branch=master
-.. _Coveralls: https://coveralls.io/github/guillermo-navas-palencia/cprior?branch=master
+.. |Coveralls| image:: https://coveralls.io/repos/github/guillermo-navas-palencia/cprior/badge.svg?branch=master&service=github
+.. _Coveralls: https://coveralls.io/github/guillermo-navas-palencia/cprior
 
 CPrior
 ======

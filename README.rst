@@ -1,4 +1,4 @@
-|Travis|_ |Codecov|_ |Coveralls|_
+|Travis|_ |Codecov|_
 
 .. |Travis| image:: https://travis-ci.com/guillermo-navas-palencia/cprior.svg?branch=master
 .. _Travis: https://travis-ci.com/guillermo-navas-palencia/cprior

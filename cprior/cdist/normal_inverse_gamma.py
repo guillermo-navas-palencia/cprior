@@ -1417,7 +1417,7 @@ class NormalInverseGammaMVTest(BayesMVTest):
             a1 = model_variant.shape_posterior
             b1 = model_variant.scale_posterior
 
-            if min(a0, a1) > 50 and max(a0, a1) <= 1:
+            if min(a0, a1) > 50 or max(a0, a1) <= 1:
                 # mean using normal approximation
                 sig0 = model_control.std()[0]
                 sig1 = model_variant.std()[0]

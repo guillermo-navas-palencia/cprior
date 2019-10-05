@@ -14,6 +14,10 @@ from .geometric import GeometricABTest
 from .geometric import GeometricModel
 from .geometric import GeometricMVTest
 
+from .lognormal import LogNormalABTest
+from .lognormal import LogNormalModel
+from .lognormal import LogNormalMVTest
+
 from .negative_binomial import NegativeBinomialABTest
 from .negative_binomial import NegativeBinomialModel
 from .negative_binomial import NegativeBinomialMVTest

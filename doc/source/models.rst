@@ -34,6 +34,7 @@ List of supported sampling distributions using a conjugate normal-inverse-gamma 
    :maxdepth: 2
 
    models_normal
+   models_lognormal
 
 Pareto conjugate prior distribution
 -----------------------------------

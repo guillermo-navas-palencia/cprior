@@ -43,7 +43,7 @@ def test_poisson_ab_check_models():
     modelB = ExponentialModel(shape=25, rate=1000)
 
     with raises(TypeError):
-        abtest = PoissonABTest(modelA=modelA, modelB=modelB)
+        PoissonABTest(modelA=modelA, modelB=modelB)
 
 
 def test_poisson_mv_check_model_input():
@@ -51,4 +51,4 @@ def test_poisson_mv_check_model_input():
     modelB = PoissonModel(shape=25, rate=1000)
 
     with raises(TypeError):
-        mvtest = PoissonMVTest(models=[modelA, modelB])
+        PoissonMVTest(models=[modelA, modelB])

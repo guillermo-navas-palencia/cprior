@@ -17,7 +17,7 @@ from cprior.models import GeometricModel
 
 def test_binomial_model_m():
     with raises(ValueError):
-        model = BinomialModel(m=-1, alpha=1, beta=1)
+        BinomialModel(m=-1, alpha=1, beta=1)
 
 
 def test_binomial_model_update():
@@ -51,7 +51,7 @@ def test_binomial_ab_check_models():
     modelB = GeometricModel(alpha=1, beta=1)
 
     with raises(TypeError):
-        abtest = BinomialABTest(modelA=modelA, modelB=modelB)
+        BinomialABTest(modelA=modelA, modelB=modelB)
 
 
 def test_binomial_mv_check_model_input():
@@ -59,4 +59,4 @@ def test_binomial_mv_check_model_input():
     modelB = BinomialModel(m=10, alpha=1, beta=1)
 
     with raises(TypeError):
-        mvtest = BinomialMVTest(models=[modelA, modelB])
+        BinomialMVTest(models=[modelA, modelB])

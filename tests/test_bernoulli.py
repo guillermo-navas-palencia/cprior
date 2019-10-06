@@ -45,7 +45,7 @@ def test_bernoulli_ab_check_models():
     modelB = GeometricModel(alpha=1, beta=1)
 
     with raises(TypeError):
-        abtest = BernoulliABTest(modelA=modelA, modelB=modelB)
+        BernoulliABTest(modelA=modelA, modelB=modelB)
 
 
 def test_bernoulli_mv_check_model_input():
@@ -53,7 +53,7 @@ def test_bernoulli_mv_check_model_input():
     modelB = BernoulliModel(alpha=1, beta=1)
 
     with raises(TypeError):
-        mvtest = BernoulliMVTest(models=[modelA, modelB])
+        BernoulliMVTest(models=[modelA, modelB])
 
 
 def test_bernoulli_mv_check_control():
@@ -63,7 +63,7 @@ def test_bernoulli_mv_check_control():
     }
 
     with raises(ValueError):
-        mvtest = BernoulliMVTest(models=models)
+        BernoulliMVTest(models=models)
 
 
 def test_bernoulli_mv_check_update():

@@ -17,7 +17,7 @@ from cprior.models import NegativeBinomialMVTest
 
 def test_negative_binomial_r():
     with raises(ValueError):
-        model = NegativeBinomialModel(r=0, alpha=1, beta=1)
+        NegativeBinomialModel(r=0, alpha=1, beta=1)
 
 
 def test_negative_binomial_model_update():
@@ -55,7 +55,7 @@ def test_negative_binomial_ab_check_model():
     modelB = BinomialModel(m=10, alpha=1, beta=1)
 
     with raises(TypeError):
-        abtest = NegativeBinomialABTest(modelA=modelA, modelB=modelB)
+        NegativeBinomialABTest(modelA=modelA, modelB=modelB)
 
 
 def test_negative_binomial_mv_check_model_input():
@@ -63,4 +63,4 @@ def test_negative_binomial_mv_check_model_input():
     modelB = NegativeBinomialModel(r=10, alpha=1, beta=1)
 
     with raises(TypeError):
-        mvtest = NegativeBinomialMVTest(models=[modelA, modelB])
+        NegativeBinomialMVTest(models=[modelA, modelB])

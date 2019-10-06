@@ -51,7 +51,7 @@ def test_geometric_ab_check_models():
     modelB = GeometricModel(alpha=1, beta=1)
 
     with raises(TypeError):
-        abtest = GeometricABTest(modelA=modelA, modelB=modelB)
+        GeometricABTest(modelA=modelA, modelB=modelB)
 
 
 def test_geometric_mv_check_model_input():
@@ -59,4 +59,4 @@ def test_geometric_mv_check_model_input():
     modelB = GeometricModel(alpha=1, beta=1)
 
     with raises(TypeError):
-        mvtest = GeometricMVTest(models=[modelA, modelB])
+        GeometricMVTest(models=[modelA, modelB])

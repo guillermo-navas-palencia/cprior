@@ -17,7 +17,7 @@ from cprior.models import PoissonModel
 
 def test_uniform_model_update():
     model = UniformModel(scale=0.005, shape=0.005)
-    data = np.array([2.2689884 , 2.9851765, 0.2667087, 2.9430999, 3.6529030])
+    data = np.array([2.2689884, 2.9851765, 0.2667087, 2.9430999, 3.6529030])
 
     model.update(data)
 
@@ -45,12 +45,13 @@ def test_uniform_model_mean_var():
     assert np.isnan(model.ppmean())
     assert np.isnan(model.ppvar())
 
+
 def test_uniform_ab_check_models():
     modelA = UniformModel()
     modelB = PoissonModel()
 
     with raises(TypeError):
-        abtest = UniformABTest(modelA=modelA, modelB=modelB)
+        UniformABTest(modelA=modelA, modelB=modelB)
 
 
 def test_uniform_mv_check_model_input():
@@ -58,4 +59,4 @@ def test_uniform_mv_check_model_input():
     modelB = UniformModel()
 
     with raises(TypeError):
-        mvtest = UniformMVTest(models=[modelA, modelB])
+        UniformMVTest(models=[modelA, modelB])

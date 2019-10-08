@@ -18,6 +18,7 @@ from .._lib.cprior import beta_cprior
 from .base import BayesABTest
 from .base import BayesModel
 from .base import BayesMVTest
+from .ci import ci_interval
 from .utils import check_ab_method
 from .utils import check_mv_method
 
@@ -431,7 +432,8 @@ class BetaABTest(BayesABTest):
                 return (np.maximum(xB - xA - lift, 0).mean(),
                         np.maximum(xA - xB - lift, 0).mean())
 
-    def expected_loss_ci(self, method="MC", variant="A", interval_length=0.9):
+    def expected_loss_ci(self, method="MC", variant="A", interval_length=0.9,
+                         ci_method="ETI"):
         r"""
         Compute credible intervals on the difference distribution of
         :math:`Z = B-A` and/or :math:`Z = A-B`.
@@ -452,6 +454,12 @@ class BetaABTest(BayesABTest):
             Compute ``interval_length`` \% credible interval. This is a value
             in [0, 1].
 
+        ci_method : str (default="ETI")
+            Method to compute credible intervals. Supported methods are Highest
+            Density interval (``method="HDI``) and Equal-tailed interval
+            (``method="ETI"``). Currently, ``method="HDI`` is only available
+            for ``method="MC"``.
+
         Returns
         -------
         expected_loss_ci : np.ndarray or tuple of np.ndarray
@@ -466,16 +474,13 @@ class BetaABTest(BayesABTest):
             xA = self.modelA.rvs(self.simulations, self.random_state)
             xB = self.modelB.rvs(self.simulations, self.random_state)
 
-            lower *= 100.0
-            upper *= 100.0
-
             if variant == "A":
-                return np.percentile((xB - xA), [lower, upper])
+                return ci_interval((xB - xA), interval_length, ci_method)
             elif variant == "B":
-                return np.percentile((xA - xB), [lower, upper])
+                return ci_interval((xA - xB), interval_length, ci_method)
             else:
-                return (np.percentile((xB - xA), [lower, upper]),
-                        np.percentile((xA - xB), [lower, upper]))
+                return (ci_interval((xB - xA), interval_length, ci_method),
+                        ci_interval((xA - xB), interval_length, ci_method))
         else:
             aA = self.modelA.alpha_posterior
             bA = self.modelA.beta_posterior
@@ -546,7 +551,7 @@ class BetaABTest(BayesABTest):
                 return (((xB - xA) / xA).mean(), ((xA - xB) / xB).mean())
 
     def expected_loss_relative_ci(self, method="MC", variant="A",
-                                  interval_length=0.9):
+                                  interval_length=0.9, ci_method="ETI"):
         r"""
         Compute credible intervals on the relative difference distribution of
         :math:`Z = (B-A)/A` and/or :math:`Z = (A-B)/B`.
@@ -568,6 +573,12 @@ class BetaABTest(BayesABTest):
             Compute ``interval_length``\% credible interval. This is a value in
             [0, 1].
 
+        ci_method : str (default="ETI")
+            Method to compute credible intervals. Supported methods are Highest
+            Density interval (``method="HDI``) and Equal-tailed interval
+            (``method="ETI"``). Currently, ``method="HDI`` is only available
+            for ``method="MC"``.
+
         Returns
         -------
         expected_loss_relative_ci : np.ndarray or tuple of np.ndarray
@@ -583,16 +594,13 @@ class BetaABTest(BayesABTest):
             xA = self.modelA.rvs(self.simulations, self.random_state)
             xB = self.modelB.rvs(self.simulations, self.random_state)
 
-            lower *= 100.0
-            upper *= 100.0
-
             if variant == "A":
-                return np.percentile((xB - xA)/xA, [lower, upper])
+                return ci_interval((xB - xA)/xA, interval_length, ci_method)
             elif variant == "B":
-                return np.percentile((xA - xB)/xB, [lower, upper])
+                return ci_interval((xA - xB)/xB, interval_length, ci_method)
             else:
-                return (np.percentile((xB - xA)/xA, [lower, upper]),
-                        np.percentile((xA - xB)/xB, [lower, upper]))
+                return (ci_interval((xB - xA)/xA, interval_length, ci_method),
+                        ci_interval((xA - xB)/xB, interval_length, ci_method))
         else:
             # compute asymptotic
             aA = self.modelA.alpha_posterior
@@ -877,7 +885,7 @@ class BetaMVTest(BayesMVTest):
             return np.maximum(x0 - x1, 0).mean()
 
     def expected_loss_ci(self, method="MC", control="A", variant="B",
-                         interval_length=0.9):
+                         interval_length=0.9, ci_method="ETI"):
         r"""
         Compute credible intervals on the difference distribution of
         :math:`Z = control-variant`.
@@ -896,6 +904,12 @@ class BetaMVTest(BayesMVTest):
         interval_length : float (default=0.9)
             Compute ``interval_length``\% credible interval. This is a value in
             [0, 1].
+
+        ci_method : str (default="ETI")
+            Method to compute credible intervals. Supported methods are Highest
+            Density interval (``method="HDI``) and Equal-tailed interval
+            (``method="ETI"``). Currently, ``method="HDI`` is only available
+            for ``method="MC"``.
 
         Returns
         -------
@@ -917,10 +931,7 @@ class BetaMVTest(BayesMVTest):
             x0 = model_control.rvs(self.simulations, self.random_state)
             x1 = model_variant.rvs(self.simulations, self.random_state)
 
-            lower *= 100.0
-            upper *= 100.0
-
-            return np.percentile((x0 - x1), [lower, upper])
+            return ci_interval((x0 - x1), interval_length, ci_method)
         else:
             a0 = model_control.alpha_posterior
             b0 = model_control.beta_posterior
@@ -1039,7 +1050,7 @@ class BetaMVTest(BayesMVTest):
             return e_max * e_inv_x - 1
 
     def expected_loss_relative_ci(self, method="MC", control="A", variant="B",
-                                  interval_length=0.9):
+                                  interval_length=0.9, ci_method="ETI"):
         r"""
         Compute credible intervals on the relative difference distribution of
         :math:`Z = (control - variant) / variant`.
@@ -1059,6 +1070,12 @@ class BetaMVTest(BayesMVTest):
         interval_length : float (default=0.9)
             Compute ``interval_length``\% credible interval. This is a value in
             [0, 1].
+
+        ci_method : str (default="ETI")
+            Method to compute credible intervals. Supported methods are Highest
+            Density interval (``method="HDI``) and Equal-tailed interval
+            (``method="ETI"``). Currently, ``method="HDI`` is only available
+            for ``method="MC"``.
 
         Returns
         -------
@@ -1080,10 +1097,7 @@ class BetaMVTest(BayesMVTest):
             x0 = model_control.rvs(self.simulations, self.random_state)
             x1 = model_variant.rvs(self.simulations, self.random_state)
 
-            lower *= 100.0
-            upper *= 100.0
-
-            return np.percentile((x0 - x1) / x1, [lower, upper])
+            return ci_interval((x0 - x1) / x1, interval_length, ci_method)
         else:
             a0 = model_control.alpha_posterior
             b0 = model_control.beta_posterior

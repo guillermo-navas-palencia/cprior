@@ -462,10 +462,6 @@ class GammaABTest(BayesABTest):
         check_ab_method(method=method, method_options=("MC", "asymptotic"),
                         variant=variant, interval_length=interval_length)
 
-        # check interval length
-        lower = (1 - interval_length) / 2
-        upper = (1 + interval_length) / 2
-
         if method == "MC":
             xA = self.modelA.rvs(self.simulations, self.random_state)
             xB = self.modelB.rvs(self.simulations, self.random_state)
@@ -478,6 +474,9 @@ class GammaABTest(BayesABTest):
                 return (ci_interval((xB - xA), interval_length, ci_method),
                         ci_interval((xA - xB), interval_length, ci_method))
         else:
+            lower = (1 - interval_length) / 2
+            upper = (1 + interval_length) / 2
+
             aA = self.modelA.shape_posterior
             bA = self.modelA.rate_posterior
 
@@ -534,9 +533,6 @@ class GammaABTest(BayesABTest):
                         method_options=("asymptotic", "exact", "MC"),
                         variant=variant, interval_length=interval_length)
 
-        lower = (1 - interval_length) / 2
-        upper = (1 + interval_length) / 2
-
         if method == "MC":
             xA = self.modelA.rvs(self.simulations, self.random_state)
             xB = self.modelB.rvs(self.simulations, self.random_state)
@@ -549,6 +545,9 @@ class GammaABTest(BayesABTest):
                 return (ci_interval((xB - xA)/xA, interval_length, ci_method),
                         ci_interval((xA - xB)/xB, interval_length, ci_method))
         else:
+            lower = (1 - interval_length) / 2
+            upper = (1 + interval_length) / 2
+
             # compute asymptotic
             aA = self.modelA.shape_posterior
             bA = self.modelA.rate_posterior
@@ -830,10 +829,6 @@ class GammaMVTest(BayesMVTest):
                         variants=self.models.keys(),
                         interval_length=interval_length)
 
-        # check interval length
-        lower = (1 - interval_length) / 2
-        upper = (1 + interval_length) / 2
-
         model_control = self.models[control]
         model_variant = self.models[variant]
 
@@ -843,6 +838,9 @@ class GammaMVTest(BayesMVTest):
 
             return ci_interval((x0 - x1), interval_length, ci_method)
         else:
+            lower = (1 - interval_length) / 2
+            upper = (1 + interval_length) / 2
+
             a0 = model_control.shape_posterior
             b0 = model_control.rate_posterior
 
@@ -1006,9 +1004,6 @@ class GammaMVTest(BayesMVTest):
                         variants=self.models.keys(),
                         interval_length=interval_length)
 
-        lower = (1 - interval_length) / 2
-        upper = (1 + interval_length) / 2
-
         model_control = self.models[control]
         model_variant = self.models[variant]
 
@@ -1018,6 +1013,9 @@ class GammaMVTest(BayesMVTest):
 
             return ci_interval((x0 - x1) / x1, interval_length, ci_method)
         else:
+            lower = (1 - interval_length) / 2
+            upper = (1 + interval_length) / 2
+
             a0 = model_control.shape_posterior
             b0 = model_control.rate_posterior
 

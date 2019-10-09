@@ -467,9 +467,6 @@ class BetaABTest(BayesABTest):
         check_ab_method(method=method, method_options=("MC", "asymptotic"),
                         variant=variant, interval_length=interval_length)
 
-        lower = (1 - interval_length) / 2
-        upper = (1 + interval_length) / 2
-
         if method == "MC":
             xA = self.modelA.rvs(self.simulations, self.random_state)
             xB = self.modelB.rvs(self.simulations, self.random_state)
@@ -482,6 +479,9 @@ class BetaABTest(BayesABTest):
                 return (ci_interval((xB - xA), interval_length, ci_method),
                         ci_interval((xA - xB), interval_length, ci_method))
         else:
+            lower = (1 - interval_length) / 2
+            upper = (1 + interval_length) / 2
+
             aA = self.modelA.alpha_posterior
             bA = self.modelA.beta_posterior
 
@@ -587,9 +587,6 @@ class BetaABTest(BayesABTest):
                         method_options=("asymptotic", "exact", "MC"),
                         variant=variant, interval_length=interval_length)
 
-        lower = (1 - interval_length) / 2
-        upper = (1 + interval_length) / 2
-
         if method == "MC":
             xA = self.modelA.rvs(self.simulations, self.random_state)
             xB = self.modelB.rvs(self.simulations, self.random_state)
@@ -602,6 +599,9 @@ class BetaABTest(BayesABTest):
                 return (ci_interval((xB - xA)/xA, interval_length, ci_method),
                         ci_interval((xA - xB)/xB, interval_length, ci_method))
         else:
+            lower = (1 - interval_length) / 2
+            upper = (1 + interval_length) / 2
+
             # compute asymptotic
             aA = self.modelA.alpha_posterior
             bA = self.modelA.beta_posterior
@@ -920,10 +920,6 @@ class BetaMVTest(BayesMVTest):
                         variants=self.models.keys(),
                         interval_length=interval_length)
 
-        # check interval length
-        lower = (1 - interval_length) / 2
-        upper = (1 + interval_length) / 2
-
         model_control = self.models[control]
         model_variant = self.models[variant]
 
@@ -933,6 +929,9 @@ class BetaMVTest(BayesMVTest):
 
             return ci_interval((x0 - x1), interval_length, ci_method)
         else:
+            lower = (1 - interval_length) / 2
+            upper = (1 + interval_length) / 2
+
             a0 = model_control.alpha_posterior
             b0 = model_control.beta_posterior
 
@@ -1087,9 +1086,6 @@ class BetaMVTest(BayesMVTest):
                         variants=self.models.keys(),
                         interval_length=interval_length)
 
-        lower = (1 - interval_length) / 2
-        upper = (1 + interval_length) / 2
-
         model_control = self.models[control]
         model_variant = self.models[variant]
 
@@ -1099,6 +1095,9 @@ class BetaMVTest(BayesMVTest):
 
             return ci_interval((x0 - x1) / x1, interval_length, ci_method)
         else:
+            lower = (1 - interval_length) / 2
+            upper = (1 + interval_length) / 2
+
             a0 = model_control.alpha_posterior
             b0 = model_control.beta_posterior
 

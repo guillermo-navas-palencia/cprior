@@ -5,8 +5,6 @@ Confidence/credible intervals (CI) methods testing.
 # Guillermo Navas-Palencia <g.navas.palencia@gmail.com>
 # Copyright (C) 2019
 
-import numpy as np
-
 from pytest import approx, raises
 from scipy import stats
 

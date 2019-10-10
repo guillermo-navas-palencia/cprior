@@ -1,4 +1,4 @@
-|Travis|_ |Codecov|_
+|PyPI|_ |Travis|_ |Codecov|_ |Licence|_
 
 .. |Travis| image:: https://travis-ci.com/guillermo-navas-palencia/cprior.svg?branch=master
 .. _Travis: https://travis-ci.com/guillermo-navas-palencia/cprior
@@ -8,6 +8,12 @@
 
 .. |Coveralls| image:: https://coveralls.io/repos/github/guillermo-navas-palencia/cprior/badge.svg?branch=master&kill_cache=1
 .. _Coveralls: https://coveralls.io/github/guillermo-navas-palencia/cprior
+
+.. |Licence| image:: https://img.shields.io/github/license/guillermo-navas-palencia/cprior
+.. _Licence: https://img.shields.io/github/license/guillermo-navas-palencia/cprior
+
+.. |PyPI| image:: https://img.shields.io/pypi/v/cprior?color=blue
+.. _PyPI: https://img.shields.io/pypi/v/cprior?color=blue 
 
 CPrior
 ======
@@ -20,12 +26,18 @@ CPrior
 Installation
 ------------
 
-See http://gnpalencia.org/cprior/getting_started.html.
+To install the current release of CPrior for Linux/Windows:
+
+.. code-block:: bash
+
+    pip install cprior
+
+For different OS and/or custom installations, see http://gnpalencia.org/cprior/getting_started.html.
 
 Dependencies
 """"""""""""
 
-CPrior requires:
+CPrior has been tested with CPython 3.5, 3.6 and 3.7. It requires:
 
 * mpmath 1.0.0 or later. Website: http://mpmath.org/
 * numpy 1.15.0 or later. Website: https://www.numpy.org/
@@ -51,7 +63,7 @@ CRO (conversion rate) or CTR (click-through rate) testing.
 
 .. code-block:: python
 
-   import scipy.stats as st
+   from scipy import stats
 
    from cprior.models import BernoulliModel
    from cprior.models import BernoulliABTest
@@ -61,8 +73,8 @@ CRO (conversion rate) or CTR (click-through rate) testing.
 
    test = BernoulliABTest(modelA=modelA, modelB=modelB)
 
-   data_A = st.bernoulli(p=0.10).rvs(size=1500, random_state=42)
-   data_B = st.bernoulli(p=0.11).rvs(size=1600, random_state=42)
+   data_A = stats.bernoulli(p=0.10).rvs(size=1500, random_state=42)
+   data_B = stats.bernoulli(p=0.11).rvs(size=1600, random_state=42)
 
    test.update_A(data_A)
    test.update_B(data_B)

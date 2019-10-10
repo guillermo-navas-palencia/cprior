@@ -78,7 +78,7 @@ setup(
     python_requires='>=3.5',
     classifiers=[
         'Topic :: Scientific/Engineering :: Mathematics',
-        'License :: OSI Approved :: LGPLv3 License',
+        'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',

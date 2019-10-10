@@ -7,7 +7,8 @@ Installation
 Install release
 """""""""""""""
 
-For Linux x86_64 platform, download the latest release from https://github.com/guillermo-navas-palencia/cprior/releases and install using
+For Windows and Linux x86_64 platform, download the latest release from
+https://github.com/guillermo-navas-palencia/cprior/releases and install using
 
 .. code-block:: bash
 
@@ -34,7 +35,9 @@ To install from source, download the git repository https://github.com/guillermo
    # build library
    g++ -shared *.o -o _cprior.so
 
-For Windows, you might use Visual Studio Express or CodeBlocks to build your DLL. Once built
+For Windows, the easiest is to use the above bash script with Cygwin
+replacing ``g++`` by ``x86_64-w64-mingw32-g++``. Alternatively, you might use
+Visual Studio Express or CodeBlocks to build your DLL. Once built
 just copy it to ``cprior/_lib/``.
 
 

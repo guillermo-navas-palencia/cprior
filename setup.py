@@ -77,7 +77,7 @@ setup(
     cmdclass={'clean': CleanCommand, 'test': PyTest},
     python_requires='>=3.5',
     classifiers=[
-        'Topic :: Software Development :: Statistics',
+        'Topic :: Scientific/Engineering :: Mathematics',
         'License :: OSI Approved :: LGPLv3 License',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.5',

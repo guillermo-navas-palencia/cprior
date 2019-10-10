@@ -26,6 +26,21 @@ def ci_interval(x, interval_length=0.9, method="ETI"):
         Method to compute credible intervals. Supported methods are Highest
         Density interval (``method="HDI``) and Equal-tailed interval
         (``method="ETI"``).
+
+    Retunrs
+    -------
+    ci_interval : numpy.ndarray
+        The lower and upper limit of the interval.
+
+    Example
+    -------
+    >>> from scipy import stats
+    >>> from cprior.cdist import ci_interval
+    >>> x = stats.norm.rvs(size=int(1e6), random_state=42)
+    >>> ci_interval(x, interval_length=0.95, method="ETI")
+    array([-1.96315029,  1.95842544])
+    >>> ci_interval(x, interval_length=0.95, method="HDI")
+    array([-1.95282024,  1.9679026 ])
     """
     if method not in ("ETI", "HDI"):
         raise ValueError("method {} is not supported. Use 'ETI' or 'HDI"
@@ -52,4 +67,4 @@ def ci_interval(x, interval_length=0.9, method="ETI"):
         hdi_min = xsorted[j]
         hdi_max = xsorted[j + n_included]
 
-        return hdi_min, hdi_max
+        return np.array([hdi_min, hdi_max])

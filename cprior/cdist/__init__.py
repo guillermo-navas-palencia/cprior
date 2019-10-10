@@ -13,3 +13,6 @@ from .normal_inverse_gamma import NormalInverseGammaMVTest
 from .pareto import ParetoABTest
 from .pareto import ParetoModel
 from .pareto import ParetoMVTest
+
+# utilities
+from .ci import ci_interval

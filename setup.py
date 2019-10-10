@@ -1,8 +1,5 @@
-import ast
-import io
 import os
 import platform
-import re
 import sys
 
 from setuptools import find_packages, setup, Command
@@ -11,10 +8,13 @@ from setuptools.command.test import test as TestCommand
 
 class CleanCommand(Command):
     user_options = []
+
     def initialize_options(self):
         pass
+
     def finalize_options(self):
         pass
+
     def run(self):
         os.system('rm -vrf ./build ./dist ./*.pyc ./*.tgz ./*.egg-info')
 
@@ -28,7 +28,7 @@ class PyTest(TestCommand):
         self.test_suite = []
 
     def run_tests(self):
-        #import here, because outside the eggs aren't loaded
+        # import here, because outside the eggs aren't loaded
         import pytest
         errcode = pytest.main(self.test_args)
         sys.exit(errcode)
@@ -63,16 +63,24 @@ install_requires = [
 
 setup(
     name="cprior",
-    version='0.3.0',
-    description='Fast conjugate prior for Bayesian statistics',
-    author='Guillermo Navas-Palencia',
-    author_email='g.navas.palencia@gmail.com',
+    version="0.3.1",
+    description="Fast Bayesian A/B and multivariate testing",
+    author="Guillermo Navas-Palencia",
+    author_email="g.navas.palencia@gmail.com",
     packages=find_packages(),
     data_files=data_files,
-    platforms='any',
+    platforms="any",
     include_package_data=True,
-    license='LGPL',
+    license="LGPL",
+    url="https://github.com/guillermo-navas-palencia/cprior",
     tests_require=['pytest'],
-    cmdclass={'clean' : CleanCommand, 'test': PyTest},
-    python_requires='>=3.5'
+    cmdclass={'clean': CleanCommand, 'test': PyTest},
+    python_requires='>=3.5',
+    classifiers=[
+        'Topic :: Software Development :: Statistics',
+        'License :: OSI Approved :: LGPLv3 License',
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7']
     )

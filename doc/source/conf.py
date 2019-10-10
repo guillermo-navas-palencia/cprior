@@ -24,9 +24,9 @@ copyright = '2019, Guillermo Navas-Palencia'
 author = 'Guillermo Navas-Palencia'
 
 # The short X.Y version
-version = '0.3.0'
+version = '0.3.1'
 # The full version, including alpha/beta/rc tags
-release = '0.3.0'
+release = '0.3.1'
 
 
 # -- General configuration ---------------------------------------------------

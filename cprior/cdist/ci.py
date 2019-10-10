@@ -27,7 +27,7 @@ def ci_interval(x, interval_length=0.9, method="ETI"):
         Density interval (``method="HDI``) and Equal-tailed interval
         (``method="ETI"``).
 
-    Retunrs
+    Returns
     -------
     ci_interval : numpy.ndarray
         The lower and upper limit of the interval.

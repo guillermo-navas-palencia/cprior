@@ -7,8 +7,15 @@ Installation
 Install release
 """""""""""""""
 
-For Windows and Linux x86_64 platform, download the latest release from
-https://github.com/guillermo-navas-palencia/cprior/releases and install using
+To install the current release of CPrior on Linux/Windows:
+
+.. code-block:: bash
+
+   pip install cprior
+
+Optionally, download a different release
+from https://github.com/guillermo-navas-palencia/cprior/releases and install
+using
 
 .. code-block:: bash
 
@@ -43,7 +50,7 @@ just copy it to ``cprior/_lib/``.
 
 Dependencies
 ------------
-CPrior has the following dependencies:
+CPrior has been tested with CPython 3.5, 3.6 and 3.7. It requires:
 
 * mpmath 1.0.0 or later. Website: http://mpmath.org/
 * numpy 1.15.0 or later. Website: https://www.numpy.org/

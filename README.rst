@@ -1,22 +1,18 @@
-|PyPI|_ |Travis|_ |Codecov|_ |Licence|_
-
-.. |Travis| image:: https://travis-ci.com/guillermo-navas-palencia/cprior.svg?branch=master
-.. _Travis: https://travis-ci.com/guillermo-navas-palencia/cprior
-    
-.. |Codecov| image:: https://codecov.io/gh/guillermo-navas-palencia/cprior/branch/master/graph/badge.svg
-.. _Codecov: https://codecov.io/gh/guillermo-navas-palencia/cprior
-
-.. |Coveralls| image:: https://coveralls.io/repos/github/guillermo-navas-palencia/cprior/badge.svg?branch=master&kill_cache=1
-.. _Coveralls: https://coveralls.io/github/guillermo-navas-palencia/cprior
-
-.. |Licence| image:: https://img.shields.io/github/license/guillermo-navas-palencia/cprior
-.. _Licence: https://img.shields.io/github/license/guillermo-navas-palencia/cprior
-
-.. |PyPI| image:: https://img.shields.io/pypi/v/cprior?color=blue
-.. _PyPI: https://img.shields.io/pypi/v/cprior?color=blue 
-
+======
 CPrior
 ======
+
+.. image::  https://travis-ci.com/guillermo-navas-palencia/cprior.svg?branch=master
+   :target: https://travis-ci.com/guillermo-navas-palencia/cprior
+
+.. image::  https://codecov.io/gh/guillermo-navas-palencia/cprior/branch/master/graph/badge.svg
+   :target: https://codecov.io/gh/guillermo-navas-palencia/cprior
+
+.. image::  https://img.shields.io/github/license/guillermo-navas-palencia/cprior
+   :target: https://img.shields.io/github/license/guillermo-navas-palencia/cprior
+
+.. image:: https://img.shields.io/pypi/v/cprior?color=blue
+   :target: https://img.shields.io/pypi/v/cprior?color=blue 
 
 **CPrior** has functionalities to perform Bayesian statistics and running A/B and multivariate testing. CPrior includes several conjugate prior distributions and has been developed focusing on performance, implementing many closed-forms in terms of special functions to obtain fast and accurate results, avoiding Monte Carlo methods whenever possible.
 
@@ -26,7 +22,7 @@ CPrior
 Installation
 ------------
 
-To install the current release of CPrior for Linux/Windows:
+To install the current release of CPrior on Linux/Windows:
 
 .. code-block:: bash
 

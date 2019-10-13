@@ -53,8 +53,10 @@ else:
 
 # install requirements
 install_requires = [
+    'matplotlib>=3.0.3',
     'mpmath>=1.0.0',
     'numpy>=1.15.0',
+    'pandas>=0.24.2',
     'scipy>=1.0.0',
     'pytest',
     'coverage'

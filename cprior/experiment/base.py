@@ -6,14 +6,21 @@ Bayesian A/B and MV testing experiment.
 # Copyright (C) 2019
 
 import copy
+import datetime
 import numbers
 import time
 
 import numpy as np
 
 from ..cdist.base import BayesMVTest
+from .plotting import experiment_plot_metric
+from .plotting import experiment_plot_stats
+from .utils import experiment_describe
+from .utils import experiment_stats
+from .utils import experiment_summary
 
-_STATUS_MAX_SAMPLES = "max_samples exceeded"
+
+_STATUS_max_n_samples = "max_n_samples exceeded"
 _STATUS_RUNNING = "running..."
 _STATUS_WINNER = "winner {}"
 
@@ -35,10 +42,10 @@ class Experiment(object):
 
     epsilon : float (default=1e-5)
 
-    min_samples : int or None (default=None)
+    min_n_samples : int or None (default=None)
         The minimum number of samples for any variant.
 
-    max_samples : int or None (default=None)
+    max_n_samples : int or None (default=None)
         The maximum number of samples for any variant.
 
     verbose : int or bool (default=False)
@@ -60,16 +67,20 @@ class Experiment(object):
         The total number of updates throughout the experimentation.
     """
     def __init__(self, name, test, stopping_rule="expected_loss", epsilon=1e-5,
-                 min_samples=None, max_samples=None, verbose=False):
+                 min_n_samples=None, max_n_samples=None, verbose=False,
+                 **options):
 
         self.name = name
         self.test = test
         self.stopping_rule = stopping_rule
         self.epsilon = epsilon
-        self.min_samples = min_samples
-        self.max_samples = max_samples
+        self.min_n_samples = min_n_samples
+        self.max_n_samples = max_n_samples
         self.verbose = verbose
+
         # options
+        self._method = options.get("method", None)
+        self._nig_metric = options.get("nig_metric", None)
 
         # attributes
         self.variants_ = None
@@ -80,6 +91,8 @@ class Experiment(object):
         # auxiliary data
         self._test = None
         self._test_type = None
+        self._multimetric = False
+        self._multimetric_idx = None
 
         # statistics
         self._trials = {}
@@ -93,6 +106,7 @@ class Experiment(object):
         # flags
         self._status = None
         self._termination = False
+        self._winner = None
 
         self._setup()
 
@@ -101,6 +115,18 @@ class Experiment(object):
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         return
+
+    def describe(self):
+        """"""
+        return experiment_describe(self)
+
+    def plot_metric(self):
+        """"""
+        return experiment_plot_metric(self)
+
+    def plot_stats(self):
+        """"""
+        return experiment_plot_stats(self)
 
     def run_update(self, **kwargs):
         """
@@ -113,21 +139,17 @@ class Experiment(object):
 
         self._update_data(**kwargs)
 
-        self._update_stats(**kwargs)
-
         self._compute_metric()
 
         self._check_termination()
 
     def stats(self):
-        """
-        """
-        pass
+        """"""
+        return experiment_stats(self)
 
     def summary(self):
-        """
-        """
-        pass
+        """"""
+        return experiment_summary(self)
 
     def _check_termination(self):
         """"""
@@ -136,37 +158,55 @@ class Experiment(object):
         if self.stopping_rule in ("expected_loss", "probability"):
             variants.remove("A")
         
-        variant_metrics = sorted([(v, self._trials[v]["metric"][-1])
-                                  for v in variants], key=lambda tup: tup[1])
+        if self._multimetric:
+            variant_metrics = sorted(
+                [(v, self._trials[v]["metric"][-1]) for v in variants],
+                key=lambda tup: tup[1][self._multimetric_idx])
+        else:
+            variant_metrics = sorted([(v, self._trials[v]["metric"][-1])
+                                      for v in variants],
+                                      key=lambda tup: tup[1])
 
         largest_metric = variant_metrics[-1]
         smallest_metric = variant_metrics[0]
 
         winner = ""
         if self.stopping_rule in ("expected_loss", "expected_loss_vs_all"):
-            if smallest_metric[1] < self.epsilon:
-                winner = smallest_metric[0]
-        elif self.stopping_rule in ("probability", "probability_vs_all"):
-            if largest_metric[1] > self.epsilon:
-                winner = largest_metric[0]
+            variant, metric = smallest_metric
 
-        if self.min_samples is not None or self.max_samples is not None:
+            if self._multimetric:
+                metric = metric[self._multimetric_idx]
+
+            if metric < self.epsilon:
+                winner = variant
+                self._winner = winner
+        elif self.stopping_rule in ("probability", "probability_vs_all"):
+            variant, metric = largest_metric
+
+            if self._multimetric:
+                metric = metric[self._multimetric_idx]
+
+            if metric > self.epsilon:
+                winner = variant
+                self._winner = winner
+
+        if self.min_n_samples is not None or self.max_n_samples is not None:
             variant_samples = [self._test.models[v].n_samples_
                                for v in self.variants_]
 
-            min_samples = np.min(variant_samples)
-            max_samples = np.max(variant_samples)
+            min_n_samples = np.min(variant_samples)
+            max_n_samples = np.max(variant_samples)
 
-            min_stop_criterion = (self.min_samples is not None and
-                                  min_samples >= self.min_samples)
-            max_stop_criterion = (self.max_samples is not None and
-                                  max_samples >= self.max_samples)
+            min_stop_criterion = (self.min_n_samples is not None and
+                                  min_n_samples >= self.min_n_samples)
+            max_stop_criterion = (self.max_n_samples is not None and
+                                  max_n_samples >= self.max_n_samples)
 
             if winner and min_stop_criterion:
                 self._status = _STATUS_WINNER.format(winner)
                 self._termination = True
             elif max_stop_criterion:
-                self._status = _STATUS_MAX_SAMPLES
+                self._status = _STATUS_max_n_samples
                 self._termination = True
             else:
                 self._status = _STATUS_RUNNING
@@ -195,7 +235,7 @@ class Experiment(object):
             for variant in variants:
                 if self.stopping_rule == "expected_loss_vs_all":
                     if self._test_type == "abtest":
-                        control = next(v for v in variants if v != variant)
+                        control = variants[not variants.index(variant)]
                         _metric = self._test.expected_loss(control=control,
                             variant=variant)
                     else:
@@ -203,7 +243,7 @@ class Experiment(object):
                             variant=variant)
                 else:
                     if self._test_type == "abtest":
-                        control = next(v for v in variants if v != variant)
+                        control = variants[not variants.index(variant)]
                         _metric = self._test.probability(control=control,
                             variant=variant)            
                     else:
@@ -219,26 +259,27 @@ class Experiment(object):
                              "Available methods are {}"
                              .format(self.stopping_rule, _STOPPING_RULES))
 
-        if self.min_samples is not None:
-            if (not isinstance(self.min_samples, numbers.Number) or
-                    self.min_samples < 0):
+        if self.min_n_samples is not None:
+            if (not isinstance(self.min_n_samples, numbers.Number) or
+                    self.min_n_samples < 0):
                 raise ValueError("Minimum number of samples must be positive; "
-                    "got {}.".format(self.min_samples))
+                    "got {}.".format(self.min_n_samples))
 
-        if self.max_samples is not None:
-            if (not isinstance(self.max_samples, numbers.Number) or
-                    self.max_samples < 0):
+        if self.max_n_samples is not None:
+            if (not isinstance(self.max_n_samples, numbers.Number) or
+                    self.max_n_samples < 0):
                 raise ValueError("Maximum number of samples must be positive; "
-                    "got {}.".format(self.min_samples))
+                    "got {}.".format(self.min_n_samples))
 
-        if None not in (self.min_samples, self.max_samples):
-            if self.min_samples > self.max_samples:
-                raise ValueError("min_samples must be <= max_samples.")
+        if None not in (self.min_n_samples, self.max_n_samples):
+            if self.min_n_samples > self.max_n_samples:
+                raise ValueError("min_n_samples must be <= max_n_samples.")
 
         if not isinstance(self.test, BayesMVTest):
             raise TypeError("test is not an instance inherited from "
                             "BayesMVTest.")
 
+        # clone test to run experiment
         self._test = copy.deepcopy(self.test)
 
         self.variants_ = self._test.models.keys()
@@ -249,19 +290,51 @@ class Experiment(object):
         else:
             self._test_type = "mvtest"
         
+        # initialize dictionary to store information of each variant at each
+        # iteration/update.
         for variant in self._test.models.keys():
             self._trials[variant] = {
                 "datetime": [],
                 "metric": [],
-                "stats": {"mean": [], "var": [], "min": [], "max": []}
+                "data": [],
+                "n_samples": [],
+                "stats": {
+                    "min": [], "max": [], "sum": [], "mean": [], "var": []
+                }
             }
 
+        # initialize status message
         self._status = _STATUS_RUNNING
+
+        # extra options
+        if type(self._test).__name__ in ("NormalMVTest", "LogNormalMVTest"):
+            self._multimetric = True
+
+            if self._nig_metric is not None:
+                if self._nig_metric not in ("mu", "sigma_sq"):
+                    raise ValueError()
+                
+                if self._nig_metric == "mu":
+                    self._multimetric_idx = 0
+                else:
+                    self._multimetric_idx = 1
+            else:
+                self._nig_metric = "mu"  # default
+                self._multimetric_idx = 0
 
     def _update_data(self, **kwargs):
         """"""
+        update_datetime = str(datetime.datetime.now())
+
         for variant, data in kwargs.items():
             self._test.update(variant=variant, data=data)
+
+            self._trials[variant]["datetime"].append(update_datetime)
+            if np.asarray(data).size > 1:
+
+                self._trials[variant]["data"].extend(np.asarray(data))
+            else:
+                self._trials[variant]["data"].append(data)    
 
     def _update_stats(self, **kwargs):
         """"""
@@ -274,3 +347,7 @@ class Experiment(object):
     @property
     def termination(self):
         return self._termination
+
+    @property
+    def winner(self):
+        return self._winner

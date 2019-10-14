@@ -112,6 +112,9 @@ def experiment_summary(experiment, mode="basic"):
     test = experiment._test
     winner = experiment.winner
 
+    if experiment._multimetric:
+        multi_idx = experiment._multimetric_idx
+
     report = {}
 
     for variant in experiment.variants_:
@@ -119,7 +122,14 @@ def experiment_summary(experiment, mode="basic"):
             # compute probability and expected_loss
             probability = test.probability(variant=variant)
             expected_loss = test.expected_loss(variant=variant)
-            improvement = -test.expected_loss_relative(variant=variant)
+            expected_loss_rel = test.expected_loss_relative(variant=variant)
+
+            if experiment._multimetric:
+                probability = probability[multi_idx]
+                expected_loss = expected_loss[multi_idx]
+                improvement = -expected_loss_rel[multi_idx]
+            else:
+                improvement = -expected_loss_rel
 
             probability_str = "{:.2%}".format(probability)
             improvement_str = "{:.2%}".format(improvement)
@@ -130,7 +140,14 @@ def experiment_summary(experiment, mode="basic"):
 
         probability_vs_all = test.probability_vs_all(variant=variant)
         expected_loss_vs_all = test.expected_loss_vs_all(variant=variant)
-        improvement_vs_all = -test.expected_loss_relative_vs_all(variant=variant)
+        expected_loss_rel_vs_all = test.expected_loss_relative_vs_all(variant=variant)
+
+        if experiment._multimetric:
+            probability_vs_all = probability_vs_all[multi_idx]
+            expected_loss_vs_all = expected_loss_vs_all[multi_idx]
+            improvement_vs_all = -expected_loss_rel_vs_all[multi_idx]
+        else:
+            improvement_vs_all = -expected_loss_rel_vs_all
 
         probability_vs_all_str = "{:.2%}".format(probability_vs_all)
         improvement_vs_all_str = "{:.2%}".format(improvement_vs_all)

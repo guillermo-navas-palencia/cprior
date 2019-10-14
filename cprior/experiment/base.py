@@ -139,6 +139,8 @@ class Experiment(object):
 
         self._update_data(**kwargs)
 
+        self._update_stats()
+
         self._compute_metric()
 
         self._check_termination()
@@ -298,9 +300,7 @@ class Experiment(object):
                 "metric": [],
                 "data": [],
                 "n_samples": [],
-                "stats": {
-                    "min": [], "max": [], "sum": [], "mean": [], "var": []
-                }
+                "stats": {"mean": [], "ci_low": [], "ci_high": []}
             }
 
         # initialize status message
@@ -330,15 +330,25 @@ class Experiment(object):
             self._test.update(variant=variant, data=data)
 
             self._trials[variant]["datetime"].append(update_datetime)
-            if np.asarray(data).size > 1:
 
-                self._trials[variant]["data"].extend(np.asarray(data))
+            x = np.asarray(data)
+            n = x.size
+
+            if n > 1:
+                self._trials[variant]["data"].extend(x)
             else:
-                self._trials[variant]["data"].append(data)    
+                self._trials[variant]["data"].append(data)
 
-    def _update_stats(self, **kwargs):
+            self._trials[variant]["n_samples"].append(n)
+
+    def _update_stats(self):
         """"""
-        pass
+        for variant in self.variants_:
+            mean = self._test.models[variant].mean()
+            ci_low, ci_high = self._test.models[variant].ppf([0.05, 0.95])
+            self._trials[variant]["stats"]["mean"].append(mean)
+            self._trials[variant]["stats"]["ci_low"].append(ci_low)
+            self._trials[variant]["stats"]["ci_high"].append(ci_high)
 
     @property
     def status(self):

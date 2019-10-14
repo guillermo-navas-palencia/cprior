@@ -20,10 +20,12 @@ def experiment_stats(experiment):
     ----------
     experiment : object
     """
-    df = pd.DataFrame({variant: experiment._trials[variant]["data"]
-                       for variant in experiment.variants_})
+    d_cols = []
+    for variant in experiment.variants_:
+        d_cols.append(pd.Series(experiment._trials[variant]["data"],
+            name=variant).describe())
 
-    return df.describe()
+    return pd.concat(d_cols, axis=1)
 
 
 def experiment_describe(experiment):
@@ -140,19 +142,20 @@ def experiment_summary(experiment, mode="basic"):
             "probability_vs_all": probability_vs_all_str,
             "expected_loss_vs_all": expected_loss_vs_all,
             "improvement": improvement_str,
-            "improvement_vs_all": improvement_vs_all_str
+            "improvement_vs_all": improvement_vs_all_str,
+            "n_samples": test.models[variant].n_samples_
         }
 
     cols = ["name", "probability", "expected_loss", "improvement",
             "probability_vs_all", "expected_loss_vs_all",
-            "improvement_vs_all"]
+            "improvement_vs_all", "n_samples"]
 
     df_report = pd.DataFrame.from_dict(report).T
     df_report = df_report[cols]
 
     if winner is not None:
         return df_report.style.set_properties(subset=pd.IndexSlice[[winner], :],
-            **{'background-color': "#C4F4C5"})
+            **{'background-color': "#C4F4C5", 'font-weight': 'bold'})
     else:
         return df_report
 

@@ -97,8 +97,6 @@ class Experiment(object):
         # statistics
         self._trials = {}
 
-        # running statistics (mean / variance)
-
         # timing
         self._time_init = None
         self._time_termination = None
@@ -218,6 +216,9 @@ class Experiment(object):
         else:
             self._status = _STATUS_RUNNING
 
+        if self._termination:
+            self._time_termination = time.perf_counter()
+
     def _compute_metric(self):
         """"""
         variants = list(self._test.models.keys())
@@ -280,6 +281,8 @@ class Experiment(object):
         if not isinstance(self.test, BayesMVTest):
             raise TypeError("test is not an instance inherited from "
                             "BayesMVTest.")
+
+        self._time_init = time.perf_counter()
 
         # clone test to run experiment
         self._test = copy.deepcopy(self.test)

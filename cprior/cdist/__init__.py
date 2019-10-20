@@ -16,3 +16,4 @@ from .pareto import ParetoMVTest
 
 # utilities
 from .ci import ci_interval
+from .ci import ci_interval_exact

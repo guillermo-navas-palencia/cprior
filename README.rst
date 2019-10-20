@@ -127,14 +127,26 @@ Bernoulli distribution with distinct success probability.
 
 4. Reporting: experiment summary
 
+.. code-block:: python
+
+   experiment.summary()
+
 .. image:: img/bernoulli_summary.png
   :width: 400
 
 5. Reporting: visualize stopping rule metric over time (updates)
 
+.. code-block:: python
+
+   experiment.plot_metric()
+
 .. image:: img/bernoulli_plot_metric.png
 
 5. Reporting: visualize statistics over time (updates)
+
+.. code-block:: python
+
+   experiment.plot_stats()
 
 .. image:: img/bernoulli_plot_stats.png
 

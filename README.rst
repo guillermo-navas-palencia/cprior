@@ -142,7 +142,7 @@ Bernoulli distribution with distinct success probability.
 
 .. image:: img/bernoulli_plot_metric.png
 
-5. Reporting: visualize statistics over time (updates)
+6. Reporting: visualize statistics over time (updates)
 
 .. code-block:: python
 

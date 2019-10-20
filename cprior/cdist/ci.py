@@ -131,7 +131,7 @@ def ci_interval_exact(dist, interval_length=0.9, method="ETI", bounds=None):
     >>> from scipy import stats
     >>> from cprior.cdist import ci_interval
     >>> dist = stats.beta(4, 10)
-    >>> ci_interval_exact(dist=dist, interval_length=0.95, method="ETI")
+    >>> ci_interval_exact(dist=dist, interval_length=0.9, method="ETI")
     array([0.11266578, 0.49464973])
     >>> bounds = [(0, 1), (0, 1)]
     >>> ci_interval_exact(dist=dist, interval_length=0.9, method="HDI", bounds=bounds)

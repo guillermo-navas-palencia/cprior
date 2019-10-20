@@ -49,9 +49,98 @@ Run all unit tests
 
    python setup.py test
 
+Examples
+--------
 
-Example
--------
+Example: run experiment
+"""""""""""""""""""""""
+
+A Bayesian multivariate test with control and 3 variants. Data follows a
+Bernoulli distribution with distinct success probability.
+
+1. Generate control and variant models and build experiment. Select stopping rule and threshold (epsilon).
+
+.. code-block:: python
+   
+   from scipy import stats
+   from cprior.models.bernoulli import BernoulliModel
+   from cprior.models.bernoulli import BernoulliMVTest
+   from cprior.experiment.base import Experiment
+   
+   modelA = BernoulliModel(name="control", alpha=1, beta=1)
+   modelB = BernoulliModel(name="variation", alpha=1, beta=1)
+   modelC = BernoulliModel(name="variation", alpha=1, beta=1)
+   modelD = BernoulliModel(name="variation", alpha=1, beta=1)
+
+   mvtest = BernoulliMVTest({"A": modelA, "B": modelB, "C": modelC, "D": modelD})
+
+   experiment = Experiment(name="CTR", test=mvtest, stopping_rule="probability_vs_all",
+                           epsilon=0.99, min_n_samples=1000, max_n_samples=None)
+
+2. See experiment description
+
+.. code-block:: python
+
+   experiment.describe()
+   
+.. code-block:: txt
+
+   =====================================================
+     Experiment: CTR
+   =====================================================
+       Bayesian model:                bernoulli-beta
+       Number of variants:                         4
+
+       Options:
+         stopping rule            probability_vs_all
+         epsilon                             0.99000
+         min_n_samples                          1000
+         max_n_samples                       not set
+
+       Priors:
+
+            alpha  beta
+         A      1     1
+         B      1     1
+         C      1     1
+         D      1     1
+     -------------------------------------------------
+   
+3. Generate or pass new data and update models until a clear winner is found. The stopping rule will be updated after a new update.
+
+.. code-block:: python
+
+   with experiment as e:
+       while not e.termination:
+           data_A = stats.bernoulli(p=0.0223).rvs(size=25)
+           data_B = stats.bernoulli(p=0.1128).rvs(size=15)
+           data_C = stats.bernoulli(p=0.0751).rvs(size=35)
+           data_D = stats.bernoulli(p=0.0280).rvs(size=15)
+
+           e.run_update(**{"A": data_A, "B": data_B, "C": data_C, "D": data_D})
+
+       print(e.termination, e.status)
+
+.. code-block:: txt
+   
+   True winner B
+
+4. Reporting: experiment summary
+
+.. image:: img/bernoulli_summary.png
+  :width: 400
+
+5. Reporting: visualize stopping rule metric over time (updates)
+
+.. image:: img/bernoulli_plot_metric.png
+
+5. Reporting: visualize statistics over time (updates)
+
+.. image:: img/bernoulli_plot_stats.png
+
+
+Example: basic A/B test
+"""""""""""""""""""""""
 
 A Bayesian A/B test with data following a Bernoulli distribution with two
 distinct success probability. This example is a simple use case for

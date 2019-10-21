@@ -43,9 +43,8 @@ def check_ab_method(method, method_options, variant, lift=0,
         raise ValueError("Method {} cannot be used with lift={}."
                          " Select method='MC'.".format(method, lift))
 
-    invalid_length = (interval_length < 0 or interval_length > 1)
-
-    if not isinstance(interval_length, numbers.Number) or invalid_length:
+    if not isinstance(interval_length, numbers.Number) or (
+            interval_length < 0 or interval_length > 1):
         raise ValueError("Interval length must a value in [0, 1]; got "
                          "interval_length={}.".format(interval_length))
 

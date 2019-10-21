@@ -18,6 +18,7 @@ CPrior includes several conjugate prior distributions and has been developed foc
    base
    conjugate
    models
+   experiment
    utilities
 
 .. toctree::

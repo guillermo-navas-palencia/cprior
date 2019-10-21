@@ -26,7 +26,7 @@ def ci_interval(x, interval_length=0.9, method="ETI"):
 
     method : str (default="ETI")
         Method to compute credible intervals. Supported methods are Highest
-        Density interval (``method="HDI``) and Equal-tailed interval
+        Density interval (``method="HDI"``) and Equal-tailed interval
         (``method="ETI"``).
 
     Returns
@@ -45,7 +45,7 @@ def ci_interval(x, interval_length=0.9, method="ETI"):
     array([-1.95282024,  1.9679026 ])
     """
     if method not in ("ETI", "HDI"):
-        raise ValueError("method {} is not supported. Use 'ETI' or 'HDI"
+        raise ValueError("method {} is not supported. Use 'ETI' or 'HDI'"
                          .format(method))
 
     invalid_length = (interval_length < 0 or interval_length > 1)
@@ -76,20 +76,20 @@ def _ci_hdi_exact(f, x0, interval_length, bounds):
     def func(x):
         return x[3] + x[2] + x[1] - x[0]
 
-    def obj_F(x):
+    def obj_f(x):
         return f.pdf(x[1]) - f.pdf(x[0])
 
-    def obj_f(x):
+    def obj_F(x):
         return f.cdf(x[1]) - f.cdf(x[0])
 
     epsilon = 1e-6
 
     cons = (
         {'type': 'ineq', 'fun': lambda x: x[1] - x[0] - epsilon},
-        {'type': 'ineq', 'fun': lambda x: -x[2] + obj_F(x)},
-        {'type': 'ineq', 'fun': lambda x: x[2] + obj_F(x)},
-        {'type': 'ineq', 'fun': lambda x: -x[3] + obj_f(x) - interval_length},
-        {'type': 'ineq', 'fun': lambda x: x[3] + obj_f(x) - interval_length}
+        {'type': 'ineq', 'fun': lambda x: -x[2] + obj_f(x)},
+        {'type': 'ineq', 'fun': lambda x: x[2] + obj_f(x)},
+        {'type': 'ineq', 'fun': lambda x: -x[3] + obj_F(x) - interval_length},
+        {'type': 'ineq', 'fun': lambda x: x[3] + obj_F(x) - interval_length}
     )
 
     res = optimize.minimize(func, (*x0, 0, 0), method="SLSQP",
@@ -114,7 +114,7 @@ def ci_interval_exact(dist, interval_length=0.9, method="ETI", bounds=None):
 
     method : str (default="ETI")
         Method to compute credible intervals. Supported methods are Highest
-        Density interval (``method="HDI``) and Equal-tailed interval
+        Density interval (``method="HDI"``) and Equal-tailed interval
         (``method="ETI"``).
 
     bounds : list or None (default=None)
@@ -138,7 +138,7 @@ def ci_interval_exact(dist, interval_length=0.9, method="ETI", bounds=None):
     array([0.09439576, 0.46944915])
     """
     if method not in ("ETI", "HDI"):
-        raise ValueError("method {} is not supported. Use 'ETI' or 'HDI"
+        raise ValueError("method {} is not supported. Use 'ETI' or 'HDI'"
                          .format(method))
 
     invalid_length = (interval_length < 0 or interval_length > 1)

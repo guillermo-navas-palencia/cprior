@@ -146,9 +146,6 @@ class NormalModel(NormalInverseGammaModel):
         t = (1 + 1. / self._variance_scale_posterior)
         scale = self._scale_posterior * t / self._shape_posterior
 
-        print(stats.t(df=df, loc=loc, scale=scale).mean())
-        print(stats.t(df=df, loc=loc, scale=scale).var())
-
         return stats.t(df=df, loc=loc, scale=scale).pdf(x)
 
     def ppmean(self):

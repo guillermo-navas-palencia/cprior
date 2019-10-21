@@ -19,6 +19,10 @@ def experiment_stats(experiment):
     Parameters
     ----------
     experiment : object
+
+    Returns
+    -------
+    stats : pandas.DataFrame
     """
     d_cols = []
     for variant in experiment.variants_:
@@ -32,7 +36,7 @@ def experiment_describe(experiment):
     """
     Parameters
     ----------
-    experiment : object    
+    experiment : object
     """
 
     # Experiment class arguments
@@ -107,7 +111,11 @@ def experiment_summary(experiment, mode="basic"):
     """
     Parameters
     ----------
-    experiment : object    
+    experiment : object
+
+    Returns
+    -------
+    stats : pandas.DataFrame    
     """
     test = experiment._test
     winner = experiment.winner
@@ -175,7 +183,3 @@ def experiment_summary(experiment, mode="basic"):
             **{'background-color': "#C4F4C5", 'font-weight': 'bold'})
     else:
         return df_report
-
-
-def _summay_formatter(summary):
-    return summary

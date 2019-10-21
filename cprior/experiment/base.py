@@ -35,12 +35,21 @@ class Experiment(object):
     Parameters
     ----------
     name : str
+        Experiment name.
 
     test : object
+        A multivariate test instance. This is a class inherit from
+        ``cprior.cdist.base.BayesMVTest``.
 
     stopping_rule : str (default="expected_loss")
+        The stopping rule or metric to be used throughout the experiment.
+        Options are "probability", "probability_vs_all", "expected_loss"
+        and "expected_loss_vs_all".
 
     epsilon : float (default=1e-5)
+        The epsilon or threshold to be checked throughout the experiment. The
+        experiment will terminate with a winner variant if the metric value
+        reaches ``epsilon``.
 
     min_n_samples : int or None (default=None)
         The minimum number of samples for any variant.
@@ -50,6 +59,10 @@ class Experiment(object):
 
     verbose : int or bool (default=False)
         Controls verbosity of output.
+
+    **options :
+        For other keyword-only arguments. For example, ``nig_metric`` with
+        options ``"mu"`` and ``"sigma_sq"``.
 
     Attributes
     ----------
@@ -126,16 +139,21 @@ class Experiment(object):
         """"""
         return experiment_plot_stats(self)
 
-    def run_update(self, **kwargs):
+    def run_update(self, **data):
         """
+        Update one or various Bayesian models with new data.
+
         Parameters
         ----------
+        **data : dict
+            Dictionary with key=variant and value=data, e.g.
+            ``**{"A": data_A}``.
         """
         if self._termination:
             print("Experiment is terminated.")
             return
 
-        self._update_data(**kwargs)
+        self._update_data(**data)
 
         self._update_stats()
 
@@ -151,8 +169,16 @@ class Experiment(object):
         """"""
         return experiment_summary(self)
 
-    def _check_termination(self):
+    def save(self, pickle_path):
         """"""
+        pass
+
+    def load(self, pickle_path):
+        """"""
+        pass
+
+    def _check_termination(self):
+        """Check termination criteria."""
         variants = list(self._test.models.keys())
 
         if self.stopping_rule in ("expected_loss", "probability"):

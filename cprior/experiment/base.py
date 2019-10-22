@@ -8,6 +8,7 @@ Bayesian A/B and MV testing experiment.
 import copy
 import datetime
 import numbers
+import pickle
 import time
 
 import numpy as np
@@ -170,12 +171,36 @@ class Experiment(object):
         return experiment_summary(self)
 
     def save(self, pickle_path):
-        """"""
-        pass
+        """
+        Save this experiment to the given pickle path.
+
+        Parameters
+        ----------
+        pickle_path : str
+            Path of the pickle object.
+        """
+        if not isinstance(pickle_path, str):
+            raise TypeError("pickle_path must be a string.")
+
+        with open(pickle_path, "wb") as output_file:
+            pickle.dump(self, output_file)
 
     def load(self, pickle_path):
-        """"""
-        pass
+        """
+        Load experiment from a given pickle path.
+
+        Parameters
+        ----------
+        pickle_path : str
+            Path of the pickle object.
+        """
+        if not isinstance(pickle_path, str):
+            raise TypeError("pickle_path must be a string.")
+
+        with open(pickle_path, "rb") as input_file:
+            experiment = pickle.load(input_file)
+
+        self.__dict__ = copy.deepcopy(experiment.__dict__)
 
     def _check_termination(self):
         """Check termination criteria."""
@@ -183,7 +208,7 @@ class Experiment(object):
 
         if self.stopping_rule in ("expected_loss", "probability"):
             variants.remove("A")
-        
+
         if self._multimetric:
             variant_metrics = sorted(
                 [(v, self._trials[v]["metric"][-1]) for v in variants],
@@ -191,7 +216,7 @@ class Experiment(object):
         else:
             variant_metrics = sorted([(v, self._trials[v]["metric"][-1])
                                       for v in variants],
-                                      key=lambda tup: tup[1])
+                                     key=lambda tup: tup[1])
 
         largest_metric = variant_metrics[-1]
         smallest_metric = variant_metrics[0]
@@ -266,7 +291,7 @@ class Experiment(object):
                     if self._test_type == "abtest":
                         control = variants[not variants.index(variant)]
                         _metric = self._test.expected_loss(control=control,
-                            variant=variant)
+                                                           variant=variant)
                     else:
                         _metric = self._test.expected_loss_vs_all(
                             variant=variant)
@@ -274,7 +299,7 @@ class Experiment(object):
                     if self._test_type == "abtest":
                         control = variants[not variants.index(variant)]
                         _metric = self._test.probability(control=control,
-                            variant=variant)            
+                                                         variant=variant)
                     else:
                         _metric = self._test.probability_vs_all(
                             variant=variant)
@@ -292,13 +317,13 @@ class Experiment(object):
             if (not isinstance(self.min_n_samples, numbers.Number) or
                     self.min_n_samples < 0):
                 raise ValueError("Minimum number of samples must be positive; "
-                    "got {}.".format(self.min_n_samples))
+                                 "got {}.".format(self.min_n_samples))
 
         if self.max_n_samples is not None:
             if (not isinstance(self.max_n_samples, numbers.Number) or
                     self.max_n_samples < 0):
                 raise ValueError("Maximum number of samples must be positive; "
-                    "got {}.".format(self.min_n_samples))
+                                 "got {}.".format(self.min_n_samples))
 
         if None not in (self.min_n_samples, self.max_n_samples):
             if self.min_n_samples > self.max_n_samples:
@@ -320,7 +345,7 @@ class Experiment(object):
             self._test_type = "abtest"
         else:
             self._test_type = "mvtest"
-        
+
         # initialize dictionary to store information of each variant at each
         # iteration/update.
         for variant in self._test.models.keys():
@@ -342,7 +367,7 @@ class Experiment(object):
             if self._nig_metric is not None:
                 if self._nig_metric not in ("mu", "sigma_sq"):
                     raise ValueError()
-                
+
                 if self._nig_metric == "mu":
                     self._multimetric_idx = 0
                 else:

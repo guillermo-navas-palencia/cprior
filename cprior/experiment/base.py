@@ -14,11 +14,6 @@ import time
 import numpy as np
 
 from ..cdist.base import BayesMVTest
-from .plotting import experiment_plot_metric
-from .plotting import experiment_plot_stats
-from .utils import experiment_describe
-from .utils import experiment_stats
-from .utils import experiment_summary
 
 
 _STATUS_max_n_samples = "max_n_samples exceeded"
@@ -93,7 +88,7 @@ class Experiment(object):
         self.verbose = verbose
 
         # options
-        self._method = options.get("method", None)
+        # self._method = options.get("method", None)
         self._nig_metric = options.get("nig_metric", None)
 
         # attributes
@@ -129,15 +124,18 @@ class Experiment(object):
         return
 
     def describe(self):
-        """"""
+        """Experiment settings."""
+        from .utils import experiment_describe
         return experiment_describe(self)
 
     def plot_metric(self):
-        """"""
+        """Plot stopping rule metric over updates/time."""
+        from .plotting import experiment_plot_metric
         return experiment_plot_metric(self)
 
     def plot_stats(self):
-        """"""
+        """Plot statistics (mean and CI intervals) over updates/time."""
+        from .plotting import experiment_plot_stats
         return experiment_plot_stats(self)
 
     def run_update(self, **data):
@@ -163,11 +161,18 @@ class Experiment(object):
         self._check_termination()
 
     def stats(self):
-        """"""
+        """Experiment main statistics on collected data."""
+        from .utils import experiment_stats
         return experiment_stats(self)
 
     def summary(self):
-        """"""
+        """
+        Experiment summary with several decision metrics.
+
+        If a winner has been declared, the corresponding row is highlighted
+        in green.
+        """
+        from .utils import experiment_summary
         return experiment_summary(self)
 
     def save(self, pickle_path):
@@ -183,7 +188,7 @@ class Experiment(object):
             raise TypeError("pickle_path must be a string.")
 
         with open(pickle_path, "wb") as output_file:
-            pickle.dump(self, output_file)
+            pickle.dump(self, output_file, pickle.HIGHEST_PROTOCOL)
 
     def load(self, pickle_path):
         """
@@ -338,7 +343,7 @@ class Experiment(object):
         # clone test to run experiment
         self._test = copy.deepcopy(self.test)
 
-        self.variants_ = self._test.models.keys()
+        self.variants_ = list(self._test.models.keys())
         self.n_variants_ = len(self.variants_)
 
         if self.n_variants_ == 2:
@@ -348,7 +353,7 @@ class Experiment(object):
 
         # initialize dictionary to store information of each variant at each
         # iteration/update.
-        for variant in self._test.models.keys():
+        for variant in list(self._test.models.keys()):
             self._trials[variant] = {
                 "datetime": [],
                 "metric": [],
@@ -398,8 +403,13 @@ class Experiment(object):
     def _update_stats(self):
         """"""
         for variant in self.variants_:
-            mean = self._test.models[variant].mean()
-            ci_low, ci_high = self._test.models[variant].ppf([0.05, 0.95])
+            if self._multimetric:
+                mean = self._test.models[variant].mean()[self._multimetric_idx]
+                ci_low, ci_high = self._test.models[variant].ppf(
+                    [0.05, 0.95])[self._multimetric_idx]
+            else:
+                mean = self._test.models[variant].mean()
+                ci_low, ci_high = self._test.models[variant].ppf([0.05, 0.95])
             self._trials[variant]["stats"]["mean"].append(mean)
             self._trials[variant]["stats"]["ci_low"].append(ci_low)
             self._trials[variant]["stats"]["ci_high"].append(ci_high)

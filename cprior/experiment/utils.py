@@ -5,17 +5,19 @@ Experiment utilities functions.
 # Guillermo Navas-Palencia <g.navas.palencia@gmail.com>
 # Copyright (C) 2019
 
-import numpy as np
 import pandas as pd
 
 from ..cdist import BetaModel
 from ..cdist import GammaModel
 from ..cdist import NormalInverseGammaModel
 from ..cdist import ParetoModel
+from .base import Experiment
 
 
 def experiment_stats(experiment):
     """
+    Experiment main statistics on collected data.
+
     Parameters
     ----------
     experiment : object
@@ -24,20 +26,27 @@ def experiment_stats(experiment):
     -------
     stats : pandas.DataFrame
     """
+    if not isinstance(experiment, Experiment):
+        raise TypeError()
+
     d_cols = []
     for variant in experiment.variants_:
         d_cols.append(pd.Series(experiment._trials[variant]["data"],
-            name=variant).describe())
+                      name=variant).describe())
 
     return pd.concat(d_cols, axis=1)
 
 
 def experiment_describe(experiment):
     """
+    Experiment settings.
+
     Parameters
     ----------
     experiment : object
     """
+    if not isinstance(experiment, Experiment):
+        raise TypeError()
 
     # Experiment class arguments
     name = experiment.name
@@ -70,7 +79,7 @@ def experiment_describe(experiment):
         prior_values = [(models[v].shape, models[v].rate) for v in variants]
     elif issubclass(model_type, NormalInverseGammaModel):
         model_prior_type_name = "normalinversegamma"
-        
+
         prior_params = ["loc", "variance_scale", "shape", "scale"]
         prior_values = [(models[v].loc, models[v].variance_scale,
                          models[v].shape, models[v].scale) for v in variants]
@@ -107,16 +116,24 @@ def experiment_describe(experiment):
     print(report)
 
 
-def experiment_summary(experiment, mode="basic"):
+def experiment_summary(experiment):
     """
+    Experiment summary with several decision metrics.
+
+    If a winner has been declared, the corresponding row is highlighted
+    in green.
+
     Parameters
     ----------
     experiment : object
 
     Returns
     -------
-    stats : pandas.DataFrame    
+    stats : pandas.DataFrame
     """
+    if not isinstance(experiment, Experiment):
+        raise TypeError()
+
     test = experiment._test
     winner = experiment.winner
 
@@ -148,7 +165,8 @@ def experiment_summary(experiment, mode="basic"):
 
         probability_vs_all = test.probability_vs_all(variant=variant)
         expected_loss_vs_all = test.expected_loss_vs_all(variant=variant)
-        expected_loss_rel_vs_all = test.expected_loss_relative_vs_all(variant=variant)
+        expected_loss_rel_vs_all = test.expected_loss_relative_vs_all(
+            variant=variant)
 
         if experiment._multimetric:
             probability_vs_all = probability_vs_all[multi_idx]
@@ -179,7 +197,8 @@ def experiment_summary(experiment, mode="basic"):
     df_report = df_report[cols]
 
     if winner is not None:
-        return df_report.style.set_properties(subset=pd.IndexSlice[[winner], :],
+        return df_report.style.set_properties(
+            subset=pd.IndexSlice[[winner], :],
             **{'background-color': "#C4F4C5", 'font-weight': 'bold'})
     else:
         return df_report

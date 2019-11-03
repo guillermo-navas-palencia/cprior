@@ -48,9 +48,8 @@ def ci_interval(x, interval_length=0.9, method="ETI"):
         raise ValueError("method {} is not supported. Use 'ETI' or 'HDI'"
                          .format(method))
 
-    invalid_length = (interval_length < 0 or interval_length > 1)
-
-    if not isinstance(interval_length, numbers.Number) or invalid_length:
+    if not isinstance(interval_length, numbers.Number) or (
+            interval_length < 0 or interval_length > 1):
         raise ValueError("Interval length must a value in [0, 1]; got "
                          "interval_length={}.".format(interval_length))
 

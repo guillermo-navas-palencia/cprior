@@ -33,3 +33,32 @@ from .poisson import PoissonMVTest
 from .uniform import UniformABTest
 from .uniform import UniformModel
 from .uniform import UniformMVTest
+
+
+__all__ = ['BernoulliABTest',
+           'BernoulliModel',
+           'BernoulliMVTest',
+           'BinomialABTest',
+           'BinomialModel',
+           'BinomialMVTest',
+           'ExponentialABTest',
+           'ExponentialModel',
+           'ExponentialMVTest',
+           'GeometricABTest',
+           'GeometricModel',
+           'GeometricMVTest',
+           'LogNormalABTest',
+           'LogNormalModel',
+           'LogNormalMVTest',
+           'NegativeBinomialABTest',
+           'NegativeBinomialModel',
+           'NegativeBinomialMVTest',
+           'NormalABTest',
+           'NormalModel',
+           'NormalMVTest',
+           'PoissonABTest',
+           'PoissonModel',
+           'PoissonMVTest',
+           'UniformABTest',
+           'UniformModel',
+           'UniformMVTest']

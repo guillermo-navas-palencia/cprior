@@ -58,6 +58,7 @@ install_requires = [
     'numpy>=1.15.0',
     'pandas>=0.24.2',
     'scipy>=1.0.0',
+    'jinja2>=2.10',
     'pytest',
     'coverage'
 ]

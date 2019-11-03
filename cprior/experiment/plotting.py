@@ -20,7 +20,8 @@ def experiment_plot_metric(experiment):
     experiment : object
     """
     if not isinstance(experiment, Experiment):
-        raise TypeError()
+        raise TypeError("Experiment {} is not an instance of Experiment."
+                        .format(experiment.__class__.__name__))
 
     for variant in experiment.variants_:
         if experiment._multimetric:
@@ -53,7 +54,8 @@ def experiment_plot_stats(experiment):
     experiment : object
     """
     if not isinstance(experiment, Experiment):
-        raise TypeError()
+        raise TypeError("Experiment {} is not an instance of Experiment."
+                        .format(experiment.__class__.__name__))
 
     for variant in experiment.variants_:
         mean = experiment._trials[variant]["stats"]["mean"]

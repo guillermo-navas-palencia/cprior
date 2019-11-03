@@ -27,7 +27,8 @@ def experiment_stats(experiment):
     stats : pandas.DataFrame
     """
     if not isinstance(experiment, Experiment):
-        raise TypeError()
+        raise TypeError("Experiment {} is not an instance of Experiment."
+                        .format(experiment.__class__.__name__))
 
     d_cols = []
     for variant in experiment.variants_:
@@ -46,7 +47,8 @@ def experiment_describe(experiment):
     experiment : object
     """
     if not isinstance(experiment, Experiment):
-        raise TypeError()
+        raise TypeError("Experiment {} is not an instance of Experiment."
+                        .format(experiment.__class__.__name__))
 
     # Experiment class arguments
     name = experiment.name
@@ -132,7 +134,8 @@ def experiment_summary(experiment):
     stats : pandas.DataFrame
     """
     if not isinstance(experiment, Experiment):
-        raise TypeError()
+        raise TypeError("Experiment {} is not an instance of Experiment."
+                        .format(experiment.__class__.__name__))
 
     test = experiment._test
     winner = experiment.winner
@@ -197,8 +200,8 @@ def experiment_summary(experiment):
     df_report = df_report[cols]
 
     if winner is not None:
-        return df_report.style.set_properties(
+        df_report = df_report.style.set_properties(
             subset=pd.IndexSlice[[winner], :],
             **{'background-color': "#C4F4C5", 'font-weight': 'bold'})
-    else:
-        return df_report
+
+    return df_report

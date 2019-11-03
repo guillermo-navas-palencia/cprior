@@ -564,6 +564,30 @@ class NormalInverseGammaModel(BayesModel):
             shape=self._shape_posterior,
             scale=self._scale_posterior).cdf(x, sig2)
 
+    def ppf(self, q):
+        """
+        Percent point function (quantile) of the posterior distribution.
+
+        Parameters
+        ----------
+        x : array-like
+            Lower tail probability.
+
+        Returns
+        -------
+        ppf : tuple of numpy.ndarray
+            Quantile corresponding to the lower tail probability q.
+        """
+        mu = self._loc_posterior
+        a = self._shape_posterior
+        b = self._scale_posterior
+        s = np.sqrt(b / a / self._variance_scale_posterior)
+
+        sig2_ppf = stats.invgamma(a=a, scale=b).ppf(q)
+        x_ppf = stats.norm(loc=mu, scale=s).ppf(q)
+
+        return x_ppf, sig2_ppf
+
     def rvs(self, size=1, random_state=None):
         """
         Random variates of the posterior distribution.

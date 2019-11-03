@@ -385,7 +385,7 @@ def test_experiment_describe():
     with raises(TypeError):
         experiment_describe(None)
 
-    experiment_describe(experiment)
+    experiment.describe()
 
 
 def test_experiment_summary():
@@ -403,7 +403,7 @@ def test_experiment_summary():
     with raises(TypeError):
         experiment_summary(None)
 
-    experiment_summary(experiment)
+    experiment.summary()
 
 
 def test_experiment_plots():
@@ -424,8 +424,8 @@ def test_experiment_plots():
     with raises(TypeError):
         experiment_plot_stats(None)
 
-    experiment_plot_metric(experiment)
-    experiment_plot_stats(experiment)
+    experiment.plot_metric()
+    experiment.plot_stats()
 
 
 def test_experiment_normal_describe_plots():
@@ -450,6 +450,6 @@ def test_experiment_normal_describe_plots():
             e.run_update(**{"A": data_A, "B": data_B, "C": data_C,
                             "D": data_D})
 
-    experiment_describe(experiment)
-    experiment_summary(experiment)
-    experiment_plot_metric(experiment)
+    experiment.describe()
+    experiment.summary()
+    experiment.plot_metric()

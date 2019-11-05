@@ -18,6 +18,7 @@ def experiment_plot_metric(experiment):
     Parameters
     ----------
     experiment : object
+        A Bayesian experiment instance.
     """
     if not isinstance(experiment, Experiment):
         raise TypeError("Experiment {} is not an instance of Experiment."
@@ -52,6 +53,7 @@ def experiment_plot_stats(experiment):
     Parameters
     ----------
     experiment : object
+        A Bayesian experiment instance.
     """
     if not isinstance(experiment, Experiment):
         raise TypeError("Experiment {} is not an instance of Experiment."

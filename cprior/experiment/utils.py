@@ -21,6 +21,7 @@ def experiment_stats(experiment):
     Parameters
     ----------
     experiment : object
+        A Bayesian experiment instance.
 
     Returns
     -------
@@ -45,6 +46,7 @@ def experiment_describe(experiment):
     Parameters
     ----------
     experiment : object
+        A Bayesian experiment instance.
     """
     if not isinstance(experiment, Experiment):
         raise TypeError("Experiment {} is not an instance of Experiment."
@@ -128,6 +130,7 @@ def experiment_summary(experiment):
     Parameters
     ----------
     experiment : object
+        A Bayesian experiment instance.
 
     Returns
     -------

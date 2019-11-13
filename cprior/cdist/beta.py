@@ -303,19 +303,19 @@ class BetaABTest(BayesABTest):
             aB = self.modelB.alpha_posterior
             bB = self.modelB.beta_posterior
 
-            r = np.arange(mlhs_samples)
+            r = np.arange(1, mlhs_samples + 1)
             np.random.shuffle(r)
             v = (r - 0.5) / mlhs_samples
 
             if variant == "A":
-                p = np.nanmean(special.betainc(aA, bA, self.modelB.ppf(v)))
+                p = np.mean(special.betainc(aA, bA, self.modelB.ppf(v)))
                 return 1.0 - p
             elif variant == "B":
-                p = np.nanmean(special.betainc(aB, bB, self.modelA.ppf(v)))
+                p = np.mean(special.betainc(aB, bB, self.modelA.ppf(v)))
                 return 1.0 - p
             else:
-                pa = np.nanmean(special.betainc(aA, bA, self.modelB.ppf(v)))
-                pb = np.nanmean(special.betainc(aB, bB, self.modelA.ppf(v)))
+                pa = np.mean(special.betainc(aA, bA, self.modelB.ppf(v)))
+                pb = np.mean(special.betainc(aB, bB, self.modelA.ppf(v)))
                 return 1.0 - pa, 1.0 - pb
         else:
             xA = self.modelA.rvs(self.simulations, self.random_state)
@@ -395,7 +395,7 @@ class BetaABTest(BayesABTest):
             aB = self.modelB.alpha_posterior
             bB = self.modelB.beta_posterior
 
-            r = np.arange(mlhs_samples)
+            r = np.arange(1, mlhs_samples + 1)
             np.random.shuffle(r)
             v = (r - 0.5) / mlhs_samples
 
@@ -403,22 +403,22 @@ class BetaABTest(BayesABTest):
                 x = self.modelB.ppf(v)
                 p = x * special.betainc(aA, bA, x)
                 q = aA / (aA + bA) * special.betainc(aA + 1, bA, x)
-                return np.nanmean(p - q)
+                return np.mean(p - q)
             elif variant == "B":
                 x = self.modelA.ppf(v)
                 p = x * special.betainc(aB, bB, x)
                 q = aB / (aB + bB) * special.betainc(aB + 1, bB, x)
-                return np.nanmean(p - q)
+                return np.mean(p - q)
             else:
                 x = self.modelB.ppf(v)
                 p = x * special.betainc(aA, bA, x)
                 q = aA / (aA + bA) * special.betainc(aA + 1, bA, x)
-                pa = np.nanmean(p - q)
+                pa = np.mean(p - q)
 
                 x = self.modelA.ppf(v)
                 p = x * special.betainc(aB, bB, x)
                 q = aB / (aB + bB) * special.betainc(aB + 1, bB, x)
-                pb = np.nanmean(p - q)
+                pb = np.mean(p - q)
                 return pa, pb
         else:
             xA = self.modelA.rvs(self.simulations, self.random_state)
@@ -727,11 +727,11 @@ class BetaMVTest(BayesMVTest):
             a0 = model_control.alpha_posterior
             b0 = model_control.beta_posterior
 
-            r = np.arange(mlhs_samples)
+            r = np.arange(1, mlhs_samples + 1)
             np.random.shuffle(r)
             v = (r - 0.5) / mlhs_samples
 
-            return np.nanmean(special.betainc(a0, b0, model_variant.ppf(v)))
+            return np.mean(special.betainc(a0, b0, model_variant.ppf(v)))
         else:
             x0 = model_control.rvs(self.simulations, self.random_state)
             x1 = model_variant.rvs(self.simulations, self.random_state)
@@ -803,14 +803,13 @@ class BetaMVTest(BayesMVTest):
             variant_params = [(self.models[v].alpha_posterior,
                               self.models[v].beta_posterior) for v in variants]
 
-            r = np.arange(mlhs_samples)
+            r = np.arange(1, mlhs_samples + 1)
             np.random.shuffle(r)
             v = (r - 0.5) / mlhs_samples
-            v = v[v >= 0]
             x = self.models[variant].ppf(v)
 
-            return np.nanmean(np.prod([special.betainc(a, b, x)
-                              for a, b in variant_params], axis=0))
+            return np.mean(np.prod([special.betainc(a, b, x)
+                           for a, b in variant_params], axis=0))
 
     def expected_loss(self, method="exact", control="A", variant="B", lift=0,
                       mlhs_samples=10000):
@@ -869,7 +868,7 @@ class BetaMVTest(BayesMVTest):
             a1 = model_variant.alpha_posterior
             b1 = model_variant.beta_posterior
 
-            r = np.arange(mlhs_samples)
+            r = np.arange(1, mlhs_samples + 1)
             np.random.shuffle(r)
             v = (r - 0.5) / mlhs_samples
 
@@ -877,7 +876,7 @@ class BetaMVTest(BayesMVTest):
             p = x * special.betainc(a1, b1, x)
             q = a1 / (a1 + b1) * special.betainc(a1 + 1, b1, x)
 
-            return np.nanmean(p - q)
+            return np.mean(p - q)
         else:
             x0 = model_control.rvs(self.simulations, self.random_state)
             x1 = model_variant.rvs(self.simulations, self.random_state)
@@ -1184,10 +1183,9 @@ class BetaMVTest(BayesMVTest):
                 return integrate.quad(func=func_mv_el, a=0, b=1, args=(
                     a, b, variant_params))[0]
             else:
-                r = np.arange(mlhs_samples)
+                r = np.arange(1, mlhs_samples + 1)
                 np.random.shuffle(r)
                 v = (r - 0.5) / mlhs_samples
-                v = v[v >= 0]
 
                 # ppf of distribution of max(x0, x1, ..., xn), where x_i
                 # follows a beta distribution
@@ -1197,14 +1195,14 @@ class BetaMVTest(BayesMVTest):
 
                 p = x * special.betainc(a, b, x)
                 q = a / (a + b) * special.betainc(a + 1, b, x)
-                return np.nanmean(p - q)
+                return np.mean(p - q)
 
     def _expected_value_max_mlhs(self, variants, mlhs_samples):
         """Compute expected value of the maximum of beta random variables."""
-        r = np.arange(mlhs_samples)
+        r = np.arange(1, mlhs_samples + 1)
         np.random.shuffle(r)
         v = (r - 0.5) / mlhs_samples
-        v = v[v >= 0][..., np.newaxis]
+        v = v[..., np.newaxis]
 
         variant_params = [(self.models[v].alpha_posterior,
                           self.models[v].beta_posterior)

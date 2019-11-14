@@ -734,10 +734,9 @@ class GammaMVTest(BayesMVTest):
             variant_params = [(self.models[v].shape_posterior,
                               self.models[v].rate_posterior) for v in variants]
 
-            r = np.arange(mlhs_samples)
+            r = np.arange(1, mlhs_samples + 1)
             np.random.shuffle(r)
             v = (r - 0.5) / mlhs_samples
-            v = v[v >= 0]
             x = self.models[variant].ppf(v)
 
             return np.nanmean(np.prod([special.gammainc(a, b * x)
@@ -1109,10 +1108,9 @@ class GammaMVTest(BayesMVTest):
                 return integrate.quad(func=func_mv_el, a=0, b=n, args=(
                     a, b, variant_params))[0]
             else:
-                r = np.arange(mlhs_samples)
+                r = np.arange(1, mlhs_samples + 1)
                 np.random.shuffle(r)
                 v = (r - 0.5) / mlhs_samples
-                v = v[v >= 0]
 
                 # ppf of distribution of max(x0, x1, ..., xn), where x_i
                 # follows a gamma distribution
@@ -1122,14 +1120,14 @@ class GammaMVTest(BayesMVTest):
 
                 p = x * special.gammainc(a, b * x)
                 q = a / b * special.gammainc(a + 1, b * x)
-                return np.nanmean(p - q)
+                return np.mean(p - q)
 
     def _expected_value_max_mlhs(self, variants, mlhs_samples):
         """Compute expected value of the maximum of beta random variables."""
-        r = np.arange(mlhs_samples)
+        r = np.arange(1, mlhs_samples + 1)
         np.random.shuffle(r)
         v = (r - 0.5) / mlhs_samples
-        v = v[v >= 0][..., np.newaxis]
+        v = v[..., np.newaxis]
 
         variant_params = [(self.models[v].shape_posterior,
                           self.models[v].rate_posterior)

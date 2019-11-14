@@ -1386,10 +1386,9 @@ class NormalInverseGammaMVTest(BayesMVTest):
 
                 return prob_mean, prob_var
             else:
-                r = np.arange(mlhs_samples)
+                r = np.arange(1, mlhs_samples + 1)
                 np.random.shuffle(r)
                 r = (r - 0.5) / mlhs_samples
-                r = r[r >= 0]
 
                 # mean
                 x = stats.t(df=2 * a, loc=mu, scale=np.sqrt(b / a / la)).ppf(r)
@@ -1720,10 +1719,10 @@ class NormalInverseGammaMVTest(BayesMVTest):
 
                 return elr_mean, elr_variance
             else:
-                r = np.arange(mlhs_samples)
+                r = np.arange(1, mlhs_samples + 1)
                 np.random.shuffle(r)
                 r = (r - 0.5) / mlhs_samples
-                r = r[r >= 0][..., np.newaxis]
+                r = r[..., np.newaxis]
 
                 n = len(variant_params)
                 variant_params.append((mu, la, a, b))
@@ -1945,10 +1944,9 @@ class NormalInverseGammaMVTest(BayesMVTest):
 
                 return el_mean, el_var
             else:
-                r = np.arange(mlhs_samples)
+                r = np.arange(1, mlhs_samples + 1)
                 np.random.shuffle(r)
                 r = (r - 0.5) / mlhs_samples
-                r = r[r >= 0]
 
                 # mean
                 x = np.array([optimize.brentq(

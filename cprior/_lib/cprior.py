@@ -9,7 +9,7 @@ import numpy.ctypeslib as npct
 import os.path
 import platform
 
-from ctypes import c_double
+from ctypes import c_double, c_int
 
 
 # load library
@@ -29,3 +29,12 @@ cprior.cpp_beta_cprior.argtypes = [c_double, c_double, c_double, c_double]
 
 def beta_cprior(a0, b0, a1, b1):
     return cprior.cpp_beta_cprior(a0, b0, a1, b1)
+
+
+cprior.cpp_beta_binomial_cdf_cprior.restype = c_double
+cprior.cpp_beta_binomial_cdf_cprior.argtypes = [c_int, c_int, c_double,
+                                                c_double]
+
+
+def beta_binomial_cdf_cprior(k, n, a, b):
+    return cprior.cpp_beta_binomial_cdf_cprior(k, n, a, b)

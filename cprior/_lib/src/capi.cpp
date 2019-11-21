@@ -11,3 +11,8 @@ double cpp_beta_binomial_cdf_cprior(int k, int n, double a, double b)
 {
   return beta_binomial_cdf_cprior(k, n, a, b);
 }
+
+int cpp_beta_binomial_ppf_cprior(double q, int n, double a, double b)
+{
+  return beta_binomial_ppf_cprior(q, n, a, b);
+}

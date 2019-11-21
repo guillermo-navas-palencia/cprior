@@ -36,3 +36,13 @@ double beta_binomial_cdf_cprior(int k, int n, double a, double b)
   }
   return s;
 }
+
+int beta_binomial_ppf_cprior(double q, int n, double a, double b)
+{
+  int k = 0;
+
+  while (q > beta_binomial_cdf_cprior(k, n, a, b))
+    k++;
+
+  return k;
+}

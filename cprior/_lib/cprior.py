@@ -38,3 +38,12 @@ cprior.cpp_beta_binomial_cdf_cprior.argtypes = [c_int, c_int, c_double,
 
 def beta_binomial_cdf_cprior(k, n, a, b):
     return cprior.cpp_beta_binomial_cdf_cprior(k, n, a, b)
+
+
+cprior.cpp_beta_binomial_ppf_cprior.restype = c_int
+cprior.cpp_beta_binomial_ppf_cprior.argtypes = [c_double, c_int, c_double,
+                                                c_double]
+
+
+def beta_binomial_ppf_cprior(q, n, a, b):
+    return cprior.cpp_beta_binomial_ppf_cprior(q, n, a, b)

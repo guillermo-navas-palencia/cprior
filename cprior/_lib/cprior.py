@@ -19,8 +19,10 @@ linux_os = (system_os == "Linux" or "CYGWIN" in system_os)
 
 if linux_os:
     cprior = npct.load_library("_cprior.so", libabspath)
-else:
+elif system_os == "Windows":
     cprior = npct.load_library("cprior.dll", libabspath)
+elif system_os == "Darwin":
+    cprior = npct.load_library("cprior.dylib", libabspath)
 
 
 cprior.cpp_beta_cprior.restype = c_double

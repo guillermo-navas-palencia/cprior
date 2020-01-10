@@ -41,14 +41,16 @@ if linux_os:
     cprior = "_cprior.so"
 elif system_os == "Windows":
     cprior = "cprior.dll"
+elif system_os == "Darwin":
+    cprior = "cprior.dylib"
 else:
     raise RuntimeError("Unexpected system {}.".format(system_os))
 
 # copy compiled libraries
-if linux_os:
-    data_files = [('cprior/_lib/', ['cprior/_lib/'+cprior])]
-else:
+if system_os == "Windows":
     data_files = [('cprior\\_lib\\', ['cprior\\_lib\\'+cprior])]
+else:
+    data_files = [('cprior/_lib/', ['cprior/_lib/'+cprior])]
 
 
 # install requirements

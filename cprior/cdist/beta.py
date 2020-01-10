@@ -197,7 +197,7 @@ class BetaModel(BayesModel):
 
         Parameters
         ----------
-        x : array-like
+        q : array-like
             Lower tail probability.
 
         Returns

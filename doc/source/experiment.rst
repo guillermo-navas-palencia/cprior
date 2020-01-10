@@ -1,6 +1,8 @@
 Bayesian experiment
 ===================
 
+Main class and utilities to run, explore and visualize a Bayesian experiment for A/B and multivariate testing.
+
 Experiment
 ----------
 

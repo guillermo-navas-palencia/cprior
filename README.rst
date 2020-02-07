@@ -14,6 +14,10 @@ CPrior
 .. image:: https://img.shields.io/pypi/v/cprior?color=blue
    :target: https://img.shields.io/pypi/v/cprior?color=blue 
 
+.. image:: https://pepy.tech/badge/cprior
+   :target: https://pepy.tech/project/cprior
+
+
 **CPrior** has functionalities to perform Bayesian statistics and running A/B and multivariate testing. CPrior includes several conjugate prior distributions and has been developed focusing on performance, implementing many closed-forms in terms of special functions to obtain fast and accurate results, avoiding Monte Carlo methods whenever possible.
 
 **Website**: http://gnpalencia.org/cprior/

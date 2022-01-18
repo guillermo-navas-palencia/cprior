@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 PROJECT="."
 PROJECT_ROOT="$PROJECT"

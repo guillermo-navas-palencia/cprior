@@ -5,16 +5,22 @@ Beta conjugate prior distribution model.
 # Guillermo Navas-Palencia <g.navas.palencia@gmail.com>
 # Copyright (C) 2019
 
-from multiprocessing import Pool
-
 import mpmath as mp
 import numpy as np
-from scipy import integrate, optimize, special, stats
+
+from multiprocessing import Pool
+from scipy import integrate
+from scipy import optimize
+from scipy import special
+from scipy import stats
 
 from .._lib.cprior import beta_cprior
-from .base import BayesABTest, BayesModel, BayesMVTest
+from .base import BayesABTest
+from .base import BayesModel
+from .base import BayesMVTest
 from .ci import ci_interval
-from .utils import check_ab_method, check_mv_method
+from .utils import check_ab_method
+from .utils import check_mv_method
 
 def get_integration_points(a, b):
     if a == 1 and b == 1:
@@ -988,7 +994,6 @@ class BetaMVTest(BayesMVTest):
             return ((x0 - x1) / x1).mean()
 
     def expected_lift_relative(self, method="exact", control="A", variant="B"):
-        # TODO: docs
         check_mv_method(method=method, method_options=("exact", "MC"),
                         control=control, variant=variant,
                         variants=self.models.keys())
@@ -1077,7 +1082,6 @@ class BetaMVTest(BayesMVTest):
 
     def expected_lift_relative_vs_all(self, method="quad", control="A",
                                       variant="B", mlhs_samples=1000):
-        # TODO: docs
         check_mv_method(method=method, method_options=("MC", "MLHS", "quad"),
                         control=None, variant=variant,
                         variants=self.models.keys())
@@ -1097,7 +1101,7 @@ class BetaMVTest(BayesMVTest):
             xall = [p.get() for p in processes]
             maxall = np.maximum.reduce(xall)
 
-            return (maxall / xvariant).mean() - 1
+            return (xvariant / maxall).mean() - 1
         else:
             if method == "quad":
                 variant_params = [(self.models[v].alpha_posterior,

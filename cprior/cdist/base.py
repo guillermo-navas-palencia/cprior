@@ -5,8 +5,7 @@ Base Bayes model and A/B testing classes.
 # Guillermo Navas-Palencia <g.navas.palencia@gmail.com>
 # Copyright (C) 2019
 
-from abc import ABCMeta
-from abc import abstractmethod
+from abc import ABCMeta, abstractmethod
 
 
 class BayesModel(metaclass=ABCMeta):
@@ -249,6 +248,13 @@ class BayesMVTest(metaclass=ABCMeta):
         Compute expected relative loss for choosing a variant. This can be seen
         as the negative expected relative improvement or uplift.
         """
+        
+    # @abstractmethod
+    # def expected_lift_relative(self):
+    #     """
+    #     Compute expected relative lift for choosing a variant. This can be seen
+    #     as the expected relative improvement or uplift.
+    #     """
 
     @abstractmethod
     def expected_loss_relative_ci(self):
@@ -260,6 +266,11 @@ class BayesMVTest(metaclass=ABCMeta):
     @abstractmethod
     def expected_loss_vs_all(self):
         """Compute the expected loss against all variations."""
+
+    # TODO: just so tests pass for now
+    # @abstractmethod
+    # def expected_lift_vs_all(self):
+    #     """Compute the expected lift against all variations."""
 
     def update(self, data, variant):
         """

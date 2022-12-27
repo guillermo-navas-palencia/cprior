@@ -22,6 +22,11 @@ from .ci import ci_interval
 from .utils import check_ab_method
 from .utils import check_mv_method
 
+def get_integration_points(a, b):
+    if a == 1 and b == 1:
+        return None
+
+    return [(a-1)/(a+b-2)]
 
 def func_ppf(x, a0, b0, a1, b1, p):
     """Function CDF ratio of beta function for root-finding."""
@@ -796,7 +801,9 @@ class BetaMVTest(BayesMVTest):
             a = self.models[variant].alpha_posterior
             b = self.models[variant].beta_posterior
 
-            return integrate.quad(func=func_mv_prob, a=0, b=1, args=(
+            points = get_integration_points(a, b)
+
+            return integrate.quad(func=func_mv_prob, a=0, b=1, points=points, args=(
                 a, b, variant_params))[0]
         else:
             # prepare parameters
@@ -986,6 +993,28 @@ class BetaMVTest(BayesMVTest):
 
             return ((x0 - x1) / x1).mean()
 
+    def expected_lift_relative(self, method="exact", control="A", variant="B"):
+        check_mv_method(method=method, method_options=("exact", "MC"),
+                        control=control, variant=variant,
+                        variants=self.models.keys())
+
+        model_control = self.models[control]
+        model_variant = self.models[variant]
+
+        if method == "exact":
+            a0 = model_control.alpha_posterior
+            b0 = model_control.beta_posterior
+
+            a1 = model_variant.alpha_posterior
+            b1 = model_variant.beta_posterior
+
+            return (a0 + b0) * (a1 - 1) / a0 / (a1 + b1 - 1) - 1
+        else:
+            x0 = model_control.rvs(self.simulations, self.random_state)
+            x1 = model_variant.rvs(self.simulations, self.random_state)
+
+            return ((x1 - x0) / x0).mean()
+
     def expected_loss_relative_vs_all(self, method="quad", control="A",
                                       variant="B", mlhs_samples=1000):
         r"""
@@ -1031,6 +1060,49 @@ class BetaMVTest(BayesMVTest):
 
             return (maxall / xvariant).mean() - 1
         else:
+            a = self.models[variant].alpha_posterior
+            b = self.models[variant].beta_posterior
+        
+            if method == "quad":
+                variant_params = [(self.models[v].alpha_posterior,
+                                  self.models[v].beta_posterior)
+                                  for v in variants]
+
+                points = get_integration_points(a, b)
+                e_max = integrate.quad(func=func_mv_elr, a=0, b=1, points=points, args=(
+                    variant_params))[0]
+            else:
+                e_max = self._expected_value_max_mlhs(variants, mlhs_samples)
+
+            e_inv_x = (a + b - 1) / (a - 1)
+
+            return e_max * e_inv_x - 1
+
+
+
+    def expected_lift_relative_vs_all(self, method="quad", control="A",
+                                      variant="B", mlhs_samples=1000):
+        check_mv_method(method=method, method_options=("MC", "MLHS", "quad"),
+                        control=None, variant=variant,
+                        variants=self.models.keys())
+
+        # exclude variant
+        variants = list(self.models.keys())
+        variants.remove(variant)
+
+        if method == "MC":
+            # generate samples from all models in parallel
+            xvariant = self.models[variant].rvs(self.simulations,
+                                                self.random_state)
+
+            pool = Pool(processes=self.n_jobs)
+            processes = [pool.apply_async(self._rvs, args=(v, ))
+                         for v in variants]
+            xall = [p.get() for p in processes]
+            maxall = np.maximum.reduce(xall)
+
+            return (xvariant / maxall).mean() - 1
+        else:
             if method == "quad":
                 variant_params = [(self.models[v].alpha_posterior,
                                   self.models[v].beta_posterior)
@@ -1043,9 +1115,9 @@ class BetaMVTest(BayesMVTest):
 
             a = self.models[variant].alpha_posterior
             b = self.models[variant].beta_posterior
-            e_inv_x = (a + b - 1) / (a - 1)
+            e_x = (a - 1) / (a + b - 1)
 
-            return e_max * e_inv_x - 1
+            return (e_x / e_max) - 1
 
     def expected_loss_relative_ci(self, method="MC", control="A", variant="B",
                                   interval_length=0.9, ci_method="ETI"):
@@ -1180,8 +1252,10 @@ class BetaMVTest(BayesMVTest):
             b = self.models[variant].beta_posterior
 
             if method == "quad":
-                return integrate.quad(func=func_mv_el, a=0, b=1, args=(
+                points = get_integration_points(a, b)
+                return integrate.quad(func=func_mv_el, a=0, b=1, points=points, args=(
                     a, b, variant_params))[0]
+
             else:
                 r = np.arange(1, mlhs_samples + 1)
                 np.random.shuffle(r)

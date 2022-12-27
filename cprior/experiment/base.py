@@ -148,7 +148,8 @@ class Experiment(object):
             Dictionary with key=variant and value=data, e.g.
             ``**{"A": data_A}``.
         """
-        if self._termination:
+        force_termination = data.pop('force_termination', True)
+        if self._termination and force_termination:
             print("Experiment is terminated.")
             return
 

@@ -80,6 +80,7 @@ setup(
     url="https://github.com/guillermo-navas-palencia/cprior",
     tests_require=['pytest'],
     cmdclass={'clean': CleanCommand, 'test': PyTest},
+    install_requires=install_requires,
     python_requires='>=3.5',
     classifiers=[
         'Topic :: Scientific/Engineering :: Mathematics',

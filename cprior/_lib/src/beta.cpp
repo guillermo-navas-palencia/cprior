@@ -18,11 +18,15 @@ double betaln(double a, double b)
 double beta_terminating_a0(int a0, double b0, double a1, double b1,
   double err=1e-15)
 {
-  double c, s, sp;
-  const double a11 = a1 - 1;
-  const double ab11 = a1 + b0 + b1 - 1;
+  long double c, s, sp;
+  const long double a11 = a1 - 1;
+  const long double ab11 = a1 + b0 + b1 - 1;
 
-  c = std::exp(betaln(a1 + a0 - 1, b0 + b1) - betaln(a1, b1) - betaln(a0, b0));
+  c = std::exp((long double)(betaln(a1 + a0 - 1, b0 + b1) - betaln(a1, b1) - betaln(a0, b0)));
+  if (c == 0)
+    return nan("");
+
+
   s = c / (b0 + a0 - 1);
   sp = s;
   for (int k = a0 - 1; k >= 0; k--) {
@@ -39,11 +43,14 @@ double beta_terminating_a0(int a0, double b0, double a1, double b1,
 double beta_terminating_a1(double a0, double b0, int a1, double b1,
   double err=1e-15)
 {
-  double c, s, sp;
-  const double a01 = a0 - 1;
-  const double ab01 = a0 + b0 + b1 - 1;
+  long double c, s, sp;
+  const long double a01 = a0 - 1;
+  const long double ab01 = a0 + b0 + b1 - 1;
 
-  c = std::exp(betaln(a0 + a1 - 1, b0 + b1) - betaln(a1, b1) - betaln(a0, b0));
+  c = std::exp((long double)(betaln(a0 + a1 - 1, b0 + b1) - betaln(a1, b1) - betaln(a0, b0)));
+  if (c == 0)
+    return nan("");
+
   s = c / (b1 + a1 - 1);
   sp = s;
   for (int k = a1 - 1; k >= 0; k--) {
@@ -60,11 +67,14 @@ double beta_terminating_a1(double a0, double b0, int a1, double b1,
 double beta_terminating_b0(double a0, int b0, double a1, double b1,
   double err=1e-15)
 {
-  double c, s, sp;
-  const double b11 = b1 - 1;
-  const double ab11 = b1 + a0 + a1 - 1;
+  long double c, s, sp;
+  const long double b11 = b1 - 1;
+  const long double ab11 = b1 + a0 + a1 - 1;
 
-  c = std::exp(betaln(b1 + b0 - 1, a0 + a1) - betaln(a1, b1) - betaln(a0, b0));
+  c = std::exp((long double)(betaln(b1 + b0 - 1, a0 + a1) - betaln(a1, b1) - betaln(a0, b0)));
+  if (c == 0)
+    return nan("");
+
   s = c / (a0 + b0 - 1);
   sp = s;
   for (int k = b0 - 1; k >= 0; k--) {
@@ -81,11 +91,14 @@ double beta_terminating_b0(double a0, int b0, double a1, double b1,
 double beta_terminating_b1(double a0, double b0, double a1, int b1,
   double err=1e-15)
 {
-  double c, s, sp;
-  const double b01 = b0 - 1;
-  const double ab01 = b0 + a0 + a1 - 1;
+  long double c, s, sp;
+  const long double b01 = b0 - 1;
+  const long double ab01 = b0 + a0 + a1 - 1;
 
-  c = std::exp(betaln(b0 + b1 - 1, a0 + a1) - betaln(a1, b1) - betaln(a0, b0));
+  c = std::exp((long double)(betaln(b0 + b1 - 1, a0 + a1) - betaln(a1, b1) - betaln(a0, b0)));
+  if (c == 0)
+    return nan("");
+
   s = c / (a1 + b1 - 1);
   sp = s;
   for (int k = b1 - 1; k >= 0; k--) {
@@ -102,14 +115,17 @@ double beta_terminating_b1(double a0, double b0, double a1, int b1,
 double beta_3f2(double a0, double b0, double a1, double b1, double err=1e-15)
 {
   const int maxiter = 10000;
-  const double aa = a0 + b0;
-  const double bb = b0 + b1;
-  const double cc = b0 + 1;
-  const double dd = a0 + b0 + a1 + b1;
+  const long double aa = a0 + b0;
+  const long double bb = b0 + b1;
+  const long double cc = b0 + 1;
+  const long double dd = a0 + b0 + a1 + b1;
 
-  double c, s, sp, t;
+  long double c, s, sp, t;
 
-  c = std::exp(betaln(a0+a1,bb)-(std::log(b0) + betaln(a0,b0) + betaln(a1,b1)));
+  c = std::exp((long double)(betaln(a0+a1,bb)-(std::log(b0) + betaln(a0,b0) + betaln(a1,b1))));
+  if (c == 0)
+    return nan("");
+
   t = c;
   s = t;
   sp = s;
@@ -126,7 +142,7 @@ double beta_3f2(double a0, double b0, double a1, double b1, double err=1e-15)
 
 double beta_cprior(double a0, double b0, double a1, double b1)
 {
-  double int_a0, int_a1, int_b0, int_b1;
+  long double int_a0, int_a1, int_b0, int_b1;
 
   if (a0 <= std::min(std::min(b0, b1), a1) && std::modf(a0, &int_a0) == 0.0)
     return beta_terminating_a0((int)a0, b0, a1, b1);

@@ -4,33 +4,42 @@ Beta distribution testing.
 
 # Guillermo Navas-Palencia <g.navas.palencia@gmail.com>
 # Copyright (C) 2019
-
-from pytest import approx, raises
+from math import isnan
 
 from cprior._lib.cprior import beta_cprior
-from cprior.cdist import BetaABTest
-from cprior.cdist import BetaModel
-from cprior.cdist import BetaMVTest
+from cprior.cdist import BetaABTest, BetaModel, BetaMVTest
+from pytest import approx, raises
 
 
 def test_beta_small_a0():
     assert beta_cprior(10, 50, 60, 250) == approx(0.7088919200, rel=1e-8)
 
+def test_beta_small_a0_large_numbers():
+    assert beta_cprior(100000, 500000, 600000, 2500000) == approx(1, abs=1e-8)
 
 def test_beta_small_a1():
     assert beta_cprior(600, 550, 52, 60) == approx(0.1223144258, rel=1e-8)
 
+def test_beta_small_a1_large_numbers():
+    assert beta_cprior(160000, 2850000, 80000, 1180000) == approx(1, abs=2e-8)
 
 def test_beta_small_b0():
     assert beta_cprior(1000, 900, 1200, 1000) == approx(0.8898254504, rel=1e-8)
 
+def test_beta_small_b0_large_numbers():
+    assert beta_cprior(1000000, 900000, 1200000, 1000000) == approx(1, abs=1e-8)
 
 def test_beta_small_b1():
     assert beta_cprior(1000, 900, 1200, 800) == approx(0.9999982656, rel=1e-8)
 
+def test_beta_small_b1_large_numbers():
+    assert beta_cprior(80000, 1180000, 160000, 2850000) == approx(0, abs=2e-8)
 
 def test_beta_equal_params_integer():
     assert beta_cprior(100, 90, 100, 90) == approx(0.5)
+
+def test_beta_huge_numbers():
+    assert isnan(beta_cprior(8000000, 118000000, 16000000, 285000000))
 
 
 def test_beta_equal_params_float():

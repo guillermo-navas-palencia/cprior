@@ -5,20 +5,14 @@ Gamma conjugate prior distribution model.
 # Guillermo Navas-Palencia <g.navas.palencia@gmail.com>
 # Copyright (C) 2019
 
-import numpy as np
-
 from multiprocessing import Pool
-from scipy import integrate
-from scipy import optimize
-from scipy import special
-from scipy import stats
 
-from .base import BayesABTest
-from .base import BayesModel
-from .base import BayesMVTest
+import numpy as np
+from scipy import integrate, optimize, special, stats
+
+from .base import BayesABTest, BayesModel, BayesMVTest
 from .ci import ci_interval
-from .utils import check_ab_method
-from .utils import check_mv_method
+from .utils import check_ab_method, check_mv_method
 
 
 def func_ppf(x, a0, b0, a1, b1, p):
@@ -895,6 +889,48 @@ class GammaMVTest(BayesMVTest):
 
             return ((x0 - x1) / x1).mean()
 
+    def expected_lift_relative(self, method="exact", control="A", variant="B"):
+        r"""
+        Compute expected relative loss for choosing a variant. This can be seen
+        as the negative expected relative improvement or uplift, i.e.,
+        :math:`\mathrm{E}[(variant - control) / control]`.
+
+        Parameters
+        ----------
+        method : str (default="exact")
+            The method of computation. Options are "exact" and "MC".
+
+        control : str (default="A")
+            The control variant.
+
+        variant : str (default="B")
+            The tested variant.
+
+        Returns
+        -------
+        expected_loss_relative : float
+        """
+        check_mv_method(method=method, method_options=("exact", "MC"),
+                        control=control, variant=variant,
+                        variants=self.models.keys())
+
+        model_control = self.models[control]
+        model_variant = self.models[variant]
+
+        if method == "exact":
+            a0 = model_control.shape_posterior
+            b0 = model_control.rate_posterior
+
+            a1 = model_variant.shape_posterior
+            b1 = model_variant.rate_posterior
+
+            return b0 / b1 * (a1 - 1) / a0 - 1
+        else:
+            x0 = model_control.rvs(self.simulations, self.random_state)
+            x1 = model_variant.rvs(self.simulations, self.random_state)
+
+            return ((x1 - x0) / x0).mean()
+
     def expected_loss_relative_vs_all(self, method="MLHS", control="A",
                                       variant="B", mlhs_samples=1000):
         r"""
@@ -964,6 +1000,76 @@ class GammaMVTest(BayesMVTest):
             e_inv_x = b / (a - 1)
 
             return e_max * e_inv_x - 1
+
+    def expected_lift_relative_vs_all(self, method="MLHS", control="A",
+                                      variant="B", mlhs_samples=1000):
+        r"""
+        Compute the expected relative loss against all variations. For example,
+        given variants "A", "B", "C" and "D", and choosing variant="B",
+        we compute :math:`\mathrm{E}[(\max(A, C, D) - B) / B]`.
+
+        Parameters
+        ----------
+        method : str (default="MLHS")
+            The method of computation. Options are "MC" (Monte Carlo),
+            "MLHS" (Monte Carlo + Median Latin Hypercube Sampling) and "quad"
+            (numerical integration).
+
+        variant : str (default="B")
+            The chosen variant.
+
+        mlhs_samples : int (default=1000)
+            Number of samples for MLHS method.
+
+        Returns
+        -------
+        expected_loss_relative_vs_all : float
+        """
+        check_mv_method(method=method, method_options=("MC", "MLHS", "quad"),
+                        control=None, variant=variant,
+                        variants=self.models.keys())
+
+        variants = list(self.models.keys())
+
+        if method == "MC":
+            # exclude variant
+            variants.remove(variant)
+            # generate samples from all models in parallel
+            xvariant = self.models[variant].rvs(self.simulations,
+                                                self.random_state)
+
+            pool = Pool(processes=self.n_jobs)
+            processes = [pool.apply_async(self._rvs, args=(v, ))
+                         for v in variants]
+            xall = [p.get() for p in processes]
+            maxall = np.maximum.reduce(xall)
+
+            return (xvariant / maxall).mean() - 1
+        else:
+            if method == "quad":
+                n = np.max([self.models[v].ppf(0.99999999) for v in variants])
+
+                # exclude variant
+                variants.remove(variant)
+
+                # prepare parameters
+                variant_params = [(self.models[v].shape_posterior,
+                                  self.models[v].rate_posterior)
+                                  for v in variants]
+
+                e_max = integrate.quad(func=func_mv_elr, a=0, b=n, args=(
+                    variant_params))[0]
+            else:
+                # exclude variant
+                variants.remove(variant)
+
+                e_max = self._expected_value_max_mlhs(variants, mlhs_samples)
+
+            a = self.models[variant].shape_posterior
+            b = self.models[variant].rate_posterior
+            e_x = (a - 1) / b
+
+            return e_x / e_max - 1
 
     def expected_loss_relative_ci(self, method="MC", control="A", variant="B",
                                   interval_length=0.9, ci_method="ETI"):
